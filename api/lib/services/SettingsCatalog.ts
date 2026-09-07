@@ -87,6 +87,34 @@ export const SETTINGS: Record<string, SettingDefinition> = {
     description: 'Suggested names for task assignment. Free text, so this is only a shortcut.'
   },
 
+  // --- network ------------------------------------------------------------
+  'network.lanAddress': {
+    // Empty, or an http(s) origin with no trailing path.
+    schema: z
+      .string()
+      .trim()
+      .refine(
+        value => value === '' || /^https?:\/\/[^/\s]+$/.test(value),
+        'Must be an address like http://192.168.1.50:8080, with no trailing path'
+      ),
+    default: () => '',
+    description:
+      'How this dashboard is reached from other devices on your network. Needed only when the ' +
+      'kiosk itself browses to localhost, which cannot be shared with a phone.'
+  },
+
+  // --- meals --------------------------------------------------------------
+  'meals.slots': {
+    schema: z.array(z.enum(['breakfast', 'lunch', 'dinner', 'snack'])).min(1),
+    default: () => ['breakfast', 'lunch', 'dinner'],
+    description: 'Which meals the weekly planner has a row for.'
+  },
+  'meals.weekStartsOn': {
+    schema: z.union([z.literal(0), z.literal(1)]),
+    default: () => 1,
+    description: 'First day of the planning week: 0 for Sunday, 1 for Monday.'
+  },
+
   // --- weather ------------------------------------------------------------
   'weather.units': {
     schema: z.enum(['metric', 'imperial']),

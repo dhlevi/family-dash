@@ -49,6 +49,17 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Meals', icon: 'meals' }
   },
   {
+    /**
+     * The shopping list on its own, which is where the QR code points. Kept
+     * out of the nav rail: it is a destination for a phone, not an eleventh
+     * tab competing for space on the wall display.
+     */
+    path: '/shopping',
+    name: 'shopping',
+    component: () => import('@/views/Shopping.vue'),
+    meta: { title: 'Shopping list', icon: 'meals', hidden: true }
+  },
+  {
     path: '/photos',
     name: 'photos',
     component: () => import('@/views/Photos.vue'),

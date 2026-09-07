@@ -259,19 +259,47 @@ export interface Recipe {
   imagePath: string | null
   sourceUrl: string | null
   favourite: boolean
+  createdAt: string
+  updatedAt: string
 }
 
-export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+export interface NewRecipe {
+  title: string
+  description?: string | null
+  servings?: number | null
+  prepMinutes?: number | null
+  cookMinutes?: number | null
+  ingredients?: Ingredient[]
+  steps?: string[]
+  tags?: string[]
+  sourceUrl?: string | null
+  favourite?: boolean
+}
+
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const
+
+export type MealSlot = (typeof MEAL_SLOTS)[number]
+
+export const MEAL_SLOT_LABELS: Record<MealSlot, string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+  snack: 'Snack'
+}
 
 export interface MealPlanEntry {
   id: string
+  /** 'YYYY-MM-DD' — a plain date, with no timezone attached. */
   planDate: string
   slot: MealSlot
   recipeId: string | null
   recipeTitle: string | null
+  /** A scribbled "leftovers" when there is no recipe. */
   customText: string | null
   notes: string | null
 }
+
+export type ShoppingOrigin = 'manual' | 'meal_plan'
 
 export interface ShoppingItem {
   id: string
@@ -279,8 +307,16 @@ export interface ShoppingItem {
   quantity: string | null
   category: string | null
   checked: boolean
-  origin: 'manual' | 'meal_plan'
+  origin: ShoppingOrigin
   recipeId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ShoppingList {
+  items: ShoppingItem[]
+  total: number
+  remaining: number
 }
 
 // --- photos and drawings ---------------------------------------------------
@@ -419,6 +455,9 @@ export interface AppSettings {
   'calendar.defaultView': 'month' | 'week' | 'agenda'
   'calendar.weekStartsOn': 0 | 1
   'calendar.dashboardDays': number
+  'network.lanAddress': string
+  'meals.slots': MealSlot[]
+  'meals.weekStartsOn': 0 | 1
   'tasks.showCompleted': boolean
   'tasks.assignees': string[]
   'weather.units': 'metric' | 'imperial'

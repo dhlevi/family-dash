@@ -256,9 +256,15 @@ Exec=chromium-browser --kiosk --noerrdialogs --disable-infobars --incognito \
   --disable-features=TranslateUI --check-for-update-interval=31536000 \
   --disable-pinch --overscroll-history-navigation=0 \
   --autoplay-policy=no-user-gesture-required \
-  http://localhost:8080
+  http://raspberrypi.local:8080
 X-GNOME-Autostart-enabled=true
 ```
+
+**Point it at the Pi's hostname, not `localhost`.** Both work for the kiosk itself, but the
+address in the browser is what the app offers when sharing the shopping list to a phone — and a
+QR code containing `localhost` scans perfectly and then fails to load. Using the hostname (or the
+Pi's IP) means what is on screen is something another device can actually reach. If you do use
+`localhost`, the app notices and asks you once for the network address instead.
 
 `--disable-pinch` and `--overscroll-history-navigation=0` matter more than they sound: without
 them a stray two-finger touch zooms the whole dashboard, and a horizontal swipe on the drawing
@@ -320,6 +326,10 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
   events.
 - **Tasks and chores** — grouped by when they are due, quick-add, priorities, free-text
   assignment, and repeating chores that reappear once ticked off.
+- **Meals** — a seven-day planner, a reusable recipe library, and a shopping list built from the
+  two. Ingredients are merged across the week (three recipes using flour give one line with the
+  total), grouped by supermarket aisle, and a QR code hands the live list to a phone on the same
+  wifi so ticking items off in a shop shows up on the wall.
 - **Sticky notes** — a draggable corkboard of typed *or handwritten* notes. Handwriting is
   captured from a finger or stylus via pointer events (with pressure and palm rejection) and
   stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
@@ -329,7 +339,8 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 
 **Still to come:**
 
-1. **Weather, News, Recipes and meal planning, Photos, Draw** — plus the Google Calendar provider.
+1. **Weather, News, Photos, Draw** — plus the Google Calendar provider, and recipe photos once
+   image upload lands with the Photos page.
 2. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
    actually on the wall.
 

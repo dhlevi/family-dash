@@ -11,7 +11,10 @@ import { healthValidators } from '../health-checks/HealthCheckLoader'
 // never constructed has no instance to call, and startup fails with a message
 // saying so rather than quietly serving nothing.
 import { CalendarController } from '../controllers/CalendarController'
+import { MealPlanController } from '../controllers/MealPlanController'
 import { NoteController } from '../controllers/NoteController'
+import { RecipeController } from '../controllers/RecipeController'
+import { ShoppingController } from '../controllers/ShoppingController'
 import { SettingsController } from '../controllers/SettingsController'
 import { SystemController } from '../controllers/SystemController'
 import { TaskController } from '../controllers/TaskController'
@@ -39,6 +42,9 @@ export default function buildRouter(): Router {
   new CalendarController()
   new TaskController()
   new NoteController()
+  new RecipeController()
+  new MealPlanController()
+  new ShoppingController()
 
   RouteManager.initializeRoutes(router)
 

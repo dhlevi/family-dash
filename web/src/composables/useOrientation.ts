@@ -9,7 +9,15 @@ import { onScopeDispose, ref, computed } from 'vue'
  * columns to lay out — since the 16" panel can be mounted either way and the
  * answer differs.
  */
-const query = typeof window !== 'undefined' ? window.matchMedia('(orientation: portrait)') : null
+/**
+ * Guarded on `matchMedia` itself, not just on `window`: jsdom does not
+ * implement it, and neither do some embedded browsers. Without a media query
+ * the app simply renders its landscape layout rather than failing to mount.
+ */
+const query =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(orientation: portrait)')
+    : null
 const isPortrait = ref(query?.matches ?? false)
 
 function onChange(event: MediaQueryListEvent): void {

@@ -64,6 +64,62 @@ export interface DateRange {
   to: Date
 }
 
+// --- recipes and meal planning ---------------------------------------------
+
+export interface Ingredient {
+  quantity: string | null
+  unit: string | null
+  item: string
+}
+
+export interface Recipe {
+  id: string
+  title: string
+  description: string | null
+  servings: number | null
+  prepMinutes: number | null
+  cookMinutes: number | null
+  ingredients: Ingredient[]
+  steps: string[]
+  tags: string[]
+  imagePath: string | null
+  sourceUrl: string | null
+  favourite: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const
+
+export type MealSlot = (typeof MEAL_SLOTS)[number]
+
+export interface MealPlanEntry {
+  id: string
+  /** 'YYYY-MM-DD' — a plain date, with no timezone attached. */
+  planDate: string
+  slot: MealSlot
+  recipeId: string | null
+  /** Denormalised for display, so a week grid is one query. */
+  recipeTitle: string | null
+  /** A scribbled "leftovers" when there is no recipe. */
+  customText: string | null
+  notes: string | null
+}
+
+export type ShoppingOrigin = 'manual' | 'meal_plan'
+
+export interface ShoppingItem {
+  id: string
+  name: string
+  quantity: string | null
+  category: string | null
+  checked: boolean
+  origin: ShoppingOrigin
+  recipeId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 // --- sticky notes ----------------------------------------------------------
 
 export type NoteKind = 'text' | 'ink'

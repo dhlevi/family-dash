@@ -122,6 +122,15 @@ stays on the wall instead of the dashboard emptying out.
 **The UI is touch-first and orientation-agnostic.** Targets are at least 48px, there are no
 hover-only affordances, and the page itself never scrolls — each panel scrolls internally. The nav
 rail sits down the left edge in landscape and along the bottom in portrait, from the same markup.
+Anything positioned by hand — a sticky note on the corkboard — is stored as a *fraction* of the
+board rather than in pixels, so the arrangement survives the screen being rotated.
+
+**Handwriting is stored as vectors, not pixels.** A drawn note keeps its strokes as points in the
+coordinate space they were written in, so an SVG viewBox reproduces them at any size without
+distortion or rasterising. Strokes are simplified on commit (Ramer–Douglas–Peucker) and rendered
+through a Catmull-Rom spline: a legible handwritten note costs well under a kilobyte, and looks
+smooth rather than faceted. Stylus pressure is captured and kept even though notes currently draw
+at a constant width.
 
 ### Adding an endpoint
 
@@ -311,14 +320,17 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
   events.
 - **Tasks and chores** — grouped by when they are due, quick-add, priorities, free-text
   assignment, and repeating chores that reappear once ticked off.
-- **Dashboard** — "Up next" and "Today's tasks" read live data; tasks can be completed from the
-  dashboard itself.
+- **Sticky notes** — a draggable corkboard of typed *or handwritten* notes. Handwriting is
+  captured from a finger or stylus via pointer events (with pressure and palm rejection) and
+  stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
+  or shrunk into a dashboard widget. Pin a note to show it on the dashboard.
+- **Dashboard** — "Up next", "Today's tasks" and "Notes" read live data; tasks can be completed
+  from the dashboard itself.
 
 **Still to come:**
 
-1. **Sticky notes** — the remaining piece of the core planner.
-2. **Weather, News, Recipes and meal planning, Photos, Draw** — plus the Google Calendar provider.
-3. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
+1. **Weather, News, Recipes and meal planning, Photos, Draw** — plus the Google Calendar provider.
+2. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
    actually on the wall.
 
 Every tab is present and navigable; the ones above say what they are waiting for rather than

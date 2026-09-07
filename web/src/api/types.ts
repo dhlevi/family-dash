@@ -172,8 +172,26 @@ export interface TaskSuggestions {
   categories: string[]
 }
 
+export type NoteKind = 'text' | 'ink'
+
+/** One point of a handwritten stroke, in capture-space pixels. */
+export interface InkPoint {
+  x: number
+  y: number
+  /** Stylus pressure, 0..1. A finger or mouse reports 0.5. */
+  p: number
+}
+
+export interface InkStroke {
+  colour: string
+  width: number
+  points: InkPoint[]
+}
+
 export interface StickyNote {
   id: string
+  kind: NoteKind
+  /** The text of a typed note, or an optional caption on a drawn one. */
   body: string
   colour: string
   /** Fractions of the board (0..1) so positions survive a screen rotation. */
@@ -181,9 +199,44 @@ export interface StickyNote {
   y: number
   zIndex: number
   pinned: boolean
+  strokes: InkStroke[]
+  /**
+   * The coordinate space `strokes` were captured in. Rendering through a
+   * viewBox of this size reproduces the writing at any scale without
+   * distorting it. Null for typed notes.
+   */
+  inkWidth: number | null
+  inkHeight: number | null
   createdAt: string
   updatedAt: string
 }
+
+export interface NewStickyNote {
+  kind: NoteKind
+  body?: string
+  colour?: string
+  x?: number
+  y?: number
+  pinned?: boolean
+  strokes?: InkStroke[]
+  inkWidth?: number
+  inkHeight?: number
+}
+
+/** The palette offered for notes. Chosen to stay legible in both themes. */
+export const NOTE_COLOURS = [
+  '#ffe066',
+  '#ffd6a5',
+  '#ffadad',
+  '#bdb2ff',
+  '#a0e7a0',
+  '#9bf6ff',
+  '#fdffb6',
+  '#ffc6ff'
+] as const
+
+/** Ink colours. Dark enough to read on every note colour above. */
+export const INK_COLOURS = ['#1a1f2b', '#1d4ed8', '#b3261e', '#0f6b4f', '#6b21a8'] as const
 
 // --- recipes and meals -----------------------------------------------------
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import CalendarWidget from '@/components/dashboard/CalendarWidget.vue'
+import NotesWidget from '@/components/dashboard/NotesWidget.vue'
 import TasksWidget from '@/components/dashboard/TasksWidget.vue'
 import WidgetShell from '@/components/dashboard/WidgetShell.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -35,7 +36,7 @@ function shows(widget: DashboardWidget): boolean {
 const placeholders: Array<{
   widget: DashboardWidget
   title: string
-  icon: 'weather' | 'meals' | 'notes' | 'news' | 'photos'
+  icon: 'weather' | 'meals' | 'news' | 'photos'
   to: string
   empty: string
   description: string
@@ -55,14 +56,6 @@ const placeholders: Array<{
     to: '/meals',
     empty: 'No meal planned',
     description: 'The meal planner arrives with the recipe library.'
-  },
-  {
-    widget: 'notes',
-    title: 'Notes',
-    icon: 'notes',
-    to: '/notes',
-    empty: 'No pinned notes',
-    description: 'Sticky notes are the next thing to land.'
   },
   {
     widget: 'news',
@@ -90,6 +83,7 @@ const visiblePlaceholders = computed(() => placeholders.filter(item => shows(ite
     <div class="grid auto-rows-[minmax(16rem,1fr)] grid-cols-[repeat(auto-fit,minmax(23rem,1fr))] gap-4">
       <CalendarWidget v-if="shows('calendar')" />
       <TasksWidget v-if="shows('tasks')" />
+      <NotesWidget v-if="shows('notes')" />
 
       <WidgetShell
         v-for="item in visiblePlaceholders"

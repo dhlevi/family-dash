@@ -64,6 +64,47 @@ export interface DateRange {
   to: Date
 }
 
+// --- sticky notes ----------------------------------------------------------
+
+export type NoteKind = 'text' | 'ink'
+
+/** One point of a handwritten stroke, in capture-space pixels. */
+export interface InkPoint {
+  x: number
+  y: number
+  /** Stylus pressure, 0..1. A finger or mouse reports 0.5. */
+  p: number
+}
+
+export interface InkStroke {
+  colour: string
+  width: number
+  points: InkPoint[]
+}
+
+export interface StickyNote {
+  id: string
+  kind: NoteKind
+  /** The text of a typed note, or an optional caption on a drawn one. */
+  body: string
+  colour: string
+  /**
+   * Position on the corkboard as a fraction of its width and height, so a
+   * note stays where it was put when the screen is rotated between portrait
+   * and landscape.
+   */
+  x: number
+  y: number
+  zIndex: number
+  pinned: boolean
+  strokes: InkStroke[]
+  /** The coordinate space `strokes` were captured in. Null for typed notes. */
+  inkWidth: number | null
+  inkHeight: number | null
+  createdAt: string
+  updatedAt: string
+}
+
 // --- tasks and chores ------------------------------------------------------
 
 export type TaskPriority = 0 | 1 | 2 | 3

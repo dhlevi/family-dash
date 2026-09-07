@@ -1,0 +1,3 @@
+build/
+node_modules/
+lib/public/swagger.json

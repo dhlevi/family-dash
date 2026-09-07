@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------------------
+# family-dash — full stack
+#
+#   docker compose up --build -d      start everything
+#   docker compose logs -f            watch it
+#   docker compose down               stop (keeps data)
+#   docker compose down -v            stop and wipe the database
+#
+# Only `web` publishes a port. The API and database talk over the internal
+# compose network, so nothing but the UI is reachable from your LAN.
+# ---------------------------------------------------------------------------
+
+name: family-dash
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-familydash}
+      POSTGRES_USER: ${POSTGRES_USER:-familydash}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      # Keeps index ordering stable and avoids locale-dependent sorts
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      TZ: ${TZ:-UTC}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Without the -U/-d flags pg_isready checks the wrong role and reports
+      # healthy before the application database actually exists.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-familydash} -d ${POSTGRES_DB:-familydash}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TZ: ${TZ:-UTC}
+      PORT: 3000
+      # node-postgres picks these up implicitly via `new Pool()`
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-familydash}
+      PGUSER: ${POSTGRES_USER:-familydash}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      MEDIA_ROOT: /media
+      DEFAULT_LATITUDE: ${DEFAULT_LATITUDE:-49.2827}
+      DEFAULT_LONGITUDE: ${DEFAULT_LONGITUDE:--123.1207}
+      DEFAULT_LOCATION_NAME: ${DEFAULT_LOCATION_NAME:-Vancouver}
+      DEFAULT_UNITS: ${DEFAULT_UNITS:-metric}
+      OPENWEATHERMAP_API_KEY: ${OPENWEATHERMAP_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - ${MEDIA_PATH:-./media}:/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthCheck').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  pgdata:

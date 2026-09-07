@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# Development override — bind mounts and hot reload.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   (or just: make dev)
+#
+# The API runs under tsx watch and the web container runs the Vite dev server,
+# so edits on your machine are picked up without a rebuild. Postgres is
+# published on the host so you can point psql or a GUI at it.
+# ---------------------------------------------------------------------------
+
+services:
+  db:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  api:
+    build:
+      target: development
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./api/lib:/app/lib
+      - ./api/config:/app/config
+      - ./api/test:/app/test
+      - ${MEDIA_PATH:-./media}:/media
+    ports:
+      # direct API access, bypassing the nginx proxy
+      - "${API_PORT:-3000}:3000"
+
+  web:
+    build:
+      target: development
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
+    environment:
+      # Vite dev server proxies /api straight to the API container
+      VITE_API_PROXY_TARGET: http://api:3000
+    volumes:
+      - ./web/src:/app/src
+      - ./web/public:/app/public
+      - ./web/index.html:/app/index.html
+      - ./web/vite.config.ts:/app/vite.config.ts

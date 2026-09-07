@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      Wall-mounted kiosk: lock the viewport to the device width, disable the
+      double-tap zoom that makes a touchscreen dashboard frustrating, and
+      allow the safe-area insets so a bezel or rounded corner does not clip
+      the nav rail.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#12151c" />
+    <meta name="description" content="Self-hosted family dashboard: calendar, tasks, meals, weather and more" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Family Dashboard</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+
+    /* The decorator-driven controller pattern needs both of these: legacy
+       decorators for @Route/@Get, and parameter metadata so RouteManager can
+       coerce query/path strings to the declared parameter types. */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "outDir": "build",
+    "rootDir": "lib",
+    "sourceMap": true,
+    "declaration": false,
+    "removeComments": false,
+
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": ["lib/**/*.ts"],
+  "exclude": ["node_modules", "build", "test"]
+}

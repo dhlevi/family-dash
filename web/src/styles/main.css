@@ -1,0 +1,196 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Palette
+   Two themes, one set of semantic names. Components only ever reference the
+   semantic tokens, so switching themes at runtime is a single attribute on
+   <html> and never a class rewrite across the tree.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* dark is the default: this thing lives on a wall, often in a dim kitchen */
+  --fd-bg: #0e1117;
+  --fd-surface: #161b25;
+  --fd-surface-2: #1e2431;
+  --fd-surface-3: #273040;
+  --fd-border: #2a3140;
+  --fd-border-strong: #3a4356;
+  --fd-text: #e8ecf4;
+  --fd-text-muted: #97a2b6;
+  --fd-text-faint: #6b7688;
+
+  --fd-accent: #4f8ef7;
+  --fd-accent-text: #ffffff;
+  --fd-accent-soft: rgb(79 142 247 / 0.16);
+
+  --fd-success: #48b884;
+  --fd-warn: #eda145;
+  --fd-danger: #e5484d;
+  --fd-info: #6cb6e3;
+
+  --fd-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.22);
+
+  /* Minimum comfortable target for a finger on a 16" panel. */
+  --fd-touch: 3rem;
+  --fd-radius: 0.875rem;
+}
+
+:root[data-theme='light'] {
+  --fd-bg: #f3f5f9;
+  --fd-surface: #ffffff;
+  --fd-surface-2: #eceff5;
+  --fd-surface-3: #e2e7f0;
+  --fd-border: #d9dfea;
+  --fd-border-strong: #bcc6d6;
+  --fd-text: #181d28;
+  --fd-text-muted: #586176;
+  --fd-text-faint: #7c869a;
+
+  --fd-accent: #2563eb;
+  --fd-accent-text: #ffffff;
+  --fd-accent-soft: rgb(37 99 235 / 0.1);
+
+  --fd-success: #16875a;
+  --fd-warn: #b96c0b;
+  --fd-danger: #cc2027;
+  --fd-info: #1f7fb0;
+
+  --fd-shadow: 0 1px 2px rgb(24 29 40 / 0.06), 0 8px 24px rgb(24 29 40 / 0.08);
+}
+
+/* Expose the palette to Tailwind as utilities (bg-surface, text-muted, ...).
+   `inline` keeps the var() reference intact so a theme swap is live. */
+@theme inline {
+  --color-bg: var(--fd-bg);
+  --color-surface: var(--fd-surface);
+  --color-surface-2: var(--fd-surface-2);
+  --color-surface-3: var(--fd-surface-3);
+  --color-line: var(--fd-border);
+  --color-line-strong: var(--fd-border-strong);
+  --color-ink: var(--fd-text);
+  --color-muted: var(--fd-text-muted);
+  --color-faint: var(--fd-text-faint);
+  --color-accent: var(--fd-accent);
+  --color-accent-ink: var(--fd-accent-text);
+  --color-accent-soft: var(--fd-accent-soft);
+  --color-success: var(--fd-success);
+  --color-warn: var(--fd-warn);
+  --color-danger: var(--fd-danger);
+  --color-info: var(--fd-info);
+
+  --radius-card: var(--fd-radius);
+  --spacing-touch: var(--fd-touch);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  color-scheme: dark;
+  /* A kiosk should never rubber-band or pull-to-refresh. */
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+}
+
+body {
+  background: var(--fd-bg);
+  color: var(--fd-text);
+  font-family: var(--font-sans);
+  /* The app manages its own scroll regions; the page itself never scrolls. */
+  overflow: hidden;
+  /* Stray text selection from a stylus or a long press is pure noise here.
+     Inputs and long-form text opt back in below. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+[contenteditable='true'],
+.fd-selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fd-accent);
+  outline-offset: 2px;
+}
+
+/* Buttons and links are finger targets first. */
+button,
+[role='button'] {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll regions
+   Visible enough to grab with a finger, quiet enough not to clutter.
+   --------------------------------------------------------------------------- */
+
+.fd-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fd-border-strong) transparent;
+}
+
+.fd-scroll::-webkit-scrollbar {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.fd-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fd-scroll::-webkit-scrollbar-thumb {
+  background: var(--fd-border-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.fd-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fd-border-strong) transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+   Respect the OS setting; a wall display that animates constantly is tiring.
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

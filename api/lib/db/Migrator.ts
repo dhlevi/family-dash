@@ -1,0 +1,138 @@
+import * as crypto from 'crypto'
+import * as fs from 'fs'
+import * as path from 'path'
+import { PostgresDatabase } from './PostgresDatabase'
+
+interface MigrationFile {
+  id: string
+  name: string
+  filePath: string
+  sql: string
+  checksum: string
+}
+
+export interface MigrationOutcome {
+  applied: string[]
+  skipped: string[]
+}
+
+/**
+ * Applies `db/migrations/NNN_name.sql` in filename order at startup.
+ *
+ * Each file runs inside its own transaction and is recorded in
+ * `schema_migration` with a checksum, so a second boot is a no-op and an
+ * edited file that has already been applied is reported loudly instead of
+ * silently diverging. Keeping this in the API container means the Pi has
+ * nothing to run by hand after a `git pull` — bringing the stack up is the
+ * whole upgrade.
+ */
+export class Migrator {
+  private constructor() {
+    /* static only */
+  }
+
+  public static migrationsDirectory(): string {
+    // Resolves under both `tsx lib/...` and the compiled `build/...` layout.
+    const candidates = [
+      path.resolve(__dirname, 'migrations'),
+      path.resolve(process.cwd(), 'build/db/migrations'),
+      path.resolve(process.cwd(), 'lib/db/migrations')
+    ]
+
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) return candidate
+    }
+
+    throw new Error(`Could not locate a migrations directory; looked in:\n  ${candidates.join('\n  ')}`)
+  }
+
+  public static async migrate(): Promise<MigrationOutcome> {
+    await Migrator.ensureMigrationTable()
+
+    const files = Migrator.load()
+    const alreadyApplied = await Migrator.appliedMigrations()
+    const outcome: MigrationOutcome = { applied: [], skipped: [] }
+
+    for (const file of files) {
+      const previous = alreadyApplied.get(file.id)
+
+      if (previous) {
+        if (previous !== file.checksum) {
+          throw new Error(
+            `Migration ${file.name} has changed since it was applied (checksum mismatch). ` +
+              'Migrations are immutable once applied — add a new migration instead of editing this one.'
+          )
+        }
+        outcome.skipped.push(file.name)
+        continue
+      }
+
+      console.info(`Applying migration ${file.name}...`)
+
+      await PostgresDatabase.transaction(async client => {
+        await client.query(file.sql)
+        await client.query('INSERT INTO schema_migration (id, name, checksum, applied_at) VALUES ($1, $2, $3, now())', [
+          file.id,
+          file.name,
+          file.checksum
+        ])
+      })
+
+      outcome.applied.push(file.name)
+    }
+
+    if (outcome.applied.length === 0) {
+      console.info(`Database schema is up to date (${outcome.skipped.length} migration(s) already applied)`)
+    } else {
+      console.info(`Applied ${outcome.applied.length} migration(s): ${outcome.applied.join(', ')}`)
+    }
+
+    return outcome
+  }
+
+  public static async appliedCount(): Promise<number> {
+    const row = await PostgresDatabase.one<{ count: string }>('SELECT count(*)::text AS count FROM schema_migration')
+    return Number(row?.count ?? 0)
+  }
+
+  private static async ensureMigrationTable(): Promise<void> {
+    await PostgresDatabase.query(`
+      CREATE TABLE IF NOT EXISTS schema_migration (
+        id          text PRIMARY KEY,
+        name        text NOT NULL,
+        checksum    text NOT NULL,
+        applied_at  timestamptz NOT NULL DEFAULT now()
+      )
+    `)
+  }
+
+  private static async appliedMigrations(): Promise<Map<string, string>> {
+    const rows = await PostgresDatabase.many<{ id: string; checksum: string }>(
+      'SELECT id, checksum FROM schema_migration'
+    )
+    return new Map(rows.map(row => [row.id, row.checksum]))
+  }
+
+  private static load(): MigrationFile[] {
+    const directory = Migrator.migrationsDirectory()
+
+    return fs
+      .readdirSync(directory)
+      .filter(name => name.endsWith('.sql'))
+      .sort()
+      .map(name => {
+        const filePath = path.join(directory, name)
+        const sql = fs.readFileSync(filePath, 'utf8')
+
+        return {
+          // The numeric prefix is the identity, so a file can be renamed for
+          // clarity without looking like a new migration.
+          id: name.split('_')[0] ?? name,
+          name,
+          filePath,
+          sql,
+          checksum: crypto.createHash('sha256').update(sql.replace(/\r\n/g, '\n')).digest('hex')
+        }
+      })
+  }
+}

@@ -1,0 +1,321 @@
+# family-dash
+
+A self-hosted family dashboard and planner for a wall-mounted touchscreen. Calendar, tasks and
+chores, sticky notes, recipes and meal planning, photos, weather, news and a freehand drawing
+pad — running on your own hardware, with no subscription and no vendor holding your data.
+
+Built to run on a Raspberry Pi driving a 16" touchscreen, in either portrait or landscape.
+
+```
+docker compose up --build -d      #  →  http://<pi-address>:8080
+```
+
+## Stack
+
+| Layer    | Choice                                                                       |
+| -------- | ---------------------------------------------------------------------------- |
+| UI       | Vue 3 + Vite + Tailwind 4, served by nginx                                   |
+| API      | TypeScript + Express 5, decorator-driven controllers                         |
+| Database | PostgreSQL 17, raw `pg` with SQL migrations applied at startup               |
+| Runtime  | Docker Compose — three containers, one published port, arm64 and amd64       |
+
+The API follows the conventions of
+[dhlevi/express-ts-api-boilerplate](https://github.com/dhlevi/express-ts-api-boilerplate):
+`@Route`/`@Get` decorators, a `RouteManager` that wires them onto Express, thin controllers over
+`*Endpoints` classes holding the logic, a `TaskManager` for scheduled work, and a `HealthService`
+behind `/healthCheck`. The template's Webade, Oracle and MyBatis pieces are not carried over —
+none apply to a household appliance, and `oracledb` is a native module that would need to compile
+on ARM for nothing.
+
+## Getting started
+
+You need Docker with Compose v2. Nothing else — no Node, no Postgres on the host.
+
+```bash
+git clone <this-repo> family-dash && cd family-dash
+make env                       # creates .env from .env.example
+$EDITOR .env                   # set POSTGRES_PASSWORD, and your location
+make up                        # build and start
+```
+
+Then open `http://localhost:8080` (or the Pi's address). `make help` lists every target.
+
+The database schema is created automatically on first boot, along with a writable "Family"
+calendar and a few news feeds to start from.
+
+### Useful commands
+
+```bash
+make logs        # tail everything
+make health      # print the API health report
+make psql        # a psql shell on the database
+make down        # stop, keeping data
+make reset       # stop and delete the database (prompts first)
+make check       # lint, typecheck and test both packages
+```
+
+## Configuration
+
+Runtime configuration lives in two places, and environment always wins:
+
+- **`.env`** — secrets and per-install values, read by Docker Compose. See `.env.example`.
+- **`api/config/application.properties`** — defaults, pool sizes, cron schedules, media paths.
+
+Anything in the properties file can be overridden by an environment variable: `media.thumbnail.width`
+becomes `MEDIA_THUMBNAIL_WIDTH`. A handful have conventional names instead (`server.port` → `PORT`);
+see `ENV_OVERRIDES` in `api/lib/core/AppProperties.ts`.
+
+Application preferences — theme, dashboard widgets, calendar sources, feeds, API keys — are stored
+in the database and edited in the Settings page, not in a file.
+
+### External services
+
+Weather works with **no API key at all**, via [Open-Meteo](https://open-meteo.com). An
+OpenWeatherMap key is optional and only needed if you prefer that provider.
+
+News is **RSS**, which also needs no key. There is no official Google News API; the feed list is
+editable in Settings.
+
+Two Google APIs deserve a warning, because both shape the design:
+
+- **Google Photos cannot be used as a photo source.** The Library API's read scopes were withdrawn
+  in 2025, and an app can now only see media it uploaded itself. Photos therefore come from a
+  folder mounted into the container (`MEDIA_PATH`) plus in-app upload.
+- **Google Calendar OAuth apps left in "testing" mode expire their refresh tokens after 7 days**,
+  which would silently stop a wall display from syncing. Calendar sources are pluggable for this
+  reason: subscribing to a secret `.ics` URL needs no credentials and never expires, and Google,
+  iCloud and Outlook all publish one. Google OAuth is available as one provider among several,
+  not as the foundation.
+
+## Architecture
+
+```
+family-dash/
+├── docker-compose.yml          three services: db, api, web
+├── api/
+│   └── lib/
+│       ├── core/               Controller, Decorators, RouteManager, TaskManager,
+│       │                       HealthService, AppProperties, OpenApiGenerator
+│       ├── db/                 pool singleton, Migrator, migrations/*.sql
+│       ├── controllers/        thin, decorated route declarations
+│       ├── services/           *Endpoints.ts — the business logic
+│       ├── repositories/       SQL, one module per table
+│       ├── providers/          calendar/ weather/ news/ photos/ — the pluggable seams
+│       ├── scheduled-tasks/    background refresh jobs
+│       └── health-checks/      probes behind /healthCheck
+└── web/
+    └── src/
+        ├── api/                typed client per feature over fetch
+        ├── components/         dashboard widgets and shared UI
+        ├── composables/        clock, orientation
+        ├── stores/             Pinia
+        └── views/              one per tab
+```
+
+Two decisions do most of the work:
+
+**External data is cached in Postgres, never fetched on page load.** Scheduled tasks pull calendar
+feeds, news and weather into the database; the UI only reads the database. So a page load never
+blocks on somebody else's API, and when the network drops or a token expires, the last good data
+stays on the wall instead of the dashboard emptying out.
+
+**The UI is touch-first and orientation-agnostic.** Targets are at least 48px, there are no
+hover-only affordances, and the page itself never scrolls — each panel scrolls internally. The nav
+rail sits down the left edge in landscape and along the bottom in portrait, from the same markup.
+
+### Adding an endpoint
+
+```ts
+@Route('api/tasks')
+export class TaskController extends Controller {
+  public constructor () { super() }
+
+  @Get('')
+  @SuccessResponse(200, 'OK')
+  @NoCache()
+  public async list (@Query('assignee') assignee?: string): Promise<TaskItem[]> {
+    return endpoints.list(assignee)
+  }
+}
+```
+
+Then instantiate it in `api/lib/routes/Routes.ts`. A decorated controller that is never
+instantiated, or an endpoint missing its verb decorator, **fails startup with an explanatory
+error** rather than silently serving nothing.
+
+Path, query and header arguments are coerced to their declared types (`number`, `boolean`, `Date`)
+using `emitDecoratorMetadata`, and a value that cannot be coerced becomes a 400 before your
+handler runs.
+
+`/openapi` serves a browsable API document, generated at runtime from the same registry the router
+was built from — so it always describes the routes that actually exist, and there is no build step
+to fall out of date.
+
+## Development
+
+Hot reload for both packages, with Postgres in Docker:
+
+```bash
+make dev      # API under tsx watch, Vite dev server, db published on 5432
+```
+
+Or work outside Docker against the containerised database:
+
+```bash
+make install
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+cd api && npm run dev     # reads PG* from your environment
+cd web && npm run dev     # proxies /api to localhost:3000
+```
+
+Before pushing: `make check` (lint, typecheck, tests for both packages). CI runs the same, plus a
+compose smoke test that boots the whole stack from an empty database, and a multi-arch image build.
+
+### Migrations
+
+Add a numbered file to `api/lib/db/migrations/` — `002_add_thing.sql`. It is applied inside a
+transaction on the next boot and recorded with a checksum. **Migrations are immutable once
+applied**: editing one that has already run fails startup with a checksum mismatch rather than
+letting two installs diverge. Add a new file instead.
+
+## Raspberry Pi
+
+A Pi 4 or 5 with 2GB is comfortable; the stack idles at a few hundred MB. Use a good SD card, or
+better, boot from USB/NVMe — Postgres on a cheap card is the main thing that will make this feel
+slow.
+
+### Install
+
+```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
+sudo usermod -aG docker "$USER" && newgrp docker
+
+git clone <this-repo> ~/family-dash && cd ~/family-dash
+make env && $EDITOR .env
+make up
+```
+
+Both images build natively on arm64. To build them elsewhere and ship them over:
+
+```bash
+make build-images    # buildx, linux/amd64 + linux/arm64
+```
+
+Point `MEDIA_PATH` at wherever the photo library lives — a USB drive or an NFS mount is fine, and
+keeping it off the SD card saves a lot of write wear.
+
+### Start on boot
+
+Compose already restarts the containers (`restart: unless-stopped`), so all systemd needs to do is
+bring the project up after Docker is ready:
+
+```ini
+# /etc/systemd/system/family-dash.service
+[Unit]
+Description=family-dash
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/pi/family-dash
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl enable --now family-dash
+```
+
+### Kiosk display
+
+Full-screen Chromium pointed at the dashboard, with everything that makes a browser look like a
+browser turned off:
+
+```bash
+# ~/.config/autostart/family-dash-kiosk.desktop
+[Desktop Entry]
+Type=Application
+Name=Family Dashboard
+Exec=chromium-browser --kiosk --noerrdialogs --disable-infobars --incognito \
+  --disable-features=TranslateUI --check-for-update-interval=31536000 \
+  --disable-pinch --overscroll-history-navigation=0 \
+  --autoplay-policy=no-user-gesture-required \
+  http://localhost:8080
+X-GNOME-Autostart-enabled=true
+```
+
+`--disable-pinch` and `--overscroll-history-navigation=0` matter more than they sound: without
+them a stray two-finger touch zooms the whole dashboard, and a horizontal swipe on the drawing
+page navigates back.
+
+**Stop the screen blanking.** On Wayland (Pi OS Bookworm and later):
+
+```bash
+# ~/.config/wayfire.ini
+[idle]
+dpms_timeout = -1
+screensaver_timeout = -1
+```
+
+On X11, add to `~/.config/autostart` or your session script:
+
+```bash
+xset s off; xset -dpms; xset s noblank
+```
+
+**Rotate the display.** Portrait on Wayland — set this in `~/.config/wayfire.ini`, using the
+output name from `wlr-randr`:
+
+```ini
+[output:HDMI-A-1]
+transform = 90
+```
+
+On X11, `xrandr --output HDMI-1 --rotate left`. Nothing needs changing in the app: the layout
+follows the screen's orientation on its own, and a rotation takes effect on the next repaint.
+
+If you rotate the panel, also rotate the touch input, or taps land in the wrong place — on
+Wayland the compositor handles it with the output; on X11 you need a matching
+`Coordinate Transformation Matrix` via `xinput`.
+
+### Health and troubleshooting
+
+```bash
+make health                 # the full health report
+docker compose ps           # container state; api and web have healthchecks
+make logs-api               # API logs
+```
+
+The Settings page shows the same information on the screen itself — service status, health probes
+and background task state — which is what you want when the Pi is on a wall and there is no
+keyboard nearby.
+
+`/healthCheck` returns 503 only when something **critical** fails (the database). A broken calendar
+feed reports as *degraded* with a 200, so one bad feed does not make Docker restart the container.
+
+## Status
+
+The foundation is in place and the whole stack runs: containers, schema and migrations, the API
+framework, the app shell in both orientations, and the Settings page's diagnostics.
+
+Feature pages land next, in this order:
+
+1. **Settings preferences, Calendar, Tasks, Sticky notes** — the core planner, with the calendar
+   provider seam (local events and ICS feed subscriptions) and its background sync.
+2. **Weather, News, Recipes and meal planning, Photos, Draw** — plus the Google Calendar provider.
+3. **Depth** — polish, empty and error states, and whatever the screen reveals once it is actually
+   on the wall.
+
+Each tab is present and navigable today; the ones above show what they are waiting for rather than
+pretending to be empty.
+
+## License
+
+MIT

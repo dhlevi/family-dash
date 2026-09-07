@@ -69,23 +69,64 @@ export interface CalendarSource {
   readOnly: boolean
   lastSyncAt: string | null
   lastError: string | null
+  /** `{ url }` for an ICS subscription; empty for the local calendar. */
+  config: Record<string, unknown>
+}
+
+export interface SyncOutcome {
+  sourceId: string
+  name: string
+  events: number
+  error: string | null
+  durationMs: number
 }
 
 export interface CalendarEvent {
   id: string
   sourceId: string
+  /**
+   * Set when the event came from a subscribed feed, which also means it
+   * cannot be edited here — the next sync would undo the change.
+   */
+  externalUid: string | null
   title: string
   description: string | null
   location: string | null
   startsAt: string
   endsAt: string
   allDay: boolean
+  rrule: string | null
   colour: string | null
+}
+
+export interface NewCalendarEvent {
+  sourceId?: string
+  title: string
+  description?: string | null
+  location?: string | null
+  startsAt: string
+  endsAt: string
+  allDay?: boolean
 }
 
 // --- tasks -----------------------------------------------------------------
 
-export type Recurrence = 'daily' | 'weekly' | 'monthly' | null
+/**
+ * A short list of named intervals rather than RRULE: household chores are
+ * "every day" or "school days", and five buttons beat a rule syntax on a
+ * touchscreen. Feed events still get full RRULE expansion server-side.
+ */
+export const RECURRENCES = ['daily', 'weekdays', 'weekly', 'fortnightly', 'monthly'] as const
+
+export type RecurrenceKind = (typeof RECURRENCES)[number]
+
+export const RECURRENCE_LABELS: Record<RecurrenceKind, string> = {
+  daily: 'Every day',
+  weekdays: 'Every weekday',
+  weekly: 'Every week',
+  fortnightly: 'Every two weeks',
+  monthly: 'Every month'
+}
 
 export interface TaskItem {
   id: string
@@ -103,6 +144,33 @@ export interface TaskItem {
 }
 
 // --- sticky notes ----------------------------------------------------------
+
+export interface NewTaskItem {
+  title: string
+  notes?: string | null
+  assignee?: string | null
+  category?: string | null
+  priority?: 0 | 1 | 2 | 3
+  dueAt?: string | null
+  recurrence?: RecurrenceKind | null
+}
+
+export interface TaskSummary {
+  open: number
+  dueSoon: number
+  overdue: number
+}
+
+export interface TaskCompletion {
+  completed: TaskItem
+  /** The next occurrence, when the task recurs. */
+  next: TaskItem | null
+}
+
+export interface TaskSuggestions {
+  assignees: string[]
+  categories: string[]
+}
 
 export interface StickyNote {
   id: string
@@ -283,9 +351,39 @@ export interface WeatherReport {
 
 // --- settings --------------------------------------------------------------
 
-export type SettingValue = string | number | boolean | string[] | Record<string, unknown> | null
+export type DashboardWidget = 'calendar' | 'tasks' | 'weather' | 'meal' | 'notes' | 'news' | 'photos'
 
-export type Settings = Record<string, SettingValue>
+/**
+ * The settings the API's catalogue declares. Typed by key so the store can
+ * hand out a correctly-typed value without a cast at every call site.
+ */
+export interface AppSettings {
+  'appearance.theme': 'dark' | 'light'
+  'appearance.accent': string
+  'appearance.clock24Hour': boolean
+  'appearance.screensaverMinutes': number
+  'dashboard.widgets': DashboardWidget[]
+  'calendar.defaultView': 'month' | 'week' | 'agenda'
+  'calendar.weekStartsOn': 0 | 1
+  'calendar.dashboardDays': number
+  'tasks.showCompleted': boolean
+  'tasks.assignees': string[]
+  'weather.units': 'metric' | 'imperial'
+  'weather.latitude': number
+  'weather.longitude': number
+  'weather.locationName': string
+  'news.maxArticles': number
+  'news.retentionDays': number
+  'photos.slideshowSeconds': number
+}
+
+export type SettingKey = keyof AppSettings
+
+export interface SettingCatalogEntry {
+  key: string
+  description: string
+  default: unknown
+}
 
 // --- paging ----------------------------------------------------------------
 

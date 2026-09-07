@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import AppHeader from '@/components/ui/AppHeader.vue'
 import AppNav from '@/components/ui/AppNav.vue'
+import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
 
 /**
@@ -15,8 +16,14 @@ import { useSystemStore } from '@/stores/system'
  * rather than following the visual flip.
  */
 const system = useSystemStore()
+const settings = useSettingsStore()
 
-onMounted(() => system.startPolling())
+onMounted(() => {
+  system.startPolling()
+  // Loaded here rather than per-page so the theme and accent are applied
+  // before the first paint of whichever tab the kiosk opens on.
+  void settings.load()
+})
 onBeforeUnmount(() => system.stopPolling())
 </script>
 

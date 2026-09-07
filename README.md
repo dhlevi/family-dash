@@ -302,18 +302,26 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 
 ## Status
 
-The foundation is in place and the whole stack runs: containers, schema and migrations, the API
-framework, the app shell in both orientations, and the Settings page's diagnostics.
+**Working now:**
 
-Feature pages land next, in this order:
+- **Settings** — theme, accent, clock, calendar defaults, dashboard widgets, household names,
+  location and units, plus service diagnostics. Changes save as you make them.
+- **Calendar** — month, week and agenda views over the local family calendar and any number of
+  ICS subscriptions, with background sync, tap-a-day to add, and read-only handling for feed
+  events.
+- **Tasks and chores** — grouped by when they are due, quick-add, priorities, free-text
+  assignment, and repeating chores that reappear once ticked off.
+- **Dashboard** — "Up next" and "Today's tasks" read live data; tasks can be completed from the
+  dashboard itself.
 
-1. **Settings preferences, Calendar, Tasks, Sticky notes** — the core planner, with the calendar
-   provider seam (local events and ICS feed subscriptions) and its background sync.
+**Still to come:**
+
+1. **Sticky notes** — the remaining piece of the core planner.
 2. **Weather, News, Recipes and meal planning, Photos, Draw** — plus the Google Calendar provider.
-3. **Depth** — polish, empty and error states, and whatever the screen reveals once it is actually
-   on the wall.
+3. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
+   actually on the wall.
 
-Each tab is present and navigable today; the ones above show what they are waiting for rather than
+Every tab is present and navigable; the ones above say what they are waiting for rather than
 pretending to be empty.
 
 ## License

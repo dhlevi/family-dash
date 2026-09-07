@@ -10,7 +10,10 @@ import { healthValidators } from '../health-checks/HealthCheckLoader'
 // registers the instance with the RouteManager; a decorated controller that is
 // never constructed has no instance to call, and startup fails with a message
 // saying so rather than quietly serving nothing.
+import { CalendarController } from '../controllers/CalendarController'
+import { SettingsController } from '../controllers/SettingsController'
 import { SystemController } from '../controllers/SystemController'
+import { TaskController } from '../controllers/TaskController'
 
 /**
  * Builds the application router: the default endpoints, then everything the
@@ -26,8 +29,14 @@ export default function buildRouter(): Router {
   // healthcheck and `docker compose ps` watch.
   router.get('/healthCheck', HealthValidators(...healthValidators))
 
-  // Controllers. Order is irrelevant; the RouteManager sorts out the wiring.
+  // Controllers. The order these are constructed in does not matter, but the
+  // order endpoints are *declared* in each controller does: Express matches
+  // first-registered-first, so a literal path like `tasks/summary` must be
+  // declared above the `tasks/{id}` that would otherwise swallow it.
   new SystemController()
+  new SettingsController()
+  new CalendarController()
+  new TaskController()
 
   RouteManager.initializeRoutes(router)
 

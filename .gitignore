@@ -16,6 +16,9 @@ dist/
 # generated api spec
 api/lib/public/swagger.json
 
+# a demo ICS fixture may be dropped at the media root during development
+media/*.ics
+
 # media library (user content; keep the folder structure)
 media/photos/*
 media/thumbs/*

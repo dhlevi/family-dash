@@ -2,7 +2,9 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useClock } from '@/composables/useClock'
+import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
+import { formatTime } from '@/utils/datetime'
 import Icon from './Icon.vue'
 
 /**
@@ -16,13 +18,13 @@ import Icon from './Icon.vue'
 const route = useRoute()
 const now = useClock()
 const system = useSystemStore()
+const settings = useSettingsStore()
 
 const title = computed(() => route.meta?.title ?? 'Family Dashboard')
 
-const timeFormat = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
 const dateFormat = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
 
-const time = computed(() => timeFormat.format(now.value))
+const time = computed(() => formatTime(now.value, settings.clock24Hour))
 const date = computed(() => dateFormat.format(now.value))
 </script>
 

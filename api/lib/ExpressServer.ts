@@ -69,7 +69,12 @@ export class ExpressServer {
     server.use(compression())
     // Drawings post a full stroke list, which can be large for a detailed
     // sketch, so the limit is deliberately generous.
-    server.use(express.json({ limit: bodyLimit }))
+    //
+    // `strict: false` allows a top-level JSON scalar in the body. The default
+    // accepts only objects and arrays, which would reject
+    // `PUT /api/settings/appearance.theme` with a body of `"dark"` — the
+    // natural way to write a single-value setting.
+    server.use(express.json({ limit: bodyLimit, strict: false }))
     server.use(express.urlencoded({ extended: true, limit: bodyLimit }))
 
     server.use((req, _res, next) => {

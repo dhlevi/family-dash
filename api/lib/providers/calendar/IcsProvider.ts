@@ -1,6 +1,7 @@
 import ICAL from 'ical.js'
 import type { CalendarProvider } from './CalendarProvider'
 import type { CalendarSource, DateRange, ProviderEvent } from '../../types/domain'
+import { OUTBOUND_USER_AGENT } from '../userAgent'
 
 /**
  * Subscribes to an iCalendar (.ics) feed.
@@ -82,7 +83,7 @@ export class IcsProvider implements CalendarProvider {
         redirect: 'follow',
         headers: {
           accept: 'text/calendar, text/plain, */*',
-          'user-agent': 'family-dash/0.1 (+https://github.com/dhlevi/family-dash)'
+          'user-agent': OUTBOUND_USER_AGENT
         }
       })
 

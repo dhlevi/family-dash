@@ -2,9 +2,11 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { ApiRequestError } from '@/api/client'
 import { calendarApi } from '@/api/calendar'
+import { newsApi } from '@/api/news'
 import { systemApi } from '@/api/system'
 import CalendarSources from '@/components/settings/CalendarSources.vue'
 import LocationPicker from '@/components/settings/LocationPicker.vue'
+import NewsFeeds from '@/components/settings/NewsFeeds.vue'
 import Card from '@/components/ui/Card.vue'
 import ColourPicker from '@/components/ui/ColourPicker.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
@@ -19,7 +21,7 @@ import Toggle from '@/components/ui/Toggle.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
-import type { CalendarSource, DashboardWidget, SystemInfo } from '@/api/types'
+import type { CalendarSource, DashboardWidget, NewsFeed, SystemInfo } from '@/api/types'
 
 /**
  * Settings.
@@ -34,6 +36,7 @@ const system = useSystemStore()
 
 const info = ref<SystemInfo | null>(null)
 const sources = ref<CalendarSource[]>([])
+const feeds = ref<NewsFeed[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -42,15 +45,17 @@ async function load(): Promise<void> {
   error.value = null
 
   try {
-    const [systemInfo, calendarSources] = await Promise.all([
+    const [systemInfo, calendarSources, newsFeeds] = await Promise.all([
       systemApi.info(),
       calendarApi.sources(),
+      newsApi.feeds(),
       settings.load(),
       system.refresh()
     ])
 
     info.value = systemInfo
     sources.value = calendarSources
+    feeds.value = newsFeeds
   } catch (caught) {
     error.value = caught instanceof ApiRequestError ? caught.message : 'Could not load settings'
   } finally {
@@ -60,6 +65,10 @@ async function load(): Promise<void> {
 
 async function reloadSources(): Promise<void> {
   sources.value = await calendarApi.sources()
+}
+
+async function reloadFeeds(): Promise<void> {
+  feeds.value = await newsApi.feeds()
 }
 
 onMounted(load)
@@ -316,6 +325,17 @@ async function runTask(name: string): Promise<void> {
         </p>
 
         <CalendarSources :sources="sources" @changed="reloadSources" />
+      </Card>
+
+      <!-- News feeds -->
+      <Card>
+        <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">News feeds</h2>
+        <p class="mb-3 text-xs text-faint">
+          Headlines are aggregated from RSS, which needs no account. Feeds are fetched in the background every half
+          hour.
+        </p>
+
+        <NewsFeeds :feeds="feeds" @changed="reloadFeeds" />
       </Card>
 
       <!-- Tasks -->

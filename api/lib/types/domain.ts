@@ -64,6 +64,35 @@ export interface DateRange {
   to: Date
 }
 
+// --- news ------------------------------------------------------------------
+
+export interface NewsFeed {
+  id: string
+  name: string
+  url: string
+  category: string | null
+  enabled: boolean
+  lastFetchAt: string | null
+  lastError: string | null
+  /** How many articles are currently cached from this feed. */
+  articleCount?: number
+}
+
+export interface NewsArticle {
+  id: string
+  feedId: string
+  /** Denormalised so a headline list is one query. */
+  feedName: string
+  feedCategory: string | null
+  title: string
+  link: string | null
+  /** Always plain text: feed HTML never reaches the browser. */
+  summary: string | null
+  author: string | null
+  imageUrl: string | null
+  publishedAt: string | null
+}
+
 // --- weather ---------------------------------------------------------------
 
 export type WeatherUnits = 'metric' | 'imperial'

@@ -128,6 +128,16 @@ rail sits down the left edge in landscape and along the bottom in portrait, from
 Anything positioned by hand — a sticky note on the corkboard — is stored as a *fraction* of the
 board rather than in pixels, so the arrangement survives the screen being rotated.
 
+**Feed content is treated as untrusted input.** RSS is arbitrary HTML from the open internet, so
+titles and summaries are stripped to plain text at the API boundary and stored that way — markup
+never reaches the database, let alone the browser, and the UI only ever renders text nodes.
+
+**Outbound requests do not advertise a URL in their user-agent.** The `(+https://…)` crawler
+convention is polite, but at least one major publisher's edge silently blackholes requests that
+use it: the connection hangs until it times out, with no status and no error, which reads as a
+network fault rather than a rejection. Measured while building this — 20s timeout with the URL,
+115ms without. See `api/lib/providers/userAgent.ts`.
+
 **Handwriting is stored as vectors, not pixels.** A drawn note keeps its strokes as points in the
 coordinate space they were written in, so an SVG viewBox reproduces them at any size without
 distortion or rasterising. Strokes are simplified on commit (Ramer–Douglas–Peucker) and rendered
@@ -329,6 +339,14 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
   events.
 - **Tasks and chores** — grouped by when they are due, quick-add, priorities, free-text
   assignment, and repeating chores that reappear once ticked off.
+- **News** — headlines aggregated from RSS, which needs no account. Images, bylines and summaries
+  are recovered from whatever shape each feed offers, cached locally, and pruned on a retention
+  window. Tapping a story shows its summary and a QR code to finish reading on a phone — a kiosk
+  browser has no back button, so following a link would strand the dashboard on a news site.
+- **Weather** — current conditions, a 24-hour strip and a seven-day outlook from
+  [Open-Meteo](https://open-meteo.com), which needs **no API key**. Set the location by searching
+  for your town rather than typing coordinates. Forecasts are cached in Postgres, so the page is
+  instant and a network outage shows the last forecast clearly marked stale rather than an error.
 - **Meals** — a seven-day planner, a reusable recipe library, and a shopping list built from the
   two. Ingredients are merged across the week (three recipes using flour give one line with the
   total), grouped by supermarket aisle, and a QR code hands the live list to a phone on the same
@@ -337,13 +355,14 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
   captured from a finger or stylus via pointer events (with pressure and palm rejection) and
   stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
   or shrunk into a dashboard widget. Pin a note to show it on the dashboard.
-- **Dashboard** — "Up next", "Today's tasks" and "Notes" read live data; tasks can be completed
-  from the dashboard itself.
+- **Dashboard** — every widget reads live data: next events, today's tasks, pinned notes,
+  tonight's meal with the outstanding shopping count, current weather, and the latest headlines.
+  Tasks can be ticked off and articles read without leaving the page.
 
 **Still to come:**
 
-1. **Weather, News, Photos, Draw** — plus the Google Calendar provider, and recipe photos once
-   image upload lands with the Photos page.
+1. **Photos, Draw** — plus the Google Calendar provider, and recipe photos once image upload
+   lands with the Photos page.
 2. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
    actually on the wall.
 

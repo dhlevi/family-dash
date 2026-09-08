@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue'
 import CalendarWidget from '@/components/dashboard/CalendarWidget.vue'
 import MealWidget from '@/components/dashboard/MealWidget.vue'
+import NewsWidget from '@/components/dashboard/NewsWidget.vue'
 import WeatherWidget from '@/components/dashboard/WeatherWidget.vue'
 import NotesWidget from '@/components/dashboard/NotesWidget.vue'
 import TasksWidget from '@/components/dashboard/TasksWidget.vue'
@@ -38,19 +39,11 @@ function shows(widget: DashboardWidget): boolean {
 const placeholders: Array<{
   widget: DashboardWidget
   title: string
-  icon: 'news' | 'photos'
+  icon: 'photos'
   to: string
   empty: string
   description: string
 }> = [
-  {
-    widget: 'news',
-    title: 'Headlines',
-    icon: 'news',
-    to: '/news',
-    empty: 'No headlines yet',
-    description: 'RSS feeds are configured in Settings and refresh in the background.'
-  },
   {
     widget: 'photos',
     title: 'Photos',
@@ -72,6 +65,7 @@ const visiblePlaceholders = computed(() => placeholders.filter(item => shows(ite
       <NotesWidget v-if="shows('notes')" />
       <MealWidget v-if="shows('meal')" />
       <WeatherWidget v-if="shows('weather')" />
+      <NewsWidget v-if="shows('news')" />
 
       <WidgetShell
         v-for="item in visiblePlaceholders"

@@ -12,6 +12,7 @@ import { healthValidators } from '../health-checks/HealthCheckLoader'
 // saying so rather than quietly serving nothing.
 import { CalendarController } from '../controllers/CalendarController'
 import { MealPlanController } from '../controllers/MealPlanController'
+import { NewsController } from '../controllers/NewsController'
 import { NoteController } from '../controllers/NoteController'
 import { RecipeController } from '../controllers/RecipeController'
 import { ShoppingController } from '../controllers/ShoppingController'
@@ -47,6 +48,7 @@ export default function buildRouter(): Router {
   new MealPlanController()
   new ShoppingController()
   new WeatherController()
+  new NewsController()
 
   RouteManager.initializeRoutes(router)
 

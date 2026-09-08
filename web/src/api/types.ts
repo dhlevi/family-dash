@@ -373,18 +373,33 @@ export interface NewsFeed {
   enabled: boolean
   lastFetchAt: string | null
   lastError: string | null
+  /** How many articles are currently cached from this feed. */
+  articleCount?: number
 }
 
 export interface NewsArticle {
   id: string
   feedId: string
   feedName: string
+  feedCategory: string | null
   title: string
   link: string | null
+  /**
+   * Always plain text. Feed HTML is stripped by the API, so this is safe to
+   * render as a text node — which is the only way it is ever rendered.
+   */
   summary: string | null
   author: string | null
   imageUrl: string | null
   publishedAt: string | null
+}
+
+export interface NewsFetchOutcome {
+  feedId: string
+  name: string
+  articles: number
+  error: string | null
+  durationMs: number
 }
 
 // --- weather ---------------------------------------------------------------

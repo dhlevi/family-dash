@@ -69,7 +69,12 @@ export function simplify(points: InkPoint[], epsilon = SIMPLIFY_EPSILON): InkPoi
   return [...left.slice(0, -1), ...right]
 }
 
-function perpendicularDistance(point: InkPoint, lineStart: InkPoint, lineEnd: InkPoint): number {
+/**
+ * Shortest distance from a point to a line *segment* — clamped to the
+ * segment's ends rather than measured against the infinite line, which is
+ * what both the simplifier and the eraser actually need.
+ */
+export function distanceToSegment(point: InkPoint, lineStart: InkPoint, lineEnd: InkPoint): number {
   const dx = lineEnd.x - lineStart.x
   const dy = lineEnd.y - lineStart.y
 
@@ -84,13 +89,56 @@ function perpendicularDistance(point: InkPoint, lineStart: InkPoint, lineEnd: In
   return Math.hypot(point.x - (lineStart.x + clamped * dx), point.y - (lineStart.y + clamped * dy))
 }
 
+const perpendicularDistance = distanceToSegment
+
+/**
+ * How sharp a direction change counts as a corner rather than a curve.
+ *
+ * Cosine of the angle between the incoming and outgoing directions: 0.5 is
+ * 60°. Anything sharper keeps its crease instead of being rounded off.
+ */
+const CORNER_COSINE = 0.5
+
+/**
+ * Whether the turn at `points[index]` is sharp enough to preserve.
+ *
+ * Without this, a deliberate corner gets smoothed away: a hand-drawn
+ * rectangle comes out as a rounded blob and the peak of a roof becomes an
+ * arc, because a Catmull-Rom spline has no notion of intent. Handwriting
+ * benefits too — the corner of a capital L should be a corner.
+ */
+function isCorner(points: InkPoint[], index: number): boolean {
+  const previous = points[index - 1]
+  const current = points[index]
+  const next = points[index + 1]
+
+  if (!previous || !current || !next) return false
+
+  const inX = current.x - previous.x
+  const inY = current.y - previous.y
+  const outX = next.x - current.x
+  const outY = next.y - current.y
+
+  const inLength = Math.hypot(inX, inY)
+  const outLength = Math.hypot(outX, outY)
+
+  // A doubled-up point has no direction to compare.
+  if (inLength === 0 || outLength === 0) return false
+
+  const cosine = (inX * outX + inY * outY) / (inLength * outLength)
+
+  return cosine < CORNER_COSINE
+}
+
 /**
  * An SVG path for a stroke, smoothed with a Catmull-Rom spline expressed as
  * cubic Béziers.
  *
  * The spline passes through every recorded point — unlike a plain quadratic
  * smoothing, which pulls the line away from the samples and makes small
- * letters look mushy.
+ * letters look mushy. Points where the pen changed direction sharply are
+ * treated as corners and keep their crease, so smoothing improves a curve
+ * without flattening a deliberate angle.
  */
 export function toSmoothPath(points: InkPoint[]): string {
   if (points.length === 0) return ''
@@ -116,15 +164,19 @@ export function toSmoothPath(points: InkPoint[]): string {
     const next = points[index + 1]!
     const after = points[index + 2] ?? next
 
-    // Catmull-Rom to Bézier: the classic 1/6 tangent scaling.
-    const control1 = {
-      x: current.x + (next.x - previous.x) / 6,
-      y: current.y + (next.y - previous.y) / 6
-    }
-    const control2 = {
-      x: next.x - (after.x - current.x) / 6,
-      y: next.y - (after.y - current.y) / 6
-    }
+    // Catmull-Rom to Bézier: the classic 1/6 tangent scaling. At a corner the
+    // tangent is taken along this segment instead of across the neighbouring
+    // points, which straightens the approach and leaves the crease intact.
+    const startIsCorner = isCorner(points, index)
+    const endIsCorner = isCorner(points, index + 1)
+
+    const control1 = startIsCorner
+      ? { x: current.x + (next.x - current.x) / 6, y: current.y + (next.y - current.y) / 6 }
+      : { x: current.x + (next.x - previous.x) / 6, y: current.y + (next.y - previous.y) / 6 }
+
+    const control2 = endIsCorner
+      ? { x: next.x - (next.x - current.x) / 6, y: next.y - (next.y - current.y) / 6 }
+      : { x: next.x - (after.x - current.x) / 6, y: next.y - (after.y - current.y) / 6 }
 
     path +=
       ` C ${round(control1.x)} ${round(control1.y)},` +
@@ -138,6 +190,84 @@ export function toSmoothPath(points: InkPoint[]): string {
 /** Two decimals is well under a pixel and keeps the stored payload small. */
 function round(value: number): number {
   return Math.round(value * 100) / 100
+}
+
+/** Default eraser radius, in capture-space pixels. */
+export const ERASER_RADIUS = 14
+
+/**
+ * Whether an eraser path passes close enough to a stroke to remove it.
+ *
+ * Strokes are erased whole rather than cut into pieces. Splitting a vector
+ * stroke where an eraser crosses it is possible but the result is rarely
+ * what somebody wanted — on a shared family drawing, "get rid of that line"
+ * is the actual intent, and a stroke that survives as two stubs reads as a
+ * bug.
+ *
+ * The eraser's own points are tested against the stroke's *segments*, not
+ * its points: a simplified stroke can have metres of straight line between
+ * two recorded points, and comparing point-to-point would erase nothing
+ * when swiping across the middle of one.
+ */
+export function strokeHitBy(stroke: InkStroke, eraserPoints: InkPoint[], radius = ERASER_RADIUS): boolean {
+  if (stroke.points.length === 0 || eraserPoints.length === 0) return false
+
+  // A thick stroke should be catchable anywhere along its width.
+  const reach = radius + stroke.width / 2
+
+  for (const eraserPoint of eraserPoints) {
+    // A single-point stroke is a dot, with no segment to measure against.
+    if (stroke.points.length === 1) {
+      if (distance(eraserPoint, stroke.points[0]!) <= reach) return true
+      continue
+    }
+
+    for (let index = 0; index < stroke.points.length - 1; index++) {
+      if (distanceToSegment(eraserPoint, stroke.points[index]!, stroke.points[index + 1]!) <= reach) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+/**
+ * The strokes that survive an eraser pass, and those it removed.
+ *
+ * Returning both lets the caller push the removed ones onto an undo stack,
+ * so an over-enthusiastic swipe is recoverable.
+ */
+export function eraseStrokes(
+  strokes: InkStroke[],
+  eraserPoints: InkPoint[],
+  radius = ERASER_RADIUS
+): { kept: InkStroke[]; removed: InkStroke[] } {
+  const kept: InkStroke[] = []
+  const removed: InkStroke[] = []
+
+  for (const stroke of strokes) {
+    if (strokeHitBy(stroke, eraserPoints, radius)) removed.push(stroke)
+    else kept.push(stroke)
+  }
+
+  return { kept, removed }
+}
+
+/**
+ * A comparable fingerprint of a set of strokes.
+ *
+ * `JSON.stringify` cannot be used directly for this: strokes make a round
+ * trip through a Postgres `jsonb` column, which normalises object key order,
+ * so a saved drawing comes back with its keys rearranged and never matches
+ * the copy on the canvas. Building the signature from arrays puts the order
+ * under our control, so "has this changed since it was saved?" answers
+ * honestly.
+ */
+export function inkSignature(strokes: InkStroke[]): string {
+  return JSON.stringify(
+    strokes.map(stroke => [stroke.colour, stroke.width, stroke.points.map(point => [point.x, point.y, point.p])])
+  )
 }
 
 export function totalPoints(strokes: InkStroke[]): number {

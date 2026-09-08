@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { ApiRequestError } from '@/api/client'
 import { notesApi } from '@/api/notes'
 import EmptyState from '@/components/ui/EmptyState.vue'
-import InkRender from '@/components/notes/InkRender.vue'
+import InkRender from '@/components/ink/InkRender.vue'
 import WidgetShell from './WidgetShell.vue'
 import type { StickyNote } from '@/api/types'
 

@@ -7,7 +7,7 @@ import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import TextInput from '@/components/ui/TextInput.vue'
 import Toggle from '@/components/ui/Toggle.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
-import InkCanvas from './InkCanvas.vue'
+import InkCanvas from '@/components/ink/InkCanvas.vue'
 import { NOTE_COLOURS, type InkStroke, type NewStickyNote, type NoteKind, type StickyNote } from '@/api/types'
 
 /**

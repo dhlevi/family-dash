@@ -138,12 +138,32 @@ use it: the connection hangs until it times out, with no status and no error, wh
 network fault rather than a rejection. Measured while building this — 20s timeout with the URL,
 115ms without. See `api/lib/providers/userAgent.ts`.
 
-**Handwriting is stored as vectors, not pixels.** A drawn note keeps its strokes as points in the
-coordinate space they were written in, so an SVG viewBox reproduces them at any size without
-distortion or rasterising. Strokes are simplified on commit (Ramer–Douglas–Peucker) and rendered
-through a Catmull-Rom spline: a legible handwritten note costs well under a kilobyte, and looks
-smooth rather than faceted. Stylus pressure is captured and kept even though notes currently draw
-at a constant width.
+**Ink is stored as vectors, not pixels.** A handwritten note or a drawing keeps its strokes as
+points in the coordinate space they were made in, so an SVG viewBox reproduces them at any size
+without distortion or rasterising. Strokes are simplified on commit (Ramer–Douglas–Peucker) and
+rendered through a Catmull-Rom spline with corner detection, so a hand-drawn box keeps its
+corners instead of rounding into a blob. A legible handwritten note costs well under a kilobyte.
+Stylus pressure is captured and kept even though strokes currently draw at a constant width.
+
+Notes and the drawing page share one control (`web/src/components/ink/`) — same pointer
+handling, palm rejection and storage — differing only in props: the palette offered, whether an
+eraser appears, and whether the surface is a fixed-aspect card or fills the panel. A fix to
+stylus handling improves both places at once.
+
+**Undo records operations, not snapshots.** A stack of strokes is enough while drawing is the
+only thing that happens, but an eraser breaks it: undoing an erase has to *restore* strokes,
+which is the opposite of undoing a draw. Each action is kept as what it was — a draw, an erase,
+or a clear — so one undo reverses one action whichever kind it was, and a swipe that removed four
+strokes returns them together rather than four undos later. Because operations identify strokes
+by reference, rotating the screen (which rescales the ink into the new shape, making new objects)
+carries the history across with it, including strokes that are currently erased and waiting to
+come back.
+
+**Ink is compared canonically, not by `JSON.stringify`.** Strokes round-trip through a Postgres
+`jsonb` column, which normalises object key order, so a saved drawing comes back with its keys
+rearranged and never string-matches the copy on the canvas. `inkSignature()` builds the
+fingerprint from arrays instead, so "are there unsaved changes?" answers honestly rather than
+warning about a drawing that was just saved.
 
 ### Adding an endpoint
 
@@ -355,13 +375,18 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
   captured from a finger or stylus via pointer events (with pressure and palm rejection) and
   stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
   or shrunk into a dashboard widget. Pin a note to show it on the dashboard.
+- **Draw** — a full-page sketch pad using the same ink control as handwritten notes, with an
+  eraser, a wider palette, five pen widths and a choice of paper colour. Drawings are saved as
+  vectors and listed in a gallery that renders its own thumbnails, so there are no image files
+  to manage and a sketch stays sharp at any size. Undo reverses whichever thing happened last —
+  a swipe that erased four strokes puts all four back in one step.
 - **Dashboard** — every widget reads live data: next events, today's tasks, pinned notes,
   tonight's meal with the outstanding shopping count, current weather, and the latest headlines.
   Tasks can be ticked off and articles read without leaving the page.
 
 **Still to come:**
 
-1. **Photos, Draw** — plus the Google Calendar provider, and recipe photos once image upload
+1. **Photos** — plus the Google Calendar provider, and recipe photos once image upload
    lands with the Photos page.
 2. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
    actually on the wall.

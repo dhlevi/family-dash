@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import Icon from '@/components/ui/Icon.vue'
-import { shouldKeep, simplify, toSmoothPath, totalPoints } from '@/utils/ink'
+import { ERASER_RADIUS, eraseStrokes, shouldKeep, simplify, toSmoothPath, totalPoints } from '@/utils/ink'
 import { INK_COLOURS, type InkPoint, type InkStroke } from '@/api/types'
 
 /**
- * A surface for writing on with a finger or a stylus.
+ * A surface for writing or drawing on with a finger or a stylus.
+ *
+ * Shared by handwritten sticky notes and the drawing page, which is why it
+ * lives here rather than under either of them. The differences between those
+ * two uses are all props: palette, pen widths, whether an eraser is offered,
+ * and whether the surface is a fixed-aspect card or fills its panel.
  *
  * Pointer events rather than touch or mouse events, because they are the
  * only ones that report a stylus properly — `pressure`, and a `pointerType`
@@ -18,14 +23,35 @@ import { INK_COLOURS, type InkPoint, type InkStroke } from '@/api/types'
  */
 const props = withDefaults(
   defineProps<{
-    /** Existing strokes, when editing a note that has already been drawn. */
+    /** Existing strokes, when editing something already drawn. */
     modelValue: InkStroke[]
     surfaceWidth?: number | null
     surfaceHeight?: number | null
     background?: string
     disabled?: boolean
+    /** Ink colours offered. Defaults to the note palette. */
+    palette?: readonly string[]
+    /** Pen widths offered. */
+    widths?: readonly number[]
+    /**
+     * Tailwind aspect class for the surface, or null to fill the available
+     * height. A sticky note wants a fixed 4:3 card; the drawing page wants
+     * the whole panel.
+     */
+    aspectClass?: string | null
+    /** Offer an eraser alongside the pen. */
+    allowErase?: boolean
   }>(),
-  { surfaceWidth: null, surfaceHeight: null, background: '#ffe066', disabled: false }
+  {
+    surfaceWidth: null,
+    surfaceHeight: null,
+    background: '#ffe066',
+    disabled: false,
+    palette: undefined,
+    widths: undefined,
+    aspectClass: 'aspect-[4/3]',
+    allowErase: false
+  }
 )
 
 const emit = defineEmits<{
@@ -34,7 +60,10 @@ const emit = defineEmits<{
   'update:surface': [size: { width: number; height: number }]
 }>()
 
-const PEN_WIDTHS = [2, 4, 7, 12] as const
+const DEFAULT_WIDTHS = [2, 4, 7, 12] as const
+
+/** Which of pen or eraser a stroke currently applies. */
+type Tool = 'pen' | 'eraser'
 
 /**
  * How long after a pen sample to keep ignoring touch input.
@@ -51,14 +80,20 @@ const surfaceEl = ref<SVGSVGElement | null>(null)
 const surface = ref({ width: props.surfaceWidth ?? 640, height: props.surfaceHeight ?? 480 })
 
 const strokes = shallowRef<InkStroke[]>([...props.modelValue])
-const undone = shallowRef<InkStroke[]>([])
 
 /** The stroke being drawn. Kept separate so committed strokes never re-render. */
 const active = ref<InkPoint[]>([])
 const activePointerId = ref<number | null>(null)
 
-const colour = ref<string>(INK_COLOURS[0])
-const width = ref<number>(PEN_WIDTHS[1])
+const inkColours = computed(() => props.palette ?? INK_COLOURS)
+const penWidths = computed(() => props.widths ?? DEFAULT_WIDTHS)
+
+const colour = ref<string>(props.palette?.[0] ?? INK_COLOURS[0])
+const width = ref<number>(props.widths?.[1] ?? DEFAULT_WIDTHS[1])
+const tool = ref<Tool>('pen')
+
+/** Strokes removed by the eraser stroke in progress, for undo. */
+let erasedThisStroke: InkStroke[] = []
 
 let lastPenAt = 0
 let observer: ResizeObserver | null = null
@@ -83,8 +118,16 @@ function measure(): void {
   if (!element) return
 
   const rect = element.getBoundingClientRect()
-  const nextWidth = Math.max(Math.round(rect.width), 1)
-  const nextHeight = Math.max(Math.round(rect.height), 1)
+
+  // A surface with no area has not been laid out yet — the note editor opens
+  // inside a transition, so the first measurement there happens before the
+  // modal has a size. Recording that as a 1x1 coordinate space would squash
+  // any existing strokes into a single point on the way in and scale them
+  // back out again on the way, so wait for the resize observer instead.
+  if (rect.width < 1 || rect.height < 1) return
+
+  const nextWidth = Math.round(rect.width)
+  const nextHeight = Math.round(rect.height)
 
   if (nextWidth === surface.value.width && nextHeight === surface.value.height) return
 
@@ -94,12 +137,43 @@ function measure(): void {
   const scaleX = nextWidth / surface.value.width
   const scaleY = nextHeight / surface.value.height
 
-  if (strokes.value.length > 0 && (scaleX !== 1 || scaleY !== 1)) {
-    strokes.value = strokes.value.map(stroke => ({
+  if (scaleX !== 1 || scaleY !== 1) {
+    const rescale = (stroke: InkStroke): InkStroke => ({
       ...stroke,
       points: stroke.points.map(point => ({ x: point.x * scaleX, y: point.y * scaleY, p: point.p }))
-    }))
-    emit('update:modelValue', strokes.value)
+    })
+
+    // Everything reachable from the canvas or its history, rescaled exactly
+    // once each. History identifies strokes by reference, and a single
+    // stroke can appear both on the canvas and in an operation, so they have
+    // to come out of this as the same new object or undo would stop finding
+    // them. The history needs it even when the canvas is empty: strokes an
+    // eraser or Clear took out are still waiting there to be put back, and
+    // rotating in between would otherwise return them in the old
+    // coordinates.
+    const strokesOf = (operation: Operation): InkStroke[] =>
+      operation.kind === 'draw' ? [operation.stroke] : operation.strokes
+
+    const reachable = [
+      ...strokes.value,
+      ...past.value.flatMap(strokesOf),
+      ...future.value.flatMap(strokesOf),
+      ...erasedThisStroke
+    ]
+
+    if (reachable.length > 0) {
+      const replacements = new Map<InkStroke, InkStroke>(reachable.map(stroke => [stroke, rescale(stroke)]))
+      const replace = (stroke: InkStroke): InkStroke => replacements.get(stroke) ?? rescale(stroke)
+
+      past.value = past.value.map(remapOperation(replace))
+      future.value = future.value.map(remapOperation(replace))
+      erasedThisStroke = erasedThisStroke.map(replace)
+
+      if (strokes.value.length > 0) {
+        strokes.value = strokes.value.map(replace)
+        emit('update:modelValue', strokes.value)
+      }
+    }
   }
 
   surface.value = { width: nextWidth, height: nextHeight }
@@ -122,12 +196,21 @@ onBeforeUnmount(() => {
 
 // --- drawing ----------------------------------------------------------------
 
-function toSurfacePoint(event: PointerEvent): InkPoint {
-  const element = surfaceEl.value
-  if (!element) return { x: 0, y: 0, p: 0.5 }
+/**
+ * Where the surface currently is on screen, or null if it has no area.
+ *
+ * Mapping a pointer onto the surface divides by these, so a surface that has
+ * not been laid out yet would turn every point into `Infinity` and put
+ * `M Infinity Infinity` in the path. Returning null instead means the
+ * pointer is simply ignored until there is something to draw on.
+ */
+function surfaceRect(): DOMRect | null {
+  const rect = surfaceEl.value?.getBoundingClientRect()
+  if (!rect || rect.width < 1 || rect.height < 1) return null
+  return rect
+}
 
-  const rect = element.getBoundingClientRect()
-
+function toSurfacePoint(event: PointerEvent, rect: DOMRect): InkPoint {
   return {
     x: ((event.clientX - rect.left) / rect.width) * surface.value.width,
     y: ((event.clientY - rect.top) / rect.height) * surface.value.height,
@@ -150,6 +233,9 @@ function onPointerDown(event: PointerEvent): void {
   // Right-click and stylus barrel buttons should not draw.
   if (event.button !== 0 && event.button !== -1) return
 
+  const rect = surfaceRect()
+  if (!rect) return
+
   event.preventDefault()
   activePointerId.value = event.pointerId
 
@@ -161,12 +247,19 @@ function onPointerDown(event: PointerEvent): void {
     // Capture is a convenience; drawing still works without it.
   }
 
-  active.value = [toSurfacePoint(event)]
+  active.value = [toSurfacePoint(event, rect)]
+
+  // A tap with the eraser should remove what is under it, without needing
+  // to be dragged first.
+  if (tool.value === 'eraser') eraseUnderPointer()
 }
 
 function onPointerMove(event: PointerEvent): void {
   if (props.disabled || event.pointerId !== activePointerId.value) return
   if (event.pointerType === 'pen') lastPenAt = Date.now()
+
+  const rect = surfaceRect()
+  if (!rect) return
 
   event.preventDefault()
 
@@ -178,11 +271,13 @@ function onPointerMove(event: PointerEvent): void {
 
   const next = [...active.value]
   for (const sample of events) {
-    const point = toSurfacePoint(sample)
+    const point = toSurfacePoint(sample, rect)
     if (shouldKeep(next.at(-1), point)) next.push(point)
   }
 
   active.value = next
+
+  if (tool.value === 'eraser') eraseUnderPointer()
 }
 
 function onPointerUp(event: PointerEvent): void {
@@ -202,63 +297,179 @@ function onPointerCancel(event: PointerEvent): void {
   if (event.pointerId !== activePointerId.value) return
 
   // A cancelled pointer (the browser took over for a gesture) discards the
-  // partial stroke rather than leaving half a letter behind.
+  // partial stroke rather than leaving half a letter behind — and puts back
+  // anything a cancelled eraser swipe had already removed.
   activePointerId.value = null
   active.value = []
+
+  if (erasedThisStroke.length > 0) {
+    strokes.value = [...strokes.value, ...erasedThisStroke]
+    erasedThisStroke = []
+    emit('update:modelValue', strokes.value)
+  }
 }
 
 function commit(): void {
   if (active.value.length === 0) return
 
+  if (tool.value === 'eraser') {
+    // The erasing already happened as the pointer moved, so committing just
+    // banks it as one operation — a swipe that took out three strokes then
+    // comes back in a single undo.
+    active.value = []
+
+    if (erasedThisStroke.length > 0) {
+      record({ kind: 'erase', strokes: erasedThisStroke })
+      erasedThisStroke = []
+      emit('update:modelValue', strokes.value)
+    }
+    return
+  }
+
   // Simplify on commit rather than during: the live line stays faithful to
   // the pointer, and what gets stored is a fraction of the samples.
-  strokes.value = [...strokes.value, { colour: colour.value, width: width.value, points: simplify(active.value) }]
+  const stroke: InkStroke = { colour: colour.value, width: width.value, points: simplify(active.value) }
+
+  strokes.value = [...strokes.value, stroke]
   active.value = []
-  undone.value = []
+  record({ kind: 'draw', stroke })
 
   emit('update:modelValue', strokes.value)
+}
+
+/**
+ * Remove whatever the eraser is currently over.
+ *
+ * Applied as the pointer moves rather than on release, so the canvas reacts
+ * under the finger — waiting until release would feel like nothing was
+ * happening.
+ */
+function eraseUnderPointer(): void {
+  const { kept, removed } = eraseStrokes(strokes.value, active.value, ERASER_RADIUS + width.value / 2)
+  if (removed.length === 0) return
+
+  strokes.value = kept
+  erasedThisStroke = [...erasedThisStroke, ...removed]
 }
 
 // --- history ----------------------------------------------------------------
 
-function undo(): void {
-  const last = strokes.value.at(-1)
-  if (!last) return
+/**
+ * History records *what happened*, not just which strokes existed.
+ *
+ * A stack of strokes is enough while drawing is the only operation, but the
+ * eraser breaks it: undoing an erase has to put strokes back, which is the
+ * opposite of undoing a draw. Keeping the operation means one undo reverses
+ * one action whichever kind it was — and an eraser swipe that removed three
+ * strokes returns in a single step, as whoever swiped expects.
+ */
+type Operation =
+  | { kind: 'draw'; stroke: InkStroke }
+  | { kind: 'erase'; strokes: InkStroke[] }
+  | { kind: 'clear'; strokes: InkStroke[] }
 
-  strokes.value = strokes.value.slice(0, -1)
-  undone.value = [...undone.value, last]
+const past = shallowRef<Operation[]>([])
+const future = shallowRef<Operation[]>([])
+
+/** Rewrites an operation's stroke references through `replace`. */
+function remapOperation(replace: (stroke: InkStroke) => InkStroke) {
+  return (operation: Operation): Operation =>
+    operation.kind === 'draw'
+      ? { kind: 'draw', stroke: replace(operation.stroke) }
+      : { ...operation, strokes: operation.strokes.map(replace) }
+}
+
+const canUndo = computed(() => past.value.length > 0)
+const canRedo = computed(() => future.value.length > 0)
+
+/** Records an operation, discarding any redo history beyond it. */
+function record(operation: Operation): void {
+  past.value = [...past.value, operation]
+  future.value = []
+}
+
+function undo(): void {
+  const operation = past.value.at(-1)
+  if (!operation) return
+
+  past.value = past.value.slice(0, -1)
+  future.value = [...future.value, operation]
+
+  if (operation.kind === 'draw') {
+    strokes.value = strokes.value.filter(stroke => stroke !== operation.stroke)
+  } else {
+    // Restored at the end rather than at their original indexes: stacking
+    // order only shows where strokes overlap, and the alternative is
+    // tracking positions through every later edit.
+    strokes.value = [...strokes.value, ...operation.strokes]
+  }
+
   emit('update:modelValue', strokes.value)
 }
 
 function redo(): void {
-  const last = undone.value.at(-1)
-  if (!last) return
+  const operation = future.value.at(-1)
+  if (!operation) return
 
-  undone.value = undone.value.slice(0, -1)
-  strokes.value = [...strokes.value, last]
+  future.value = future.value.slice(0, -1)
+  past.value = [...past.value, operation]
+
+  if (operation.kind === 'draw') {
+    strokes.value = [...strokes.value, operation.stroke]
+  } else {
+    strokes.value = strokes.value.filter(stroke => !operation.strokes.includes(stroke))
+  }
+
   emit('update:modelValue', strokes.value)
 }
 
 function clear(): void {
   if (strokes.value.length === 0) return
 
-  // Kept in the redo stack, so a mis-tap on Clear is recoverable.
-  undone.value = [...strokes.value].reverse()
+  record({ kind: 'clear', strokes: strokes.value })
   strokes.value = []
   active.value = []
   emit('update:modelValue', strokes.value)
 }
 
-defineExpose({ clear, undo, isEmpty })
+defineExpose({ clear, undo, redo, isEmpty })
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex min-h-0 flex-1 flex-col gap-2">
     <!-- Pens -->
     <div class="flex flex-wrap items-center gap-3">
+      <div v-if="allowErase" class="flex items-center gap-1" role="radiogroup" aria-label="Tool">
+        <button
+          type="button"
+          role="radio"
+          :aria-checked="tool === 'pen'"
+          aria-label="Pen"
+          :disabled="disabled"
+          class="grid size-11 place-items-center rounded-card transition-colors"
+          :class="tool === 'pen' ? 'bg-accent text-accent-ink' : 'text-muted hover:bg-surface-2'"
+          @click="tool = 'pen'"
+        >
+          <Icon name="draw" :size="20" />
+        </button>
+        <button
+          type="button"
+          role="radio"
+          :aria-checked="tool === 'eraser'"
+          aria-label="Eraser"
+          :disabled="disabled"
+          class="grid size-11 place-items-center rounded-card transition-colors"
+          :class="tool === 'eraser' ? 'bg-accent text-accent-ink' : 'text-muted hover:bg-surface-2'"
+          @click="tool = 'eraser'"
+        >
+          <Icon name="close" :size="20" />
+        </button>
+        <span class="mx-1 h-7 w-px bg-line" />
+      </div>
+
       <div class="flex items-center gap-1.5" role="radiogroup" aria-label="Ink colour">
         <button
-          v-for="option in INK_COLOURS"
+          v-for="option in inkColours"
           :key="option"
           type="button"
           role="radio"
@@ -276,7 +487,7 @@ defineExpose({ clear, undo, isEmpty })
 
       <div class="flex items-center gap-1.5" role="radiogroup" aria-label="Pen width">
         <button
-          v-for="option in PEN_WIDTHS"
+          v-for="option in penWidths"
           :key="option"
           type="button"
           role="radio"
@@ -303,7 +514,7 @@ defineExpose({ clear, undo, isEmpty })
           type="button"
           class="grid size-11 place-items-center rounded-card text-muted transition-colors hover:bg-surface-2 disabled:opacity-35"
           aria-label="Undo"
-          :disabled="disabled || strokes.length === 0"
+          :disabled="disabled || !canUndo"
           @click="undo"
         >
           <Icon name="refresh" :size="20" class="-scale-x-100" />
@@ -312,7 +523,7 @@ defineExpose({ clear, undo, isEmpty })
           type="button"
           class="grid size-11 place-items-center rounded-card text-muted transition-colors hover:bg-surface-2 disabled:opacity-35"
           aria-label="Redo"
-          :disabled="disabled || undone.length === 0"
+          :disabled="disabled || !canRedo"
           @click="redo"
         >
           <Icon name="refresh" :size="20" />
@@ -331,13 +542,22 @@ defineExpose({ clear, undo, isEmpty })
 
     <!-- The surface. touch-action:none stops the browser panning or zooming
          the page while a finger is drawing on it. -->
-    <div class="relative overflow-hidden rounded-card border-2 border-line" :style="{ backgroundColor: background }">
+    <div
+      class="relative min-h-0 overflow-hidden rounded-card border-2 border-line"
+      :class="aspectClass ? '' : 'flex-1'"
+      :style="{ backgroundColor: background }"
+    >
       <svg
         ref="surfaceEl"
+        role="img"
+        :aria-label="allowErase ? 'Drawing surface' : 'Writing surface'"
         :viewBox="viewBox"
         preserveAspectRatio="none"
-        class="block aspect-[4/3] w-full touch-none select-none"
-        :class="disabled ? 'cursor-not-allowed' : 'cursor-crosshair'"
+        class="block w-full touch-none select-none"
+        :class="[
+          aspectClass ?? 'h-full',
+          disabled ? 'cursor-not-allowed' : tool === 'eraser' ? 'cursor-cell' : 'cursor-crosshair'
+        ]"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
@@ -355,7 +575,7 @@ defineExpose({ clear, undo, isEmpty })
           stroke-linejoin="round"
         />
         <path
-          v-if="activePath"
+          v-if="activePath && tool === 'pen'"
           :d="activePath"
           :stroke="colour"
           :stroke-width="width"
@@ -369,7 +589,7 @@ defineExpose({ clear, undo, isEmpty })
         v-if="isEmpty"
         class="pointer-events-none absolute inset-0 grid place-items-center text-sm font-medium text-black/35"
       >
-        Write here with a finger or stylus
+        {{ allowErase ? 'Draw here with a finger or stylus' : 'Write here with a finger or stylus' }}
       </p>
     </div>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import Icon from '@/components/ui/Icon.vue'
-import InkRender from './InkRender.vue'
+import InkRender from '@/components/ink/InkRender.vue'
 import type { StickyNote } from '@/api/types'
 
 /**

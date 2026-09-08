@@ -336,32 +336,47 @@ export interface Photo {
   thumbUrl: string | null
 }
 
-export interface StrokePoint {
-  x: number
-  y: number
-  /** Stylus pressure, 0..1. Mouse and finger input report 0.5. */
-  pressure: number
-}
-
-export interface Stroke {
-  colour: string
-  width: number
-  /** Eraser strokes composite differently but are otherwise ordinary strokes. */
-  eraser: boolean
-  points: StrokePoint[]
-}
-
 export interface Drawing {
   id: string
   title: string
-  strokes: Stroke[]
+  strokes: InkStroke[]
   background: string
+  /** The coordinate space `strokes` were captured in. */
   width: number
   height: number
-  thumbPath: string | null
   createdAt: string
   updatedAt: string
 }
+
+export interface NewDrawing {
+  title?: string
+  strokes: InkStroke[]
+  background?: string
+  width: number
+  height: number
+}
+
+/**
+ * The drawing palette — wider than the note ink set, since a picture wants
+ * more than five pens. All dark enough to read on the paper colours below.
+ */
+export const DRAW_COLOURS = [
+  '#1a1f2b',
+  '#1d4ed8',
+  '#0284c7',
+  '#0f6b4f',
+  '#65a30d',
+  '#b3261e',
+  '#ea580c',
+  '#a16207',
+  '#6b21a8',
+  '#be185d'
+] as const
+
+export const DRAW_WIDTHS = [2, 4, 8, 14, 24] as const
+
+/** Paper colours. Kept pale so every ink colour stays legible on them. */
+export const PAPER_COLOURS = ['#ffffff', '#fdf6e3', '#eef2f7', '#eaf4fb', '#fdeef2'] as const
 
 // --- news ------------------------------------------------------------------
 

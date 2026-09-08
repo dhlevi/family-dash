@@ -64,6 +64,20 @@ export interface DateRange {
   to: Date
 }
 
+// --- drawings --------------------------------------------------------------
+
+export interface Drawing {
+  id: string
+  title: string
+  strokes: InkStroke[]
+  background: string
+  /** The coordinate space `strokes` were captured in. */
+  width: number
+  height: number
+  createdAt: string
+  updatedAt: string
+}
+
 // --- news ------------------------------------------------------------------
 
 export interface NewsFeed {

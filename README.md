@@ -352,6 +352,83 @@ If the library lives on a removable drive, note that the scan will not delete th
 drive is absent — it reports that instead, so unplugging the drive does not lose the pictures'
 favourites or the recipe photos pointing at them.
 
+### Storage
+
+**You do not need external storage.** The whole thing runs off the SD card. Measured on a working
+install:
+
+| | Size | Grows? |
+|---|---|---|
+| Container images (api, web, postgres) | ~970 MB | no |
+| Postgres volume | 63 MB, of which the database itself is ~9 MB | barely |
+| Photos | ~2 MB each | yes — the only unbounded thing |
+| Thumbnails | ~25 KB each | with the photos |
+
+The database stays small by design: news is pruned on a retention window, the weather cache is a
+single row, and everything else is short text. On a 32 GB card that leaves room for something like
+ten to fifteen thousand photos.
+
+**Space is not the risk; the card is.** Postgres writes continuously — every transaction hits the
+write-ahead log, and four background tasks write every 15 to 30 minutes, for years. SD cards are
+the most common way a Raspberry Pi dies, and when one goes it takes the notes, tasks, recipes,
+meal plans, drawings and photo favourites with it. The calendar, news and weather all re-sync
+themselves; nothing else comes back.
+
+So, in order of preference:
+
+1. **Boot a Pi 4 or 5 from a USB SSD and skip the card entirely.** Images, the Postgres volume and
+   the media folder all land on the SSD, there is nothing to configure here, and it is faster as
+   well as more durable. This is the one change that actually solves the problem.
+2. **Keep the card, but move what you can off it.** Point `MEDIA_PATH` at external storage or a
+   network share — that keeps the photo writes away from the card, though not Postgres'. Use a
+   *high-endurance* card (the ones sold for dashcams), not a standard one.
+3. **Keep everything on the card and take backups.** Which you should do regardless.
+
+Relocating just the database is more trouble than it looks: `pgdata` is a named Docker volume, so
+you would move Docker's whole `data-root` in `/etc/docker/daemon.json` rather than change anything
+in this project.
+
+Rebuilding leaves old image layers behind. `make prune` reclaims them.
+
+### Backups
+
+```bash
+make backup                                    # writes backups/familydash-<timestamp>.sql.gz
+make backup BACKUP_DIR=/mnt/usb/family-dash    # ...or wherever you would rather keep them
+make restore FILE=backups/familydash-20260908-124912.sql.gz
+```
+
+A dump of a full household is around 30 KB compressed, so keeping months of them costs nothing.
+`make restore` asks for confirmation, replaces the current database, and restarts the API.
+
+Two things worth knowing:
+
+- **Put the backups somewhere other than the card.** A backup on the same SD card as the database
+  does not survive the failure it exists for. `BACKUP_DIR` is there for exactly that.
+- **Photo files are not in the dump.** They live on the media volume, are usually copies of what is
+  already on somebody's phone, and a nightly tar of a 15 GB library is not a backup anyone keeps
+  running. Back that folder up with whatever backs up the drive it sits on. Thumbnails need no
+  backup at all — a rescan rebuilds them.
+
+Nightly, via the Pi's own crontab (`crontab -e`):
+
+```cron
+30 3 * * * cd /home/pi/family-dash && make backup BACKUP_DIR=/mnt/usb/family-dash >> /var/log/family-dash-backup.log 2>&1
+# and keep a month of them
+40 3 * * * find /mnt/usb/family-dash -name 'familydash-*.sql.gz' -mtime +30 -delete
+```
+
+Test the restore before you need it. Restoring into a scratch database proves the dump is good
+without touching the live one:
+
+```bash
+make psql   # then, at the prompt:
+# CREATE DATABASE restoretest;
+# \q
+gunzip -c backups/familydash-20260908-124912.sql.gz \
+  | docker compose exec -T db psql -U familydash -d restoretest -v ON_ERROR_STOP=1
+```
+
 ### Start on boot
 
 Compose already restarts the containers (`restart: unless-stopped`), so all systemd needs to do is

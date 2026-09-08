@@ -12,10 +12,23 @@
 
 name: family-dash
 
+# Docker's default log driver never rotates, and this runs for months on a
+# Raspberry Pi whose root filesystem is very likely an SD card. Steady-state
+# logging here is tiny — nginx does not log the health poll, which is the only
+# thing that polls — but a container stuck in a restart loop writes a stack
+# trace per second, and an unbounded log is then a filled card and a dead Pi.
+# 10MB x 3 files per service caps the worst case at 90MB.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-familydash}
       POSTGRES_USER: ${POSTGRES_USER:-familydash}
@@ -39,6 +52,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *logging
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -75,6 +89,7 @@ services:
       context: ./web
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *logging
     environment:
       TZ: ${TZ:-UTC}
     ports:

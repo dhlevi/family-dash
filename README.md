@@ -191,6 +191,28 @@ by reference, rotating the screen (which rescales the ink into the new shape, ma
 carries the history across with it, including strokes that are currently erased and waiting to
 come back.
 
+**The automatic theme follows the sun, not the clock.** `appearance.theme` accepts `auto`, which
+resolves against today's sunrise and sunset for the location already set for the weather — the
+forecast carries them, so it costs nothing extra to fetch and it tracks the seasons rather than
+guessing at a fixed hour. Both ends are pulled in by a configurable offset, because daybreak is
+an unkind moment for a screen in a dim kitchen to turn white. `prefers-color-scheme` is
+deliberately not used: a kiosk Chromium reports whatever the Pi's OS says, and nobody is changing
+that at dusk. With no forecast to work from it falls back to fixed local hours rather than
+sticking on whichever theme it happened to be.
+
+**The screensaver's crossfade avoids `<Transition>` on purpose.** Vue advances transition classes
+on a `requestAnimationFrame`, which does not run while a page is hidden — and a screensaver caught
+mid-fade would sit at `opacity: 0` indefinitely, a black screen with a clock on it, until somebody
+touched the display. The two picture layers fade on a bound `opacity` instead: it may or may not
+animate, but it always ends up at the right value. Worth the care in the one component whose whole
+job is to keep showing something for hours unattended.
+
+**Only deliberate actions count as activity.** The idle watcher listens for taps, keys and
+scrolls, not pointer movement: a wall display with a mouse plugged in would otherwise be kept
+awake for weeks by a cursor sitting still under a draught. The screensaver dismisses on the press
+rather than the release, and prevents the default, so the tap that wakes the screen does not also
+land as a click on whatever was underneath it.
+
 **Photos are addressed by database id, never by path.** `/media/photos/<id>` looks the row up and
 serves the file it names, so a request cannot describe a file — which removes path traversal from
 the only routes that touch arbitrary files, rather than trying to filter it. The URL carries the
@@ -436,8 +458,9 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 
 **Working now:**
 
-- **Settings** — theme, accent, clock, calendar defaults, dashboard widgets, household names,
-  location and units, plus service diagnostics. Changes save as you make them.
+- **Settings** — theme (including one that follows sunrise and sunset), accent, clock, screensaver,
+  calendar defaults, dashboard widgets, household names, location and units, plus service
+  diagnostics. Changes save as you make them.
 - **Calendar** — month, week and agenda views merged across the local family calendar, any number
   of ICS subscriptions and a connected Google account, with background sync, tap-a-day to add,
   and read-only handling for events a feed owns.
@@ -473,6 +496,10 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 - **Dashboard** — every widget reads live data: next events, today's tasks, pinned notes,
   tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
   a slowly cycling photo.
+- **Screensaver** — after a configurable idle spell the screen becomes a clock, the current
+  temperature and a slow slideshow of the favourited photos, which is more use from across a
+  kitchen than the dashboard it replaces and keeps one layout from burning into the panel. Any
+  tap, key or scroll dismisses it. Off by default; set the idle minutes in Settings.
 
 Recipes carry a picture from the photo library, so one can be uploaded once and reused, and
 deleting it from the library clears the reference rather than leaving a broken image.

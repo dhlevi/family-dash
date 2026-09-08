@@ -33,5 +33,17 @@ export const photosApi = {
   remove: (id: string) => api.delete<void>(`/photos/${id}`),
 
   /** Reconciles the index with the media volume. Walks the whole library. */
-  scan: () => api.post<PhotoScanOutcome>('/photos/scan', undefined, { timeoutMs: 300000 })
+  scan: () => api.post<PhotoScanOutcome>('/photos/scan', undefined, { timeoutMs: 300000 }),
+
+  /**
+   * The pictures to cycle through on the dashboard and the screensaver.
+   *
+   * Favourites if there are any, otherwise the newest — so starring a
+   * handful of pictures is the whole of curating what the wall shows, and a
+   * library nobody has starred yet still shows something.
+   */
+  slideshowPool: async (limit: number): Promise<Photo[]> => {
+    const favourites = await photosApi.list({ favouritesOnly: true, limit })
+    return favourites.length > 0 ? favourites : photosApi.list({ limit })
+  }
 }

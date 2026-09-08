@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { ApiRequestError } from '@/api/client'
 import { settingsApi } from '@/api/settings'
-import type { AppSettings, SettingKey } from '@/api/types'
+import { resolveAutoTheme, type SunTimes } from '@/utils/theme'
+import type { AppSettings, SettingKey, Theme, ThemePreference } from '@/api/types'
 
 /**
  * Application preferences, loaded once and shared.
@@ -29,7 +30,60 @@ export const useSettingsStore = defineStore('settings', () => {
     return value === undefined ? fallback : value
   }
 
-  const theme = computed(() => get('appearance.theme', 'dark'))
+  /** What the setting says, which may be 'auto'. */
+  const themePreference = computed<ThemePreference>(() => get('appearance.theme', 'dark'))
+  const autoThemeOffsetMinutes = computed(() => get('appearance.autoThemeOffsetMinutes', 30))
+
+  /**
+   * Today's sunrise and sunset, when something has supplied them.
+   *
+   * Fed in from outside rather than fetched here: they come from the weather
+   * report, and a preferences store has no business knowing about the
+   * weather. `useSolarTheme` is what keeps this current, and only while the
+   * theme is actually set to auto.
+   */
+  const sunTimes = ref<SunTimes | null>(null)
+
+  function setSunTimes(times: SunTimes | null): void {
+    sunTimes.value = times
+  }
+
+  /**
+   * A coarse ticker, so the automatic theme changes over without a reload.
+   *
+   * One minute is plenty for a boundary that moves by a minute or two a day,
+   * and it keeps this off the one-second clock the header runs on. Only
+   * ticking while the theme is automatic, since nothing else here depends on
+   * the time.
+   */
+  const minute = ref(Date.now())
+  let ticker: ReturnType<typeof setInterval> | null = null
+
+  watch(
+    themePreference,
+    preference => {
+      if (preference === 'auto' && ticker === null) {
+        ticker = setInterval(() => (minute.value = Date.now()), 60_000)
+      } else if (preference !== 'auto' && ticker !== null) {
+        clearInterval(ticker)
+        ticker = null
+      }
+    },
+    { immediate: true }
+  )
+
+  onScopeDispose(() => {
+    if (ticker !== null) clearInterval(ticker)
+    ticker = null
+  })
+
+  /** The theme actually applied to the document. Never 'auto'. */
+  const theme = computed<Theme>(() =>
+    themePreference.value === 'auto'
+      ? resolveAutoTheme(new Date(minute.value), sunTimes.value, autoThemeOffsetMinutes.value)
+      : themePreference.value
+  )
+
   const accent = computed(() => get('appearance.accent', '#4f8ef7'))
   const clock24Hour = computed(() => get('appearance.clock24Hour', true))
   const weekStartsOn = computed(() => get('calendar.weekStartsOn', 0))
@@ -121,6 +175,10 @@ export const useSettingsStore = defineStore('settings', () => {
     loaded,
     get,
     theme,
+    themePreference,
+    autoThemeOffsetMinutes,
+    sunTimes,
+    setSunTimes,
     accent,
     clock24Hour,
     weekStartsOn,

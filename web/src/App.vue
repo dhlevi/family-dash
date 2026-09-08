@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import AppHeader from '@/components/ui/AppHeader.vue'
 import AppNav from '@/components/ui/AppNav.vue'
+import Screensaver from '@/components/ui/Screensaver.vue'
+import { useIdle } from '@/composables/useIdle'
+import { useSolarTheme } from '@/composables/useSolarTheme'
 import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
 
@@ -17,6 +20,12 @@ import { useSystemStore } from '@/stores/system'
  */
 const system = useSystemStore()
 const settings = useSettingsStore()
+
+// Keeps the automatic theme following the sun. Does nothing unless the theme
+// is set to auto.
+useSolarTheme()
+
+const { idle, wake } = useIdle(computed(() => settings.screensaverMinutes))
 
 onMounted(() => {
   system.startPolling()
@@ -42,5 +51,9 @@ onBeforeUnmount(() => system.stopPolling())
         </Suspense>
       </RouterView>
     </main>
+
+    <!-- Over everything, the nav rail included: an idle wall display should
+         be showing photographs, not a dimmed copy of the dashboard. -->
+    <Screensaver v-if="idle" @wake="wake" />
   </div>
 </template>

@@ -10,10 +10,9 @@ import type { Photo } from '@/api/types'
 /**
  * A slowly cycling picture from the library.
  *
- * Favourites first, because this is the widget that sits on the wall all day
- * and nobody wants to curate it — starring a handful of pictures is the
- * whole configuration. Falls back to the newest photos if nothing has been
- * starred, so a fresh library still shows something.
+ * Shows the same pool as the screensaver — favourites, or the newest
+ * pictures if nothing has been starred — so what the wall shows is decided
+ * in one place.
  *
  * Only the thumbnail is fetched. A full-size picture would be several
  * megabytes for a tile a few hundred pixels wide, and it is the dashboard
@@ -42,10 +41,7 @@ async function load(): Promise<void> {
   error.value = null
 
   try {
-    const favourites = await photosApi.list({ favouritesOnly: true, limit: POOL_SIZE })
-
-    photos.value = favourites.length > 0 ? favourites : await photosApi.list({ limit: POOL_SIZE })
-
+    photos.value = await photosApi.slideshowPool(POOL_SIZE)
     index.value = 0
   } catch (caught) {
     error.value = caught instanceof ApiRequestError ? caught.message : 'Could not load photos'

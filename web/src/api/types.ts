@@ -566,8 +566,15 @@ export type DashboardWidget = 'calendar' | 'tasks' | 'weather' | 'meal' | 'notes
  * The settings the API's catalogue declares. Typed by key so the store can
  * hand out a correctly-typed value without a cast at every call site.
  */
+/** What the theme setting can hold. 'auto' follows the sun. */
+export type ThemePreference = 'dark' | 'light' | 'auto'
+
+/** What is actually applied to the document. */
+export type Theme = 'dark' | 'light'
+
 export interface AppSettings {
-  'appearance.theme': 'dark' | 'light'
+  'appearance.theme': ThemePreference
+  'appearance.autoThemeOffsetMinutes': number
   'appearance.accent': string
   'appearance.clock24Hour': boolean
   'appearance.screensaverMinutes': number

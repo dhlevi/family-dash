@@ -30,9 +30,19 @@ interface SettingDefinition {
 export const SETTINGS: Record<string, SettingDefinition> = {
   // --- appearance ---------------------------------------------------------
   'appearance.theme': {
-    schema: z.enum(['dark', 'light']),
+    schema: z.enum(['dark', 'light', 'auto']),
     default: () => 'dark',
-    description: 'Colour theme. Dark suits a wall display in a dim room.'
+    description:
+      'Colour theme. Dark suits a wall display in a dim room; auto follows sunrise and sunset ' +
+      'at the location set for the weather.'
+  },
+  'appearance.autoThemeOffsetMinutes': {
+    schema: z.number().int().min(0).max(180),
+    default: () => 30,
+    description:
+      'With the auto theme, how long after sunrise to wait before going light, and how long ' +
+      'before sunset to go dark again. Sunrise itself is an unkind moment for a screen in a dim ' +
+      'kitchen to turn white.'
   },
   'appearance.accent': {
     schema: hexColour,
@@ -47,7 +57,8 @@ export const SETTINGS: Record<string, SettingDefinition> = {
   'appearance.screensaverMinutes': {
     schema: z.number().int().min(0).max(240),
     default: () => 0,
-    description: 'Idle minutes before the photo slideshow takes over. 0 disables it.'
+    description:
+      'Idle minutes before the screen turns into a photo slideshow. Any tap or key dismisses it. ' + '0 disables it.'
   },
 
   // --- dashboard ----------------------------------------------------------

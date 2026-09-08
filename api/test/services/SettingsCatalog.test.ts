@@ -93,6 +93,23 @@ describe('SettingsCatalog', () => {
       expect(parse('calendar.weekStartsOn', 6)).toBe(false)
     })
 
+    it('accepts the three theme choices and nothing else', () => {
+      expect(parse('appearance.theme', 'dark')).toBe(true)
+      expect(parse('appearance.theme', 'light')).toBe(true)
+      expect(parse('appearance.theme', 'auto')).toBe(true)
+      expect(parse('appearance.theme', 'sepia')).toBe(false)
+    })
+
+    it('bounds the auto-theme offset', () => {
+      expect(parse('appearance.autoThemeOffsetMinutes', 0)).toBe(true)
+      expect(parse('appearance.autoThemeOffsetMinutes', 180)).toBe(true)
+      // A negative offset would mean going light before the sun is up, and a
+      // three-hour-plus offset leaves the screen dark most of a winter day.
+      expect(parse('appearance.autoThemeOffsetMinutes', -30)).toBe(false)
+      expect(parse('appearance.autoThemeOffsetMinutes', 181)).toBe(false)
+      expect(parse('appearance.autoThemeOffsetMinutes', 30.5)).toBe(false)
+    })
+
     it('trims and bounds the assignee shortcut list', () => {
       expect(parse('tasks.assignees', ['Skye', 'Dylan'])).toBe(true)
       expect(parse('tasks.assignees', [''])).toBe(false)

@@ -22,7 +22,7 @@ import Toggle from '@/components/ui/Toggle.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
-import type { CalendarSource, DashboardWidget, NewsFeed, SystemInfo } from '@/api/types'
+import type { CalendarSource, DashboardWidget, NewsFeed, SystemInfo, ThemePreference } from '@/api/types'
 
 /**
  * Settings.
@@ -76,7 +76,10 @@ onMounted(load)
 
 // --- appearance -------------------------------------------------------------
 
-const theme = ref<'dark' | 'light'>('dark')
+const theme = ref<ThemePreference>('dark')
+const autoThemeOffset = ref(30)
+const screensaverMinutes = ref(0)
+const slideshowSeconds = ref(20)
 const accent = ref('#4f8ef7')
 const clock24Hour = ref(true)
 
@@ -120,6 +123,9 @@ watch(
     if (!values) return
 
     theme.value = values['appearance.theme']
+    autoThemeOffset.value = values['appearance.autoThemeOffsetMinutes']
+    screensaverMinutes.value = values['appearance.screensaverMinutes']
+    slideshowSeconds.value = values['photos.slideshowSeconds']
     accent.value = values['appearance.accent']
     clock24Hour.value = values['appearance.clock24Hour']
     defaultView.value = values['calendar.defaultView']
@@ -250,15 +256,59 @@ async function runTask(name: string): Promise<void> {
         <h2 class="mb-3 text-sm font-semibold tracking-wide text-muted uppercase">Appearance</h2>
 
         <div class="flex flex-col gap-4">
-          <Field label="Theme">
+          <Field
+            label="Theme"
+            :hint="theme === 'auto' ? `Following sunrise and sunset at ${locationName || 'your location'}` : undefined"
+          >
             <SegmentedControl
               v-model="theme"
               :options="[
                 { value: 'dark', label: 'Dark' },
-                { value: 'light', label: 'Light' }
+                { value: 'light', label: 'Light' },
+                { value: 'auto', label: 'Auto' }
               ]"
               block
               @update:model-value="persist({ 'appearance.theme': theme })"
+            />
+          </Field>
+
+          <Field
+            v-if="theme === 'auto'"
+            label="Ease in and out by"
+            hint="Waits this long after sunrise to go light, and goes dark this long before sunset"
+          >
+            <NumberStepper
+              v-model="autoThemeOffset"
+              :min="0"
+              :max="180"
+              :step="15"
+              suffix="min"
+              @update:model-value="persist({ 'appearance.autoThemeOffsetMinutes': autoThemeOffset })"
+            />
+          </Field>
+
+          <Field
+            label="Screensaver after"
+            hint="Turns the screen into a photo slideshow when nobody has touched it. 0 switches it off."
+          >
+            <NumberStepper
+              v-model="screensaverMinutes"
+              :min="0"
+              :max="240"
+              :step="5"
+              suffix="min"
+              @update:model-value="persist({ 'appearance.screensaverMinutes': screensaverMinutes })"
+            />
+          </Field>
+
+          <Field v-if="screensaverMinutes > 0" label="Seconds per photo">
+            <NumberStepper
+              v-model="slideshowSeconds"
+              :min="3"
+              :max="600"
+              :step="5"
+              suffix="sec"
+              @update:model-value="persist({ 'photos.slideshowSeconds': slideshowSeconds })"
             />
           </Field>
 

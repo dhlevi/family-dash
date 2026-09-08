@@ -389,6 +389,8 @@ export interface NewsArticle {
 
 // --- weather ---------------------------------------------------------------
 
+export type WeatherUnitSystem = 'metric' | 'imperial'
+
 export interface WeatherLocation {
   latitude: number
   longitude: number
@@ -413,6 +415,7 @@ export interface WeatherHour {
   temperature: number
   precipitationProbability: number
   code: number
+  isDay: boolean
 }
 
 export interface WeatherDay {
@@ -430,12 +433,34 @@ export interface WeatherReport {
   provider: string
   location: WeatherLocation
   units: 'metric' | 'imperial'
+  /** The location's IANA timezone, as the provider resolved it. */
+  timezone: string
   current: WeatherCurrent
   hourly: WeatherHour[]
   daily: WeatherDay[]
   fetchedAt: string
-  /** True when the network is down and this came from the database cache. */
+  /**
+   * True when the provider could not be reached and this came from the
+   * database cache. The UI says so rather than presenting old numbers as
+   * current.
+   */
   stale: boolean
+}
+
+export interface GeocodeResult {
+  name: string
+  /** "British Columbia, Canada" — enough to tell two Vancouvers apart. */
+  region: string
+  latitude: number
+  longitude: number
+  timezone: string | null
+}
+
+export interface WeatherProviderInfo {
+  id: string
+  name: string
+  configured: boolean
+  canGeocode: boolean
 }
 
 // --- settings --------------------------------------------------------------

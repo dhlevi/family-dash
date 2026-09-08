@@ -70,8 +70,11 @@ in the database and edited in the Settings page, not in a file.
 
 ### External services
 
-Weather works with **no API key at all**, via [Open-Meteo](https://open-meteo.com). An
-OpenWeatherMap key is optional and only needed if you prefer that provider.
+Weather works with **no API key at all**, via [Open-Meteo](https://open-meteo.com), which also
+provides the place-name search used to set your location. An OpenWeatherMap key is optional; set
+`weather.provider=openweathermap` in `api/config/application.properties` and supply a key to use
+it instead. If a chosen provider is missing its key, the service falls back to one that works
+rather than leaving the page empty.
 
 News is **RSS**, which also needs no key. There is no official Google News API; the feed list is
 editable in Settings.

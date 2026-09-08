@@ -1,6 +1,7 @@
 import { AppProperties } from '../core/AppProperties'
 import { TaskManager } from '../core/TaskManager'
 import { calendarSyncTask } from './CalendarSyncTask'
+import { weatherRefreshTask } from './WeatherRefreshTask'
 
 /**
  * Registers the background refresh jobs with the TaskManager.
@@ -14,7 +15,7 @@ import { calendarSyncTask } from './CalendarSyncTask'
  * minutes.
  */
 export function registerTasks(): void {
-  TaskManager.register(calendarSyncTask)
+  TaskManager.register(calendarSyncTask, weatherRefreshTask)
 
   const registered = TaskManager.names()
   console.info(

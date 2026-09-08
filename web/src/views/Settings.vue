@@ -4,6 +4,7 @@ import { ApiRequestError } from '@/api/client'
 import { calendarApi } from '@/api/calendar'
 import { systemApi } from '@/api/system'
 import CalendarSources from '@/components/settings/CalendarSources.vue'
+import LocationPicker from '@/components/settings/LocationPicker.vue'
 import Card from '@/components/ui/Card.vue'
 import ColourPicker from '@/components/ui/ColourPicker.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
@@ -155,11 +156,16 @@ function removeAssignee(name: string): void {
   void persist({ 'tasks.assignees': assignees.value })
 }
 
-function saveLocation(): void {
+/** The picker hands over a complete location, saved as one change. */
+function applyLocation(location: { name: string; latitude: number; longitude: number }): void {
+  locationName.value = location.name
+  latitude.value = location.latitude
+  longitude.value = location.longitude
+
   void persist({
-    'weather.locationName': locationName.value.trim() || 'Home',
-    'weather.latitude': latitude.value,
-    'weather.longitude': longitude.value
+    'weather.locationName': location.name.trim() || 'Home',
+    'weather.latitude': location.latitude,
+    'weather.longitude': location.longitude
   })
 }
 
@@ -391,28 +397,13 @@ async function runTask(name: string): Promise<void> {
             />
           </Field>
 
-          <Field label="Place name" for="location-name">
-            <TextInput id="location-name" v-model="locationName" @enter="saveLocation" />
-          </Field>
-
-          <div class="grid grid-cols-2 gap-3">
-            <Field label="Latitude" for="location-lat">
-              <TextInput
-                id="location-lat"
-                :model-value="String(latitude)"
-                @update:model-value="latitude = Number($event)"
-              />
-            </Field>
-            <Field label="Longitude" for="location-lon">
-              <TextInput
-                id="location-lon"
-                :model-value="String(longitude)"
-                @update:model-value="longitude = Number($event)"
-              />
-            </Field>
-          </div>
-
-          <ToolButton icon="check" label="Save location" @click="saveLocation" />
+          <LocationPicker
+            :name="locationName"
+            :latitude="latitude"
+            :longitude="longitude"
+            :saving="settings.saving"
+            @select="applyLocation"
+          />
         </div>
       </Card>
 

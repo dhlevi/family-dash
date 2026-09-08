@@ -64,6 +64,77 @@ export interface DateRange {
   to: Date
 }
 
+// --- weather ---------------------------------------------------------------
+
+export type WeatherUnits = 'metric' | 'imperial'
+
+export interface WeatherLocation {
+  latitude: number
+  longitude: number
+  name: string
+}
+
+export interface WeatherCurrent {
+  temperature: number
+  feelsLike: number
+  humidity: number
+  windSpeed: number
+  /** Degrees clockwise from north. */
+  windDirection: number
+  precipitation: number
+  /** WMO weather code. Turned into an icon and a label by the UI. */
+  code: number
+  isDay: boolean
+  observedAt: string
+}
+
+export interface WeatherHour {
+  time: string
+  temperature: number
+  precipitationProbability: number
+  code: number
+  isDay: boolean
+}
+
+export interface WeatherDay {
+  /** 'YYYY-MM-DD' in the location's own timezone. */
+  date: string
+  temperatureMin: number
+  temperatureMax: number
+  precipitationProbability: number
+  precipitationSum: number
+  sunrise: string | null
+  sunset: string | null
+  code: number
+}
+
+export interface WeatherReport {
+  provider: string
+  location: WeatherLocation
+  units: WeatherUnits
+  /** The location's IANA timezone, as the provider resolved it. */
+  timezone: string
+  current: WeatherCurrent
+  hourly: WeatherHour[]
+  daily: WeatherDay[]
+  fetchedAt: string
+  /**
+   * True when this came from the database cache because the provider could
+   * not be reached. The UI says so rather than showing stale numbers as if
+   * they were current.
+   */
+  stale: boolean
+}
+
+export interface GeocodeResult {
+  name: string
+  /** "British Columbia, Canada" — enough to tell two Vancouvers apart. */
+  region: string
+  latitude: number
+  longitude: number
+  timezone: string | null
+}
+
 // --- recipes and meal planning ---------------------------------------------
 
 export interface Ingredient {

@@ -15,6 +15,7 @@ import { MealPlanController } from '../controllers/MealPlanController'
 import { NoteController } from '../controllers/NoteController'
 import { RecipeController } from '../controllers/RecipeController'
 import { ShoppingController } from '../controllers/ShoppingController'
+import { WeatherController } from '../controllers/WeatherController'
 import { SettingsController } from '../controllers/SettingsController'
 import { SystemController } from '../controllers/SystemController'
 import { TaskController } from '../controllers/TaskController'
@@ -45,6 +46,7 @@ export default function buildRouter(): Router {
   new RecipeController()
   new MealPlanController()
   new ShoppingController()
+  new WeatherController()
 
   RouteManager.initializeRoutes(router)
 

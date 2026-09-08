@@ -4,6 +4,7 @@ import { ExpressServer } from './ExpressServer'
 import { Migrator } from './db/Migrator'
 import { PostgresDatabase } from './db/PostgresDatabase'
 import { registerCalendarProviders } from './providers/calendar'
+import { registerWeatherProviders } from './providers/weather'
 import { registerTasks } from './scheduled-tasks/TaskLoader'
 
 /**
@@ -30,6 +31,7 @@ export class Application {
     // Providers must be registered before the router is built: the calendar
     // endpoints ask the registry whether a source type is writable.
     registerCalendarProviders()
+    registerWeatherProviders()
 
     const port = AppProperties.getNumber('server.port', 3000)
     const expressServer = new ExpressServer()

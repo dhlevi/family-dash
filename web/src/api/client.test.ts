@@ -35,10 +35,10 @@ describe('api client', () => {
   it('serialises query parameters and drops empty ones', async () => {
     fetchMock.mockResolvedValue(jsonResponse([]))
 
-    await api.get('/tasks', { query: { assignee: 'Sam', done: false, category: undefined, tag: '' } })
+    await api.get('/tasks', { query: { assignee: 'Skye', done: false, category: undefined, tag: '' } })
 
     const url = fetchMock.mock.calls[0]?.[0] as string
-    expect(url).toContain('assignee=Sam')
+    expect(url).toContain('assignee=Skye')
     expect(url).toContain('done=false')
     expect(url).not.toContain('category')
     expect(url).not.toContain('tag')

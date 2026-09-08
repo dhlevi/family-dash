@@ -1,12 +1,22 @@
 import { api } from './client'
-import type { CalendarEvent, CalendarSource, NewCalendarEvent, SyncOutcome } from './types'
+import type {
+  CalendarEvent,
+  CalendarSource,
+  GoogleCalendarStatus,
+  GoogleCalendarSummary,
+  NewCalendarEvent,
+  SyncOutcome
+} from './types'
 
 export const calendarApi = {
   // --- sources -------------------------------------------------------------
   sources: () => api.get<CalendarSource[]>('/calendar/sources'),
 
-  addSource: (source: { type: 'ics'; name: string; colour?: string; config: { url: string } }) =>
-    api.post<CalendarSource>('/calendar/sources', source),
+  addSource: (
+    source:
+      | { type: 'ics'; name: string; colour?: string; config: { url: string } }
+      | { type: 'google'; name: string; colour?: string }
+  ) => api.post<CalendarSource>('/calendar/sources', source),
 
   updateSource: (
     id: string,
@@ -19,6 +29,21 @@ export const calendarApi = {
   syncSource: (id: string) => api.post<SyncOutcome>(`/calendar/sources/${id}/sync`, undefined, { timeoutMs: 60000 }),
 
   syncAll: () => api.post<SyncOutcome[]>('/calendar/sync', undefined, { timeoutMs: 120000 }),
+
+  // --- google ---------------------------------------------------------------
+  googleStatus: () => api.get<GoogleCalendarStatus>('/calendar/google/status'),
+
+  /**
+   * The consent URL for a source. The redirect address is worked out by the
+   * API from the request, so it is whatever address this browser used.
+   */
+  googleAuthUrl: (sourceId: string) => api.get<{ url: string }>('/calendar/google/auth-url', { query: { sourceId } }),
+
+  googleCalendars: (sourceId: string) =>
+    api.get<GoogleCalendarSummary[]>('/calendar/google/calendars', { query: { sourceId }, timeoutMs: 30000 }),
+
+  googleDisconnect: (sourceId: string) =>
+    api.post<CalendarSource>('/calendar/google/disconnect', undefined, { query: { sourceId } }),
 
   // --- events --------------------------------------------------------------
   /** Events overlapping a range. Reads the API's cache, so it works offline. */

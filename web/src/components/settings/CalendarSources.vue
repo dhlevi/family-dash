@@ -7,6 +7,7 @@ import Field from '@/components/ui/Field.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Modal from '@/components/ui/Modal.vue'
 import TextInput from '@/components/ui/TextInput.vue'
+import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { formatRelativeDay, formatTime } from '@/utils/datetime'
 import type { CalendarSource } from '@/api/types'
@@ -28,6 +29,8 @@ const busy = ref<string | null>(null)
 const formError = ref<string | null>(null)
 const saving = ref(false)
 
+/** What kind of calendar is being added. Only meaningful when creating. */
+const kind = ref<'ics' | 'google'>('ics')
 const name = ref('')
 const url = ref('')
 const colour = ref('#48b884')
@@ -37,6 +40,7 @@ const localSources = computed(() => props.sources.filter(source => source.type =
 
 function openAdd(): void {
   editing.value = null
+  kind.value = 'ics'
   name.value = ''
   url.value = ''
   colour.value = '#48b884'
@@ -46,6 +50,7 @@ function openAdd(): void {
 
 function openEdit(source: CalendarSource): void {
   editing.value = source
+  kind.value = source.type === 'google' ? 'google' : 'ics'
   name.value = source.name
   url.value = typeof source.config.url === 'string' ? source.config.url : ''
   colour.value = source.colour
@@ -53,9 +58,14 @@ function openEdit(source: CalendarSource): void {
   addOpen.value = true
 }
 
-const canSave = computed(
-  () => name.value.trim().length > 0 && (editing.value !== null || url.value.trim().length > 0) && !saving.value
-)
+const canSave = computed(() => {
+  if (saving.value || name.value.trim().length === 0) return false
+  // A Google calendar has no address to type: it is connected afterwards,
+  // in the Google section below.
+  if (kind.value === 'google') return true
+
+  return editing.value !== null || url.value.trim().length > 0
+})
 
 async function save(): Promise<void> {
   if (!canSave.value) return
@@ -70,6 +80,8 @@ async function save(): Promise<void> {
         colour: colour.value,
         config: url.value.trim().length > 0 ? { url: url.value.trim() } : undefined
       })
+    } else if (kind.value === 'google') {
+      await calendarApi.addSource({ type: 'google', name: name.value.trim(), colour: colour.value })
     } else {
       await calendarApi.addSource({
         type: 'ics',
@@ -209,11 +221,33 @@ function syncLabel(source: CalendarSource): string {
       <div class="flex flex-col gap-4">
         <p v-if="formError" class="rounded-card bg-danger/15 px-3 py-2 text-sm text-danger">{{ formError }}</p>
 
+        <Field
+          v-if="!editing"
+          label="What kind?"
+          hint="A feed subscription is read-only but never needs re-authorising. Google can be written to."
+        >
+          <SegmentedControl
+            v-model="kind"
+            :options="[
+              { value: 'ics', label: 'Feed address' },
+              { value: 'google', label: 'Google account' }
+            ]"
+            block
+            :disabled="saving"
+          />
+        </Field>
+
         <Field label="Name" for="source-name">
           <TextInput id="source-name" v-model="name" placeholder="School, Work, Swimming…" :disabled="saving" />
         </Field>
 
+        <p v-if="kind === 'google'" class="rounded-card bg-surface-2 px-3 py-2 text-xs text-muted">
+          This creates the calendar; connecting it to your Google account happens in the Google Calendar section, just
+          below this one.
+        </p>
+
         <Field
+          v-if="kind === 'ics'"
           label="Feed address"
           for="source-url"
           :hint="editing ? 'Leave unchanged to keep the current address' : undefined"

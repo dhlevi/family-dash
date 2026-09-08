@@ -450,6 +450,16 @@ const tabs = [
       <div v-else class="fd-scroll min-h-0 flex-1 p-4">
         <div class="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
           <Card v-for="recipe in recipes" :key="recipe.id" interactive @click="openDetail(recipe)">
+            <!-- Negative margins cancel the card's p-4 so the picture reaches
+                 its edges; the card clips the corners itself. -->
+            <img
+              v-if="recipe.photoThumbUrl"
+              :src="recipe.photoThumbUrl"
+              :alt="recipe.title"
+              loading="lazy"
+              class="-mx-4 -mt-4 mb-3 h-32 w-[calc(100%+2rem)] object-cover"
+            />
+
             <div class="flex items-start gap-2">
               <h3 class="min-w-0 flex-1 text-base font-semibold text-ink">{{ recipe.title }}</h3>
               <Icon v-if="recipe.favourite" name="check" :size="16" class="mt-1 shrink-0 text-warn" />

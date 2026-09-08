@@ -13,8 +13,10 @@ import { healthValidators } from '../health-checks/HealthCheckLoader'
 import { CalendarController } from '../controllers/CalendarController'
 import { DrawingController } from '../controllers/DrawingController'
 import { MealPlanController } from '../controllers/MealPlanController'
+import { MediaController } from '../controllers/MediaController'
 import { NewsController } from '../controllers/NewsController'
 import { NoteController } from '../controllers/NoteController'
+import { PhotoController } from '../controllers/PhotoController'
 import { RecipeController } from '../controllers/RecipeController'
 import { ShoppingController } from '../controllers/ShoppingController'
 import { WeatherController } from '../controllers/WeatherController'
@@ -51,6 +53,8 @@ export default function buildRouter(): Router {
   new WeatherController()
   new NewsController()
   new DrawingController()
+  new PhotoController()
+  new MediaController()
 
   RouteManager.initializeRoutes(router)
 

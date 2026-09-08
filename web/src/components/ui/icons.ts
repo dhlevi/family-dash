@@ -36,7 +36,12 @@ export const icons = {
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 2',
   trash: 'M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v6M14 11v6',
   edit: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17zM14 7.5l2.5 2.5',
-  drag: 'M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01'
+  drag: 'M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01',
+  play: 'M8 5l11 7-11 7z',
+  pause: 'M9 5v14M15 5v14',
+  star: 'M12 4l2.4 5.1 5.6.7-4.1 3.9 1 5.6L12 16.6 7.1 19.3l1-5.6L4 9.8l5.6-.7z',
+  upload: 'M12 16V4M7.5 8.5 12 4l4.5 4.5M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15',
+  expand: 'M4 9V4h5M20 15v5h-5M15 4h5v5M9 20H4v-5'
 } as const
 
 export type IconName = keyof typeof icons

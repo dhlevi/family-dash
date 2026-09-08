@@ -1,6 +1,5 @@
 import * as fs from 'fs'
-import * as path from 'path'
-import { AppProperties } from '../core/AppProperties'
+import { MediaStore } from '../services/MediaStore'
 import { HealthResult, HealthValidator } from '../core/model/HealthValidator'
 
 /**
@@ -16,16 +15,16 @@ export class MediaCheck implements HealthValidator {
   public readonly critical = false
 
   public async validate(): Promise<HealthResult> {
-    const root = AppProperties.getString('media.root', '/media')
+    const root = MediaStore.root()
 
     if (!fs.existsSync(root)) {
       return { healthy: false, message: `Media root '${root}' does not exist`, detail: { root } }
     }
 
-    const subdirectories = ['photos.dir', 'thumbs.dir', 'drawings.dir'].map(key =>
-      path.join(root, AppProperties.getString(key, key.replace('.dir', '')))
-    )
-
+    // Asked of MediaStore rather than rebuilt from properties here: the
+    // directories this probe reports on have to be the ones the photo
+    // library actually uses, and there is one definition of those.
+    const subdirectories = [MediaStore.photosDir(), MediaStore.thumbsDir()]
     const missing = subdirectories.filter(directory => !fs.existsSync(directory))
 
     try {

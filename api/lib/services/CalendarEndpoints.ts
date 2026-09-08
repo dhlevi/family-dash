@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { ApiError } from '../core/model/ApiError'
-import { CalendarProviderRegistry } from '../providers/calendar'
+import { CalendarProviderRegistry, GoogleOAuth, GoogleProvider } from '../providers/calendar'
+import type { GoogleCalendarSummary } from '../providers/calendar/GoogleProvider'
 import { CalendarSourceRepository } from '../repositories/CalendarSourceRepository'
 import { EventRepository } from '../repositories/EventRepository'
 import { SettingRepository } from '../repositories/SettingRepository'
@@ -68,6 +69,26 @@ const eventUpdateSchema = z
 
 /** Keys that must never leave the API, whatever a provider stores. */
 const SECRET_CONFIG_KEYS = ['refreshToken', 'accessToken', 'clientSecret']
+
+export interface GoogleStatus {
+  /** Whether the server has an OAuth client at all. */
+  configured: boolean
+  /** Not a secret, and useful for confirming which client is in use. */
+  clientId: string
+  sources: Array<{
+    id: string
+    name: string
+    connected: boolean
+    calendarId: string | null
+    lastError: string | null
+  }>
+}
+
+export interface GoogleCallbackResult {
+  ok: boolean
+  message: string
+  sourceId?: string
+}
 
 export class CalendarEndpoints {
   // --- sources -------------------------------------------------------------
@@ -162,6 +183,138 @@ export class CalendarEndpoints {
     return sync.syncAll()
   }
 
+  // --- google ---------------------------------------------------------------
+
+  /**
+   * Whether Google Calendar can be used, and which sources are connected.
+   *
+   * The Settings page needs to distinguish three states that all look like
+   * "it does not work": no OAuth client on the server, a client but no
+   * account connected, and connected but no calendar chosen yet.
+   */
+  public async googleStatus(): Promise<GoogleStatus> {
+    const googleSources = (await sources.all()).filter(source => source.type === 'google')
+
+    return {
+      configured: GoogleOAuth.isConfigured(),
+      clientId: GoogleOAuth.clientId(),
+      sources: googleSources.map(source => ({
+        id: source.id,
+        name: source.name,
+        connected: typeof source.config.refreshToken === 'string' && source.config.refreshToken.length > 0,
+        calendarId: typeof source.config.calendarId === 'string' ? source.config.calendarId : null,
+        lastError: source.lastError
+      }))
+    }
+  }
+
+  /**
+   * The URL to send the browser to in order to connect a source.
+   *
+   * `redirectUri` is derived by the controller from the request's own origin
+   * rather than accepted from the caller: only the browser knows how this
+   * dashboard was reached, but taking the value from the request instead of
+   * the query string means there is nothing here to point somewhere else.
+   * It must match what was registered with Google exactly, which is why the
+   * README tells you what to register.
+   */
+  public async googleAuthUrl(sourceId: string, redirectUri: string): Promise<{ url: string }> {
+    if (!GoogleOAuth.isConfigured()) {
+      throw ApiError.unprocessable(
+        'No Google OAuth client is configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env and restart.'
+      )
+    }
+
+    const source = await sources.byId(sourceId)
+    if (!source) throw ApiError.notFound(`No calendar source with id '${sourceId}'`)
+    if (source.type !== 'google') throw ApiError.badRequest(`'${source.name}' is not a Google calendar`)
+
+    return { url: GoogleOAuth.beginAuthorization(sourceId, redirectUri).url }
+  }
+
+  /**
+   * Completes the OAuth handshake, storing the refresh token on the source.
+   *
+   * Returns a message rather than throwing for the ordinary failures: this
+   * is reached by a browser redirect, and a JSON error page is a dead end
+   * for somebody standing at a wall display.
+   */
+  public async googleCallback(code: string | undefined, state: string | undefined): Promise<GoogleCallbackResult> {
+    if (!state) return { ok: false, message: 'That authorisation link is missing its state and cannot be used.' }
+
+    const pending = GoogleOAuth.claimAuthorization(state)
+    if (!pending) {
+      return {
+        ok: false,
+        message: 'That authorisation has expired or was already used. Start again from Settings.'
+      }
+    }
+
+    if (!code) return { ok: false, message: 'Google did not return an authorisation code.' }
+
+    const source = await sources.byId(pending.sourceId)
+    if (!source) return { ok: false, message: 'The calendar this was for no longer exists.' }
+
+    try {
+      const tokens = await GoogleOAuth.exchangeCode(code, pending.redirectUri)
+
+      const calendars = await GoogleProvider.listCalendars(tokens.refreshToken as string)
+      // Pre-select the account's own calendar: it is what almost everyone
+      // wants, and it saves a second step before anything appears.
+      const primary = calendars.find(calendar => calendar.primary) ?? calendars[0]
+
+      await sources.update(pending.sourceId, {
+        config: {
+          ...source.config,
+          refreshToken: tokens.refreshToken,
+          calendarId: primary?.id ?? null
+        }
+      })
+
+      // Fill the calendar immediately rather than leaving it empty until the
+      // next scheduled sync.
+      const connected = await sources.byId(pending.sourceId)
+      if (connected && connected.enabled && primary) void sync.syncOne(connected)
+
+      return { ok: true, message: `Connected to Google as ${primary?.name ?? 'your account'}.`, sourceId: source.id }
+    } catch (error) {
+      return { ok: false, message: (error as Error).message }
+    }
+  }
+
+  /** The calendars a connected source can see, for the picker in Settings. */
+  public async googleCalendars(sourceId: string): Promise<GoogleCalendarSummary[]> {
+    const source = await sources.byId(sourceId)
+    if (!source) throw ApiError.notFound(`No calendar source with id '${sourceId}'`)
+
+    const refreshToken = typeof source.config.refreshToken === 'string' ? source.config.refreshToken : ''
+    if (refreshToken.length === 0) {
+      throw ApiError.unprocessable(`'${source.name}' is not connected to Google yet`)
+    }
+
+    try {
+      return await GoogleProvider.listCalendars(refreshToken)
+    } catch (error) {
+      throw ApiError.badGateway((error as Error).message)
+    }
+  }
+
+  /** Forgets the stored tokens, leaving the source in place. */
+  public async googleDisconnect(sourceId: string): Promise<CalendarSource> {
+    const source = await sources.byId(sourceId)
+    if (!source) throw ApiError.notFound(`No calendar source with id '${sourceId}'`)
+
+    const config = { ...source.config }
+    delete config.refreshToken
+    delete config.accessToken
+    delete config.calendarId
+
+    const updated = await sources.update(sourceId, { config })
+    if (!updated) throw ApiError.notFound(`No calendar source with id '${sourceId}'`)
+
+    return CalendarEndpoints.publicSource(updated)
+  }
+
   // --- events --------------------------------------------------------------
 
   /**
@@ -184,14 +337,46 @@ export class CalendarEndpoints {
     const parsed = newEventSchema.parse(body)
     const source = await CalendarEndpoints.writableSource(parsed.sourceId)
 
-    return events.create({
-      sourceId: source.id,
+    const event = {
+      externalUid: null as string | null,
       title: parsed.title,
       description: parsed.description ?? null,
       location: parsed.location ?? null,
       startsAt: new Date(parsed.startsAt),
       endsAt: new Date(parsed.endsAt),
       allDay: parsed.allDay ?? false,
+      rrule: null
+    }
+
+    const provider = CalendarProviderRegistry.require(source.type)
+
+    /**
+     * A writable remote calendar is written to first, and only then cached.
+     *
+     * The sync replaces its whole cached window from upstream, so an event
+     * written only locally against a remote source would appear to save and
+     * then disappear at the next sync. Pushing first also means a failure is
+     * reported instead of being hidden by a local row that is about to be
+     * deleted.
+     */
+    if (provider.push) {
+      try {
+        const pushed = await provider.push(source, event)
+        event.externalUid = pushed.externalUid
+      } catch (error) {
+        throw ApiError.badGateway(`'${source.name}' would not accept the event: ${(error as Error).message}`)
+      }
+    }
+
+    return events.create({
+      sourceId: source.id,
+      externalUid: event.externalUid,
+      title: event.title,
+      description: event.description,
+      location: event.location,
+      startsAt: event.startsAt,
+      endsAt: event.endsAt,
+      allDay: event.allDay,
       colour: parsed.colour ?? null
     })
   }

@@ -18,6 +18,11 @@ interface EventRow {
 
 export interface NewEvent {
   sourceId: string
+  /**
+   * The upstream's own id, when the event was pushed to a remote calendar as
+   * it was created. Null for events that live only here.
+   */
+  externalUid?: string | null
   title: string
   description?: string | null
   location?: string | null
@@ -99,11 +104,12 @@ export class EventRepository {
 
   public async create(event: NewEvent): Promise<CalendarEvent> {
     const row = await PostgresDatabase.one<EventRow>(
-      `INSERT INTO event (source_id, title, description, location, starts_at, ends_at, all_day, colour)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO event (source_id, external_uid, title, description, location, starts_at, ends_at, all_day, colour)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING ${COLUMNS}`,
       [
         event.sourceId,
+        event.externalUid ?? null,
         event.title,
         event.description ?? null,
         event.location ?? null,

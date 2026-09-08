@@ -94,7 +94,7 @@ describe('SettingsCatalog', () => {
     })
 
     it('trims and bounds the assignee shortcut list', () => {
-      expect(parse('tasks.assignees', ['Sam', 'Dylan'])).toBe(true)
+      expect(parse('tasks.assignees', ['Skye', 'Dylan'])).toBe(true)
       expect(parse('tasks.assignees', [''])).toBe(false)
       expect(parse('tasks.assignees', new Array(21).fill('x'))).toBe(false)
     })

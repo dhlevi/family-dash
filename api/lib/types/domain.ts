@@ -64,6 +64,53 @@ export interface DateRange {
   to: Date
 }
 
+// --- photos ----------------------------------------------------------------
+
+/**
+ * A picture in the library, as the UI sees it.
+ *
+ * Where the file actually sits on the media volume is not part of this: the
+ * browser addresses images by id through `url`/`thumbUrl`, and the paths
+ * stay inside the API (see `PhotoFile`).
+ */
+export interface Photo {
+  id: string
+  /** Subfolder name, or '' for loose files at the top of the library. */
+  album: string
+  filename: string
+  mimeType: string | null
+  width: number | null
+  height: number | null
+  sizeBytes: number | null
+  /** When the picture was taken, from EXIF where present, else the file's date. */
+  takenAt: string | null
+  /** Where the browser fetches the full image. Addressed by id, not by path. */
+  url: string
+  /** Where the browser fetches the small version. Falls back to the original. */
+  thumbUrl: string
+  favourite: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** The on-disk side of a photo. Never leaves the API. */
+export interface PhotoFile {
+  id: string
+  relPath: string
+  thumbPath: string | null
+  mimeType: string | null
+  filename: string
+}
+
+export interface PhotoAlbum {
+  /** '' for the loose files at the top of the library. */
+  name: string
+  count: number
+  /** The newest photo in the album, for the album's cover tile. */
+  coverPhotoId: string | null
+  latestTakenAt: string | null
+}
+
 // --- drawings --------------------------------------------------------------
 
 export interface Drawing {
@@ -196,7 +243,11 @@ export interface Recipe {
   ingredients: Ingredient[]
   steps: string[]
   tags: string[]
-  imagePath: string | null
+  /** A photo in the library, or null. Cleared automatically if that photo is deleted. */
+  photoId: string | null
+  /** Resolved from `photoId`, so the client never builds a media URL. */
+  photoThumbUrl: string | null
+  photoUrl: string | null
   sourceUrl: string | null
   favourite: boolean
   createdAt: string

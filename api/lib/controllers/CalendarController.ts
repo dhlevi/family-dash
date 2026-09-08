@@ -1,3 +1,4 @@
+import type { Request, Response as ExpressResponse } from 'express'
 import { Controller } from '../core/Controller'
 import {
   Body,
@@ -8,11 +9,14 @@ import {
   Path,
   Post,
   Query,
+  Req,
+  Res,
   Response,
   Route,
   SuccessResponse
 } from '../core/Decorators'
-import { CalendarEndpoints } from '../services/CalendarEndpoints'
+import { CalendarEndpoints, type GoogleCallbackResult, type GoogleStatus } from '../services/CalendarEndpoints'
+import type { GoogleCalendarSummary } from '../providers/calendar/GoogleProvider'
 import type { SyncOutcome } from '../services/CalendarSyncService'
 import type { CalendarEvent, CalendarSource } from '../types/domain'
 
@@ -26,6 +30,19 @@ const endpoints = new CalendarEndpoints()
  */
 @Route('api/calendar')
 export class CalendarController extends Controller {
+  /**
+   * The callback address, as this request reached the dashboard.
+   *
+   * Google requires the redirect URI to match a registered one exactly, so
+   * this is the value the README tells you to register. Taken from the
+   * request rather than from a parameter: there is then nothing a crafted
+   * link can redirect to, and a mismatched host fails at Google's end
+   * anyway.
+   */
+  private static callbackUriFor(req: Request): string {
+    return `${req.protocol}://${req.get('host')}/api/calendar/google/callback`
+  }
+
   public constructor() {
     super()
   }
@@ -87,6 +104,86 @@ export class CalendarController extends Controller {
   // --- events --------------------------------------------------------------
 
   /** Events overlapping a range. Defaults to the current month. */
+  // --- google ----------------------------------------------------------------
+
+  /** Whether Google can be used, and the state of each Google source. */
+  @Get('google/status')
+  @SuccessResponse(200, 'OK')
+  @NoCache()
+  public async getGoogleStatus(): Promise<GoogleStatus> {
+    return endpoints.googleStatus()
+  }
+
+  /**
+   * The consent URL for connecting a source.
+   *
+   * The redirect URI is built from this request's own origin, so it is
+   * whatever address the browser used to reach the dashboard — that is the
+   * address to register in the Google Cloud console.
+   */
+  @Get('google/auth-url')
+  @SuccessResponse(200, 'OK')
+  @Response(404, 'No such calendar source')
+  @Response(422, 'No Google OAuth client is configured')
+  @NoCache()
+  public async getGoogleAuthUrl(
+    @Query('sourceId', true) sourceId: string,
+    @Req() req: Request
+  ): Promise<{ url: string }> {
+    return endpoints.googleAuthUrl(sourceId, CalendarController.callbackUriFor(req))
+  }
+
+  /**
+   * Where Google sends the browser back to.
+   *
+   * Answers with a redirect rather than JSON: a person is looking at this in
+   * a browser, and the useful thing to do is put them back on the Settings
+   * page with the outcome.
+   */
+  @Get('google/callback')
+  @SuccessResponse(302, 'Redirects back to Settings')
+  @NoCache()
+  public async getGoogleCallback(
+    @Res() res: ExpressResponse,
+    @Query('code') code?: string,
+    @Query('state') state?: string,
+    @Query('error') error?: string
+  ): Promise<void> {
+    // Google reports a refused consent screen this way rather than by not
+    // calling back at all.
+    const result: GoogleCallbackResult = error
+      ? { ok: false, message: `Google reported: ${error}` }
+      : await endpoints.googleCallback(code, state)
+
+    const query = new URLSearchParams({
+      google: result.ok ? 'connected' : 'failed',
+      message: result.message
+    })
+
+    res.redirect(302, `/settings?${query.toString()}`)
+  }
+
+  /** The calendars a connected source can see. */
+  @Get('google/calendars')
+  @SuccessResponse(200, 'OK')
+  @Response(404, 'No such calendar source')
+  @Response(422, 'That source is not connected')
+  @NoCache()
+  public async getGoogleCalendars(@Query('sourceId', true) sourceId: string): Promise<GoogleCalendarSummary[]> {
+    return endpoints.googleCalendars(sourceId)
+  }
+
+  /** Forgets the stored Google tokens, leaving the source in place. */
+  @Post('google/disconnect')
+  @SuccessResponse(200, 'OK')
+  @Response(404, 'No such calendar source')
+  @NoCache()
+  public async postGoogleDisconnect(@Query('sourceId', true) sourceId: string): Promise<CalendarSource> {
+    return endpoints.googleDisconnect(sourceId)
+  }
+
+  // --- events ----------------------------------------------------------------
+
   @Get('events')
   @SuccessResponse(200, 'OK')
   @Response(400, 'Invalid range')

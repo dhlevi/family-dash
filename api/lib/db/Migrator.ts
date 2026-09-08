@@ -60,7 +60,9 @@ export class Migrator {
         if (previous !== file.checksum) {
           throw new Error(
             `Migration ${file.name} has changed since it was applied (checksum mismatch). ` +
-              'Migrations are immutable once applied — add a new migration instead of editing this one.'
+              'Migrations are immutable once applied — add a new migration instead of editing this one. ' +
+              `If the change was only to a comment and the schema is unchanged, run ` +
+              `\`npm run migrate -- --reseal ${file.name}\` to record the new checksum.`
           )
         }
         outcome.skipped.push(file.name)
@@ -88,6 +90,43 @@ export class Migrator {
     }
 
     return outcome
+  }
+
+  /**
+   * Records a migration's current checksum without re-running it.
+   *
+   * The immutability check is deliberately blunt: it hashes the whole file,
+   * so correcting a typo in a comment stops the API from booting even though
+   * the schema is untouched. Without a way out, the only remedies are
+   * reverting an intentional edit or editing `schema_migration` by hand on
+   * the Pi — so this is the way out, and it says plainly that the caller is
+   * asserting the change was cosmetic.
+   *
+   * It cannot invent history: a migration that was never applied is refused,
+   * because the fix there is to apply it.
+   */
+  public static async reseal(name: string): Promise<{ name: string; from: string; to: string }> {
+    await Migrator.ensureMigrationTable()
+
+    const file = Migrator.load().find(candidate => candidate.name === name || candidate.id === name)
+    if (!file) {
+      throw new Error(`No migration named '${name}' in ${Migrator.migrationsDirectory()}`)
+    }
+
+    const applied = await Migrator.appliedMigrations()
+    const previous = applied.get(file.id)
+
+    if (previous === undefined) {
+      throw new Error(`Migration ${file.name} has not been applied, so there is no checksum to reseal.`)
+    }
+
+    if (previous === file.checksum) {
+      throw new Error(`Migration ${file.name} already matches its recorded checksum; nothing to reseal.`)
+    }
+
+    await PostgresDatabase.execute('UPDATE schema_migration SET checksum = $1 WHERE id = $2', [file.checksum, file.id])
+
+    return { name: file.name, from: previous, to: file.checksum }
   }
 
   public static async appliedCount(): Promise<number> {

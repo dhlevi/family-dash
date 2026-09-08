@@ -21,6 +21,12 @@ const newRecipeSchema = z.object({
   ingredients: z.array(ingredientSchema).max(200).optional(),
   steps: z.array(z.string().trim().max(2000)).max(100).optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  /**
+   * A picture in the photo library. The column is a foreign key, so a photo
+   * that does not exist is refused by the database rather than stored as a
+   * dangling reference — and deleting the photo later clears this on its own.
+   */
+  photoId: z.string().uuid('Must be the id of a photo in the library').nullish(),
   sourceUrl: z.string().trim().url('Must be a URL').max(500).nullish().or(z.literal('')),
   favourite: z.boolean().optional()
 })

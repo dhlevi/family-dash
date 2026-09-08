@@ -96,7 +96,7 @@ CREATE TABLE task (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title         text NOT NULL,
   notes         text,
-  -- Free text: the household is shared, so this is "Sam" or "whoever's up",
+  -- Free text: the household is shared, so this is "Skye" or "whoever's up",
   -- not a foreign key.
   assignee      text,
   category      text,

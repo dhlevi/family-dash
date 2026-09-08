@@ -256,7 +256,11 @@ export interface Recipe {
   ingredients: Ingredient[]
   steps: string[]
   tags: string[]
-  imagePath: string | null
+  /** A photo in the library. Cleared automatically if that photo is deleted. */
+  photoId: string | null
+  /** Resolved by the API, so media URLs are never built here. */
+  photoThumbUrl: string | null
+  photoUrl: string | null
   sourceUrl: string | null
   favourite: boolean
   createdAt: string
@@ -272,6 +276,7 @@ export interface NewRecipe {
   ingredients?: Ingredient[]
   steps?: string[]
   tags?: string[]
+  photoId?: string | null
   sourceUrl?: string | null
   favourite?: boolean
 }
@@ -323,17 +328,55 @@ export interface ShoppingList {
 
 export interface Photo {
   id: string
-  /** Served from the API at /media/photos/<relPath> */
-  relPath: string
+  /** Subfolder in the library, or '' for the loose files at the top of it. */
   album: string
   filename: string
+  mimeType: string | null
   width: number | null
   height: number | null
+  sizeBytes: number | null
+  /** From EXIF where the camera recorded it, otherwise the file's own date. */
   takenAt: string | null
-  thumbPath: string | null
-  favourite: boolean
+  /**
+   * Where to fetch the picture. Given by the API rather than built here, and
+   * carries a version so a photo replaced on the volume is not hidden behind
+   * the year-long cache these are served with.
+   */
   url: string
-  thumbUrl: string | null
+  thumbUrl: string
+  favourite: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PhotoAlbum {
+  /** '' for the loose files at the top of the library. */
+  name: string
+  count: number
+  coverPhotoId: string | null
+  latestTakenAt: string | null
+}
+
+export interface PhotoUploadOutcome {
+  added: Photo[]
+  /** Files the API refused, with the reason, so the page can say which. */
+  rejected: Array<{ filename: string; reason: string }>
+}
+
+export interface PhotoScanOutcome {
+  added: number
+  removed: number
+  updated: number
+  thumbnailed: number
+  skipped: number
+  durationMs: number
+}
+
+/** The label for the album with no folder of its own. */
+export const LOOSE_ALBUM_LABEL = 'Everything else'
+
+export function albumLabel(name: string): string {
+  return name.length > 0 ? name : LOOSE_ALBUM_LABEL
 }
 
 export interface Drawing {
@@ -415,6 +458,28 @@ export interface NewsFetchOutcome {
   articles: number
   error: string | null
   durationMs: number
+}
+
+// --- google calendar -------------------------------------------------------
+
+export interface GoogleCalendarStatus {
+  /** Whether the server has an OAuth client at all. */
+  configured: boolean
+  clientId: string
+  sources: Array<{
+    id: string
+    name: string
+    connected: boolean
+    calendarId: string | null
+    lastError: string | null
+  }>
+}
+
+export interface GoogleCalendarSummary {
+  id: string
+  name: string
+  primary: boolean
+  writable: boolean
 }
 
 // --- weather ---------------------------------------------------------------

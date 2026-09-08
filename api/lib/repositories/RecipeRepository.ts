@@ -1,4 +1,5 @@
 import { PostgresDatabase } from '../db/PostgresDatabase'
+import { photoUrls } from '../services/mediaUrls'
 import type { Ingredient, Recipe } from '../types/domain'
 import { buildUpdate, toIsoRequired } from './rows'
 
@@ -12,7 +13,9 @@ interface RecipeRow {
   ingredients: Ingredient[]
   steps: string[]
   tags: string[]
-  image_path: string | null
+  photo_id: string | null
+  /** From the joined photo, so its URL can carry a cache version. */
+  photo_updated_at: Date | null
   source_url: string | null
   favourite: boolean
   created_at: Date
@@ -28,6 +31,7 @@ export interface NewRecipe {
   ingredients?: Ingredient[]
   steps?: string[]
   tags?: string[]
+  photoId?: string | null
   sourceUrl?: string | null
   favourite?: boolean
 }
@@ -41,9 +45,19 @@ export interface RecipeFilter {
   limit?: number
 }
 
+/**
+ * Selected with the recipe's picture joined on.
+ *
+ * A recipe grid would otherwise need a request per card to turn a photo id
+ * into something to display; one left join costs nothing and keeps URL
+ * building out of the client entirely.
+ */
 const COLUMNS =
-  'id, title, description, servings, prep_minutes, cook_minutes, ingredients, steps, tags, ' +
-  'image_path, source_url, favourite, created_at, updated_at'
+  'recipe.id, recipe.title, recipe.description, recipe.servings, recipe.prep_minutes, recipe.cook_minutes, ' +
+  'recipe.ingredients, recipe.steps, recipe.tags, recipe.photo_id, recipe.source_url, recipe.favourite, ' +
+  'recipe.created_at, recipe.updated_at, photo.updated_at AS photo_updated_at'
+
+const FROM = 'recipe LEFT JOIN photo ON photo.id = recipe.photo_id'
 
 export class RecipeRepository {
   public async list(filter: RecipeFilter = {}): Promise<Recipe[]> {
@@ -71,7 +85,7 @@ export class RecipeRepository {
     }
 
     const rows = await PostgresDatabase.many<RecipeRow>(
-      `SELECT ${COLUMNS} FROM recipe
+      `SELECT ${COLUMNS} FROM ${FROM}
        ${conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''}
        ORDER BY favourite DESC, lower(title)
        ${limitClause}`,
@@ -82,16 +96,17 @@ export class RecipeRepository {
   }
 
   public async byId(id: string): Promise<Recipe | null> {
-    const row = await PostgresDatabase.one<RecipeRow>(`SELECT ${COLUMNS} FROM recipe WHERE id = $1`, [id])
+    const row = await PostgresDatabase.one<RecipeRow>(`SELECT ${COLUMNS} FROM ${FROM} WHERE recipe.id = $1`, [id])
     return row ? RecipeRepository.toDomain(row) : null
   }
 
   public async byIds(ids: string[]): Promise<Recipe[]> {
     if (ids.length === 0) return []
 
-    const rows = await PostgresDatabase.many<RecipeRow>(`SELECT ${COLUMNS} FROM recipe WHERE id = ANY($1::uuid[])`, [
-      ids
-    ])
+    const rows = await PostgresDatabase.many<RecipeRow>(
+      `SELECT ${COLUMNS} FROM ${FROM} WHERE recipe.id = ANY($1::uuid[])`,
+      [ids]
+    )
     return rows.map(RecipeRepository.toDomain)
   }
 
@@ -104,11 +119,14 @@ export class RecipeRepository {
   }
 
   public async create(recipe: NewRecipe): Promise<Recipe> {
-    const row = await PostgresDatabase.one<RecipeRow>(
+    // Returns the new id only, then reads it back: `COLUMNS` joins the photo
+    // table for the picture's URL, and a RETURNING clause has no join to
+    // read from.
+    const row = await PostgresDatabase.one<{ id: string }>(
       `INSERT INTO recipe (title, description, servings, prep_minutes, cook_minutes,
-                           ingredients, steps, tags, source_url, favourite)
-       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8, $9, $10)
-       RETURNING ${COLUMNS}`,
+                           ingredients, steps, tags, photo_id, source_url, favourite)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8, $9, $10, $11)
+       RETURNING id`,
       [
         recipe.title,
         recipe.description ?? null,
@@ -118,11 +136,16 @@ export class RecipeRepository {
         JSON.stringify(recipe.ingredients ?? []),
         JSON.stringify(recipe.steps ?? []),
         recipe.tags ?? [],
+        recipe.photoId ?? null,
         recipe.sourceUrl ?? null,
         recipe.favourite ?? false
       ]
     )
-    return RecipeRepository.toDomain(row as RecipeRow)
+
+    const created = row ? await this.byId(row.id) : null
+    if (!created) throw new Error('The recipe was inserted but could not be read back')
+
+    return created
   }
 
   public async update(id: string, changes: RecipeUpdate): Promise<Recipe | null> {
@@ -136,6 +159,7 @@ export class RecipeRepository {
         ingredients: changes.ingredients === undefined ? undefined : JSON.stringify(changes.ingredients),
         steps: changes.steps === undefined ? undefined : JSON.stringify(changes.steps),
         tags: changes.tags,
+        photo_id: changes.photoId,
         source_url: changes.sourceUrl,
         favourite: changes.favourite
       },
@@ -144,11 +168,12 @@ export class RecipeRepository {
 
     if (clause.length === 0) return this.byId(id)
 
-    const row = await PostgresDatabase.one<RecipeRow>(
-      `UPDATE recipe SET ${clause} WHERE id = $${params.length + 1} RETURNING ${COLUMNS}`,
-      [...params, id]
-    )
-    return row ? RecipeRepository.toDomain(row) : null
+    const updated = await PostgresDatabase.execute(`UPDATE recipe SET ${clause} WHERE id = $${params.length + 1}`, [
+      ...params,
+      id
+    ])
+
+    return updated > 0 ? this.byId(id) : null
   }
 
   public async remove(id: string): Promise<boolean> {
@@ -174,7 +199,15 @@ export class RecipeRepository {
       ingredients: Array.isArray(row.ingredients) ? row.ingredients : [],
       steps: Array.isArray(row.steps) ? row.steps : [],
       tags: row.tags ?? [],
-      imagePath: row.image_path,
+      photoId: row.photo_id,
+      // Null when there is no picture, or when the one referenced has since
+      // been deleted from the library.
+      ...(row.photo_id && row.photo_updated_at
+        ? {
+            photoThumbUrl: photoUrls(row.photo_id, row.photo_updated_at).thumbUrl,
+            photoUrl: photoUrls(row.photo_id, row.photo_updated_at).url
+          }
+        : { photoThumbUrl: null, photoUrl: null }),
       sourceUrl: row.source_url,
       favourite: row.favourite,
       createdAt: toIsoRequired(row.created_at),

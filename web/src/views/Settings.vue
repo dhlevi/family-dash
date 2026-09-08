@@ -5,6 +5,7 @@ import { calendarApi } from '@/api/calendar'
 import { newsApi } from '@/api/news'
 import { systemApi } from '@/api/system'
 import CalendarSources from '@/components/settings/CalendarSources.vue'
+import GoogleCalendar from '@/components/settings/GoogleCalendar.vue'
 import LocationPicker from '@/components/settings/LocationPicker.vue'
 import NewsFeeds from '@/components/settings/NewsFeeds.vue'
 import Card from '@/components/ui/Card.vue'
@@ -325,6 +326,17 @@ async function runTask(name: string): Promise<void> {
         </p>
 
         <CalendarSources :sources="sources" @changed="reloadSources" />
+      </Card>
+
+      <!-- Google Calendar -->
+      <Card>
+        <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">Google Calendar</h2>
+        <p class="mb-3 text-xs text-faint">
+          Two-way, so events added here appear in Google too — at the cost of an OAuth client you have to create
+          yourself, and tokens that need care. A feed subscription above is simpler if you only need to read a calendar.
+        </p>
+
+        <GoogleCalendar @changed="reloadSources" />
       </Card>
 
       <!-- News feeds -->

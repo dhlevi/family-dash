@@ -35,6 +35,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const weekStartsOn = computed(() => get('calendar.weekStartsOn', 0))
   const dashboardWidgets = computed(() => get('dashboard.widgets', []))
   const showCompletedTasks = computed(() => get('tasks.showCompleted', false))
+  const slideshowSeconds = computed(() => get('photos.slideshowSeconds', 20))
+  const screensaverMinutes = computed(() => get('appearance.screensaverMinutes', 0))
 
   async function load(): Promise<void> {
     loading.value = true
@@ -124,6 +126,8 @@ export const useSettingsStore = defineStore('settings', () => {
     weekStartsOn,
     dashboardWidgets,
     showCompletedTasks,
+    slideshowSeconds,
+    screensaverMinutes,
     load,
     save,
     set,

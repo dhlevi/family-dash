@@ -8,8 +8,14 @@ const props = withDefaults(
     /** Pixel size; the icon is always square. */
     size?: number | string
     strokeWidth?: number
+    /**
+     * Fill colour. These are stroke-based outlines by default; filling one
+     * with `currentColor` gives the solid form, which is how a toggle like
+     * a favourite star shows that it is set.
+     */
+    fill?: string
   }>(),
-  { size: 24, strokeWidth: 1.75 }
+  { size: 24, strokeWidth: 1.75, fill: 'none' }
 )
 
 const path = computed(() => icons[props.name])
@@ -20,7 +26,7 @@ const path = computed(() => icons[props.name])
     :width="size"
     :height="size"
     viewBox="0 0 24 24"
-    fill="none"
+    :fill="fill"
     stroke="currentColor"
     :stroke-width="strokeWidth"
     stroke-linecap="round"

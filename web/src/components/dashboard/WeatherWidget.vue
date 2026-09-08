@@ -69,7 +69,7 @@ const badge = computed(() => (report.value?.stale ? 'cached' : null))
     />
 
     <div v-else-if="report" class="flex min-h-0 flex-1 flex-col gap-3 p-4">
-      <div class="flex items-center gap-3">
+      <div style="height: 250px; margin-left: 110px" class="flex items-center gap-3">
         <WeatherIcon :code="report.current.code" :is-day="report.current.isDay" :size="64" />
         <div class="min-w-0">
           <p class="text-3xl leading-none font-semibold tabular-nums text-ink">

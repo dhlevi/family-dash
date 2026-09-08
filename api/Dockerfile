@@ -9,9 +9,11 @@
 
 FROM node:22-alpine AS base
 WORKDIR /app
-# tini reaps zombies and forwards SIGTERM, so `docker compose down` reaches
-# the clean-shutdown handler in Application.ts instead of being killed.
-RUN apk add --no-cache tini
+# tini reaps zombies and forwards SIGTERM; libheif-tools supplies the HEVC
+# decoder that sharp's bundled libheif does not carry, which is the only way
+# a photo straight off an iPhone can be thumbnailed. 458 KiB, and worth it:
+# HEIC is what every phone in the house shoots by default.
+RUN apk add --no-cache tini libheif-tools
 ENV NODE_ENV=production
 
 
@@ -56,7 +58,7 @@ COPY config ./config
 
 # The media volume is mounted here; create it so an unmounted run still
 # starts and the media health check reports a clear reason.
-RUN mkdir -p /media/photos /media/thumbs /media/drawings \
+RUN mkdir -p /media/photos /media/thumbs \
   && chown -R node:node /media /app
 
 USER node

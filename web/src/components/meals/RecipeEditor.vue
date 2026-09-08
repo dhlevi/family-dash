@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import Field from '@/components/ui/Field.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Modal from '@/components/ui/Modal.vue'
+import PhotoPicker from '@/components/photos/PhotoPicker.vue'
 import NumberStepper from '@/components/ui/NumberStepper.vue'
 import TextInput from '@/components/ui/TextInput.vue'
 import Toggle from '@/components/ui/Toggle.vue'
@@ -54,6 +55,7 @@ const ingredients = ref<EditableIngredient[]>([])
 const steps = ref<Array<{ key: number; text: string }>>([])
 const tagInput = ref('')
 const tags = ref<string[]>([])
+const photoId = ref<string | null>(null)
 const sourceUrl = ref('')
 const favourite = ref(false)
 
@@ -70,6 +72,7 @@ watch(
     prepMinutes.value = recipe?.prepMinutes ?? 0
     cookMinutes.value = recipe?.cookMinutes ?? 0
     tags.value = [...(recipe?.tags ?? [])]
+    photoId.value = recipe?.photoId ?? null
     sourceUrl.value = recipe?.sourceUrl ?? ''
     favourite.value = recipe?.favourite ?? false
     tagInput.value = ''
@@ -133,6 +136,7 @@ function submit(): void {
       })),
     steps: steps.value.map(step => step.text.trim()).filter(text => text.length > 0),
     tags: tags.value,
+    photoId: photoId.value,
     sourceUrl: sourceUrl.value.trim() || null,
     favourite: favourite.value
   })
@@ -261,6 +265,10 @@ function submit(): void {
             </button>
           </span>
         </div>
+      </Field>
+
+      <Field label="Picture" hint="A photo from the library, or upload one — it is filed under Recipes">
+        <PhotoPicker v-model="photoId" :disabled="saving" />
       </Field>
 
       <Field label="Source" for="recipe-source" hint="Optional link to where it came from">

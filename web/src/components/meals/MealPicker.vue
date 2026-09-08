@@ -186,7 +186,7 @@ function submit(): void {
         </li>
       </ul>
 
-      <Field label="Note" for="meal-notes" hint="Optional — 'defrost the mince', 'Sam is out'">
+      <Field label="Note" for="meal-notes" hint="Optional — 'defrost the mince', 'Skye is out'">
         <TextInput id="meal-notes" v-model="notes" placeholder="Optional" :disabled="saving" />
       </Field>
     </div>

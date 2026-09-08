@@ -90,6 +90,32 @@ Two Google APIs deserve a warning, because both shape the design:
   iCloud and Outlook all publish one. Google OAuth is available as one provider among several,
   not as the foundation.
 
+#### Connecting Google Calendar
+
+Only needed if you want events added on the dashboard to appear in Google too. To read a Google
+calendar, subscribing to its secret `.ics` address is simpler and never needs re-authorising.
+
+1. In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), create an
+   **OAuth 2.0 Client ID** of type **Web application**.
+2. Add an **authorised redirect URI**. Google matches these exactly, and it depends on the address
+   you open the dashboard at — so the Settings page prints the one to use. From the Pi's own
+   screen that is `http://localhost:8080/api/calendar/google/callback`.
+3. Put the id and secret in `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, then
+   `docker compose up -d`.
+4. Set the OAuth **consent screen to "In production"**, not "Testing". You will see an
+   "unverified app" warning when you connect, which is expected for an app only you use — click
+   through it. Leaving the screen in Testing is what expires the refresh token after a week.
+5. In Settings → Calendars, add a calendar of kind **Google account**, then connect it in the
+   Google Calendar section below and pick which calendar to show.
+
+Google only permits `http://` redirect URIs on `localhost`, so the connect step has to be done
+from a browser that reaches the dashboard as `localhost` — the Pi's own screen, or an SSH tunnel
+(`ssh -L 8080:localhost:8080 pi@familypi`). Everything afterwards works from any device.
+
+If a connection dies, `/healthCheck` reports it under `calendar-sources` and Settings shows the
+reason on the calendar itself. A calendar you have created but not yet connected is not treated
+as a fault — it is a setup step, not a failure.
+
 ## Architecture
 
 ```
@@ -103,7 +129,7 @@ family-dash/
 │       ├── controllers/        thin, decorated route declarations
 │       ├── services/           *Endpoints.ts — the business logic
 │       ├── repositories/       SQL, one module per table
-│       ├── providers/          calendar/ weather/ news/ photos/ — the pluggable seams
+│       ├── providers/          calendar/ weather/ news/ — the pluggable seams
 │       ├── scheduled-tasks/    background refresh jobs
 │       └── health-checks/      probes behind /healthCheck
 └── web/
@@ -114,6 +140,12 @@ family-dash/
         ├── stores/             Pinia
         └── views/              one per tab
 ```
+
+There is no `providers/photos/`. The plan called for one, but Google Photos cannot list a library
+and a mounted folder is the only source there is — an interface with a single implementation and
+no plausible second is worse than a well-named service, so the scanner lives in
+`services/PhotoService.ts`. The seams that exist earned it: there really are several calendars and
+several weather APIs.
 
 Two decisions do most of the work:
 
@@ -158,6 +190,30 @@ strokes returns them together rather than four undos later. Because operations i
 by reference, rotating the screen (which rescales the ink into the new shape, making new objects)
 carries the history across with it, including strokes that are currently erased and waiting to
 come back.
+
+**Photos are addressed by database id, never by path.** `/media/photos/<id>` looks the row up and
+serves the file it names, so a request cannot describe a file — which removes path traversal from
+the only routes that touch arbitrary files, rather than trying to filter it. The URL carries the
+row's `updated_at` as a version, because these responses are cached for a year: a picture
+replaced on the volume keeps its id, and without the version it would stay hidden behind that
+cache forever.
+
+**HEIC needs a decoder sharp does not ship.** Every iPhone shoots HEIC by default, and sharp's
+prebuilt libheif reads the container but carries no HEVC decoder — dimensions and EXIF come back
+fine and then any attempt to decode the pixels fails. Alpine's `libheif-tools` (458 KiB, in the
+API image) does have one, so HEIC takes one extra step through `heif-convert` on the way in. No
+browser can display a HEIC either, so opening one serves a converted copy instead, generated the
+first time somebody actually looks at that picture and kept afterwards — a library full of phone
+photos costs nothing until it is browsed.
+
+**An empty photo library is treated as an unmounted volume, not as an empty library.** The scan
+reconciles the index against the filesystem, which normally means deleting rows whose files have
+gone. If the volume is a USB drive that has been unplugged, doing that would delete every row —
+and `recipe.photo_id` references those rows, so every recipe would quietly lose its picture, with
+re-indexing later giving new ids that cannot put them back. A scan that finds nothing at all when
+the index is not empty therefore changes nothing and reports itself as a failure. The trade-off is
+deliberate: somebody who really does empty the library keeps a stale index until they add a file
+or delete through the UI, which is the recoverable way round.
 
 **Ink is compared canonically, not by `JSON.stringify`.** Strokes round-trip through a Postgres
 `jsonb` column, which normalises object key order, so a saved drawing comes back with its keys
@@ -220,6 +276,18 @@ transaction on the next boot and recorded with a checksum. **Migrations are immu
 applied**: editing one that has already run fails startup with a checksum mismatch rather than
 letting two installs diverge. Add a new file instead.
 
+The checksum covers the whole file, comments included, so correcting a typo in an applied
+migration stops the API booting even though the schema is untouched. When that is genuinely all
+that changed, record the new checksum rather than reverting the edit:
+
+```bash
+docker compose run --rm --entrypoint sh api -c "node build/db/cli.js --reseal 001_init.sql"
+```
+
+`docker compose run` rather than `exec`, because a container that will not boot cannot be exec'd
+into. This asserts the change was cosmetic; if it was not, the database and the migration have
+diverged and nothing will tell you so later.
+
 ## Raspberry Pi
 
 A Pi 4 or 5 with 2GB is comfortable; the stack idles at a few hundred MB. Use a good SD card, or
@@ -244,7 +312,23 @@ make build-images    # buildx, linux/amd64 + linux/arm64
 ```
 
 Point `MEDIA_PATH` at wherever the photo library lives — a USB drive or an NFS mount is fine, and
-keeping it off the SD card saves a lot of write wear.
+keeping it off the SD card saves a lot of write wear. The layout inside it is:
+
+```
+<MEDIA_PATH>/
+├── photos/          the library. Top-level folders become albums.
+│   ├── Holiday/
+│   └── Garden/
+└── thumbs/          generated, and safe to delete — a rescan rebuilds it
+```
+
+Copy pictures straight into `photos/` if that is easier than uploading them; the hourly scan
+indexes whatever it finds, and `Rescan` on the Pictures page does it now. Nothing writes to
+`photos/` except uploads, so the folder stays yours.
+
+If the library lives on a removable drive, note that the scan will not delete the index when the
+drive is absent — it reports that instead, so unplugging the drive does not lose the pictures'
+favourites or the recipe photos pointing at them.
 
 ### Start on boot
 
@@ -354,9 +438,9 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 
 - **Settings** — theme, accent, clock, calendar defaults, dashboard widgets, household names,
   location and units, plus service diagnostics. Changes save as you make them.
-- **Calendar** — month, week and agenda views over the local family calendar and any number of
-  ICS subscriptions, with background sync, tap-a-day to add, and read-only handling for feed
-  events.
+- **Calendar** — month, week and agenda views merged across the local family calendar, any number
+  of ICS subscriptions and a connected Google account, with background sync, tap-a-day to add,
+  and read-only handling for events a feed owns.
 - **Tasks and chores** — grouped by when they are due, quick-add, priorities, free-text
   assignment, and repeating chores that reappear once ticked off.
 - **News** — headlines aggregated from RSS, which needs no account. Images, bylines and summaries
@@ -375,24 +459,35 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
   captured from a finger or stylus via pointer events (with pressure and palm rejection) and
   stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
   or shrunk into a dashboard widget. Pin a note to show it on the dashboard.
+- **Photos** — an album browser over a folder on the mounted media volume, because Google Photos
+  cannot list a library any more. Pictures arrive by uploading them or by copying them onto the
+  volume; an hourly scan reconciles the two, reads capture dates from EXIF so the library is in
+  the order things actually happened, and generates thumbnails. HEIC from a phone works. A
+  full-screen slideshow at a configurable interval, favourites for the dashboard widget, and
+  deleting a picture removes the file rather than just the index row.
 - **Draw** — a full-page sketch pad using the same ink control as handwritten notes, with an
   eraser, a wider palette, five pen widths and a choice of paper colour. Drawings are saved as
   vectors and listed in a gallery that renders its own thumbnails, so there are no image files
   to manage and a sketch stays sharp at any size. Undo reverses whichever thing happened last —
   a swipe that erased four strokes puts all four back in one step.
 - **Dashboard** — every widget reads live data: next events, today's tasks, pinned notes,
-  tonight's meal with the outstanding shopping count, current weather, and the latest headlines.
-  Tasks can be ticked off and articles read without leaving the page.
+  tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
+  a slowly cycling photo.
+
+Recipes carry a picture from the photo library, so one can be uploaded once and reused, and
+deleting it from the library clears the reference rather than leaving a broken image.
+
+Calendars come from three providers behind one seam: the local family calendar, any number of ICS
+subscriptions, and **Google Calendar** — two-way, so an event added on the wall is pushed to
+Google as it is created. Events that came from an upstream calendar are not editable here, since
+the next sync would undo the change; the app says so rather than losing the edit.
 
 **Still to come:**
 
-1. **Photos** — plus the Google Calendar provider, and recipe photos once image upload
-   lands with the Photos page.
-2. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
+1. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
    actually on the wall.
 
-Every tab is present and navigable; the ones above say what they are waiting for rather than
-pretending to be empty.
+Every tab is built and every page reads live data.
 
 ## License
 

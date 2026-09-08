@@ -89,6 +89,15 @@ export class CalendarSyncService {
       return { sourceId: source.id, name: source.name, events: 0, error: null, durationMs: 0 }
     }
 
+    // Created but not finished being set up. Not a failure, so nothing is
+    // recorded against it — otherwise a half-configured calendar would
+    // report the whole dashboard as degraded every quarter of an hour. Any
+    // error from a previous attempt is cleared, since it is no longer true.
+    if (provider.isReadyToSync && !provider.isReadyToSync(source)) {
+      await sources.clearError(source.id)
+      return { sourceId: source.id, name: source.name, events: 0, error: null, durationMs: 0 }
+    }
+
     const range = CalendarSyncService.window()
 
     try {

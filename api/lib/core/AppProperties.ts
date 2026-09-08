@@ -40,6 +40,8 @@ export class AppProperties {
     'weather.location.name': 'DEFAULT_LOCATION_NAME',
     'weather.units': 'DEFAULT_UNITS',
     'weather.provider': 'WEATHER_PROVIDER',
+    'google.clientId': 'GOOGLE_CLIENT_ID',
+    'google.clientSecret': 'GOOGLE_CLIENT_SECRET',
     'database.migrate.onStartup': 'DB_MIGRATE_ON_STARTUP'
   }
 

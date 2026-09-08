@@ -80,6 +80,13 @@ function describe(ingredient: { quantity: string | null; unit: string | null; it
 <template>
   <Modal :open="open" :title="recipe?.title ?? 'Recipe'" @close="emit('close')">
     <div v-if="recipe" class="flex flex-col gap-4">
+      <img
+        v-if="recipe.photoUrl"
+        :src="recipe.photoUrl"
+        :alt="recipe.title"
+        class="max-h-64 w-full rounded-card object-cover"
+      />
+
       <p v-if="recipe.description" class="text-sm text-muted">{{ recipe.description }}</p>
 
       <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">

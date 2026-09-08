@@ -38,11 +38,27 @@ export interface CalendarProvider {
   validateConfig?(config: Record<string, unknown>): Promise<string | null>
 
   /**
-   * Push a locally created event upstream. Only implemented by writable
-   * remote providers — local events need no push, and feeds cannot accept
-   * one. Reserved for the Google provider.
+   * Whether this source has everything it needs to be synced.
+   *
+   * A Google calendar exists before it is connected to an account: Settings
+   * creates it, then sends the browser off to Google. Syncing one in that
+   * state would record a failure every quarter of an hour and report the
+   * dashboard as degraded, when nothing is wrong — somebody is halfway
+   * through setting it up. Providers with nothing to wait for can leave this
+   * out.
    */
-  push?(source: CalendarSource, event: ProviderEvent): Promise<void>
+  isReadyToSync?(source: CalendarSource): boolean
+
+  /**
+   * Push a locally created event upstream, returning the id the upstream
+   * gave it.
+   *
+   * Only implemented by writable remote providers — local events need no
+   * push, and feeds cannot accept one. The returned id is stored as the
+   * event's `externalUid`, which is what stops the wall display from
+   * offering to edit a copy the next sync would overwrite.
+   */
+  push?(source: CalendarSource, event: ProviderEvent): Promise<{ externalUid: string | null }>
 }
 
 /**

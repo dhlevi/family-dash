@@ -1,4 +1,5 @@
 import cors from 'cors'
+import type { RequestHandler } from 'express'
 import multer from 'multer'
 import { HttpMethod, RouteManager } from './RouteManager'
 import { noCache } from '../middleware/NoCacheMiddleware'
@@ -67,10 +68,15 @@ export function Query(name?: string, required = false): ParameterDecorator {
   }
 }
 
-/** The parsed request body. */
-export function Body(): ParameterDecorator {
+/**
+ * The parsed request body. Required unless `required` is passed as false.
+ *
+ * An upload endpoint whose form carries files and no text fields legitimately
+ * arrives with an empty body, so those declare `@Body(false)`.
+ */
+export function Body(required = true): ParameterDecorator {
   return function bodyDecorator(target: any, property: any, index: number) {
-    RouteManager.registerParameter(target, String(property), index, 'body', undefined, true)
+    RouteManager.registerParameter(target, String(property), index, 'body', undefined, required)
   }
 }
 
@@ -169,26 +175,63 @@ export function Middleware(...handlers: any[]): MethodDecorator {
 
 // -- uploads ----------------------------------------------------------------
 
+/**
+ * Upload options, or a function returning them.
+ *
+ * The function form exists because a decorator runs when its module is
+ * imported, and the controllers are imported through the route table before
+ * `AppProperties.initialize()` has read application.properties. A limit
+ * taken from configuration at decoration time would therefore always be the
+ * hard-coded default, quietly ignoring whatever the file said — so pass a
+ * function and it is resolved on the first request instead.
+ */
+type UploadOptions = multer.Options | (() => multer.Options)
+
+/** Defers building the multer middleware until the first request reaches it. */
+function lazyUpload(
+  options: UploadOptions | undefined,
+  apply: (instance: multer.Multer) => RequestHandler
+): RequestHandler {
+  let handler: RequestHandler | null = null
+
+  return function uploadMiddleware(req, res, next) {
+    handler ??= apply(multer(typeof options === 'function' ? options() : options))
+    return handler(req, res, next)
+  }
+}
+
 /** Accept one file on the named multipart field. */
-export function UploadSingle(field: string, options?: multer.Options): MethodDecorator {
+export function UploadSingle(field: string, options?: UploadOptions): MethodDecorator {
   return function uploadSingleDecorator(target: any, property: any, descriptor: any) {
-    RouteManager.registerEndpointMiddleware(target, String(property), multer(options).single(field))
+    RouteManager.registerEndpointMiddleware(
+      target,
+      String(property),
+      lazyUpload(options, instance => instance.single(field))
+    )
     return descriptor
   }
 }
 
 /** Accept up to `count` files on the named multipart field. */
-export function UploadArray(field: string, count: number, options?: multer.Options): MethodDecorator {
+export function UploadArray(field: string, count: number, options?: UploadOptions): MethodDecorator {
   return function uploadArrayDecorator(target: any, property: any, descriptor: any) {
-    RouteManager.registerEndpointMiddleware(target, String(property), multer(options).array(field, count))
+    RouteManager.registerEndpointMiddleware(
+      target,
+      String(property),
+      lazyUpload(options, instance => instance.array(field, count))
+    )
     return descriptor
   }
 }
 
 /** Accept files across several named multipart fields. */
-export function MultiPartFormMixed(fields: multer.Field[], options?: multer.Options): MethodDecorator {
+export function MultiPartFormMixed(fields: multer.Field[], options?: UploadOptions): MethodDecorator {
   return function multiPartFormMixedDecorator(target: any, property: any, descriptor: any) {
-    RouteManager.registerEndpointMiddleware(target, String(property), multer(options).fields(fields))
+    RouteManager.registerEndpointMiddleware(
+      target,
+      String(property),
+      lazyUpload(options, instance => instance.fields(fields))
+    )
     return descriptor
   }
 }

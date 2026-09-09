@@ -110,7 +110,7 @@ calendar, subscribing to its secret `.ics` address is simpler and never needs re
 
 Google only permits `http://` redirect URIs on `localhost`, so the connect step has to be done
 from a browser that reaches the dashboard as `localhost` — the Pi's own screen, or an SSH tunnel
-(`ssh -L 8080:localhost:8080 pi@familypi`). Everything afterwards works from any device.
+(`ssh -L 8080:localhost:8080 you@your-pi`). Everything afterwards works from any device.
 
 If a connection dies, `/healthCheck` reports it under `calendar-sources` and Settings shows the
 reason on the calendar itself. A calendar you have created but not yet connected is not treated
@@ -345,6 +345,10 @@ which you have:
 uname -m        # must print: aarch64
 ```
 
+Everything below is done over SSH, which Raspberry Pi Imager can enable (and set your username,
+password and wifi) when you write the card — under the gear/⚙ advanced options. Otherwise turn it
+on from the Pi itself with `sudo raspi-config nonint do_ssh 0`.
+
 #### 1. Install Docker
 
 Use Docker's own apt repository rather than Debian's `docker.io` package: you need the Compose
@@ -483,7 +487,7 @@ docker buildx build --platform linux/arm64 --load -t family-dash-api:latest ./ap
 docker buildx build --platform linux/arm64 --load -t family-dash-web:latest ./web
 
 docker save family-dash-api:latest family-dash-web:latest | gzip \
-  | ssh pi@raspberrypi 'gunzip | docker load'
+  | ssh you@your-pi 'gunzip | docker load'
 ```
 
 Then on the Pi, `docker compose up -d` without `--build` uses what you just loaded. `make
@@ -571,7 +575,7 @@ Two things worth knowing:
 Nightly, via the Pi's own crontab (`crontab -e`):
 
 ```cron
-30 3 * * * cd /home/pi/family-dash && make backup BACKUP_DIR=/mnt/usb/family-dash >> /var/log/family-dash-backup.log 2>&1
+30 3 * * * cd "$HOME/family-dash" && make backup BACKUP_DIR=/mnt/usb/family-dash >> "$HOME/family-dash-backup.log" 2>&1
 # and keep a month of them
 40 3 * * * find /mnt/usb/family-dash -name 'familydash-*.sql.gz' -mtime +30 -delete
 ```
@@ -621,13 +625,32 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now family-dash
 ```
 
-Check it:
+Check it — this asserts the substitution actually happened rather than leaving you to eyeball it:
 
 ```bash
-systemctl is-enabled family-dash     # enabled
-systemctl status family-dash --no-pager
-grep -E 'User|WorkingDirectory' /etc/systemd/system/family-dash.service   # your account, not "pi"
+systemctl is-enabled family-dash                                    # enabled
+[ "$(systemctl show -P User family-dash)" = "$USER" ] \
+  && echo "user ok" || echo "WRONG USER: $(systemctl show -P User family-dash)"
+[ -d "$(systemctl show -P WorkingDirectory family-dash)" ] \
+  && echo "path ok" || echo "WRONG PATH: $(systemctl show -P WorkingDirectory family-dash)"
 ```
+
+A successful start shows `active (exited)`, because the unit is `Type=oneshot` — the containers
+keep running after it finishes.
+
+**If it fails to start**, the exit status says which of three things went wrong:
+
+```bash
+systemctl show family-dash -p Result -p ExecMainStatus
+sudo journalctl -u family-dash -n 30 --no-pager
+```
+
+| Status | Meaning | Fix |
+|---|---|---|
+| `217/USER` | The `User=` account does not exist | Re-run the `tee` above from *your own* shell — not from `sudo -i` or `sudo su`, where `$USER` is `root`. Older versions of this file hardcoded `pi`, which is no longer the default account name. |
+| `200/CHDIR` | `WorkingDirectory` does not exist | Check where you actually cloned it, and correct the path |
+| `203/EXEC` | `/usr/bin/docker` is not there | `command -v docker`, and use that path instead |
+| `1` | Docker ran and refused | The journal carries Compose's own message — usually `POSTGRES_PASSWORD` still unset in `.env` |
 
 ### Kiosk display
 
@@ -667,21 +690,43 @@ tee ~/.local/bin/family-dash-kiosk > /dev/null <<'EOF'
 # Full-screen Chromium with everything that makes a browser look like one turned off.
 BROWSER=$(command -v chromium-browser || command -v chromium)
 
-exec "$BROWSER" --kiosk --noerrdialogs --disable-infobars --incognito \
+set -- --kiosk --noerrdialogs --disable-infobars --incognito \
   --disable-features=TranslateUI --check-for-update-interval=31536000 \
   --disable-pinch --overscroll-history-navigation=0 \
   --autoplay-policy=no-user-gesture-required \
   "http://$(hostname).local:8080"
+
+# Under Wayland, Chromium still tries the X11 backend first and dies with
+# "Missing X server or $DISPLAY". Tell it where it actually is.
+[ -n "$WAYLAND_DISPLAY" ] && set -- --ozone-platform=wayland "$@"
+
+exec "$BROWSER" "$@"
 EOF
 chmod +x ~/.local/bin/family-dash-kiosk
 ```
 
-Check it before wiring it to boot — this opens the kiosk on the attached screen, and `Alt+F4`
-from a keyboard or `pkill chromium` over SSH closes it:
+**Running this straight from SSH will not work** — an SSH session has no display attached, so
+Chromium exits with `Missing X server or $DISPLAY` whatever backend it picks. To try it on the
+Pi's own screen from SSH you have to point at the session that is already running there:
 
 ```bash
+ls /run/user/$(id -u)/ | grep -E '^wayland-[0-9]+$'   # Wayland socket, if any
+ps -e -o comm= | grep -xE 'labwc|wayfire|Xorg'        # and what is running
+```
+
+If a Wayland socket is listed:
+
+```bash
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+export WAYLAND_DISPLAY=$(ls "$XDG_RUNTIME_DIR" | grep -m1 -E '^wayland-[0-9]+$')
 ~/.local/bin/family-dash-kiosk
 ```
+
+On X11, `export DISPLAY=:0` instead. Either way `pkill chromium` from SSH closes it again.
+
+If neither command prints anything, there is no desktop session to attach to — which is the
+answer in itself. Finish step 1, reboot, and check again. Honestly the simpler path is to skip
+testing by hand: wire up step 4, reboot, and watch the screen.
 
 **Why the hostname and not `localhost`.** Both work for the kiosk itself, but the address in the
 browser is what the app offers when sharing the shopping list to a phone — and a QR code
@@ -695,33 +740,48 @@ page navigates back.
 
 #### 4. Start it at login
 
-Whichever line matches step 2:
+Each compositor has its own mechanism, so this detects which one is running and writes the
+matching file. Safe to re-run — it will not add a second entry:
 
 ```bash
-# labwc
-mkdir -p ~/.config/labwc
-echo "$HOME/.local/bin/family-dash-kiosk &" >> ~/.config/labwc/autostart
+KIOSK="$HOME/.local/bin/family-dash-kiosk"
+COMPOSITOR=$(ps -e -o comm= | grep -m1 -xE 'labwc|wayfire|Xorg')
+echo "compositor: ${COMPOSITOR:-none detected}"
 
-# wayfire — Raspberry Pi OS already ships an [autostart] section, so add the
-# line to that one rather than appending a second section it may ignore
-if grep -q '^\[autostart\]' ~/.config/wayfire.ini 2>/dev/null; then
-  sed -i "/^\[autostart\]/a kiosk = $HOME/.local/bin/family-dash-kiosk" ~/.config/wayfire.ini
-else
-  printf '\n[autostart]\nkiosk = %s/.local/bin/family-dash-kiosk\n' "$HOME" >> ~/.config/wayfire.ini
-fi
-
-# X11 (Bullseye and earlier)
-mkdir -p ~/.config/autostart
-tee ~/.config/autostart/family-dash-kiosk.desktop > /dev/null <<EOF
-[Desktop Entry]
-Type=Application
-Name=Family Dashboard
-Exec=$HOME/.local/bin/family-dash-kiosk
-X-GNOME-Autostart-enabled=true
-EOF
+case "$COMPOSITOR" in
+  labwc)
+    mkdir -p ~/.config/labwc
+    grep -q family-dash-kiosk ~/.config/labwc/autostart 2>/dev/null \
+      || echo "$KIOSK &" >> ~/.config/labwc/autostart
+    ;;
+  wayfire)
+    # Raspberry Pi OS ships an [autostart] section already, so the line goes
+    # in that one rather than in a second section wayfire may ignore.
+    if grep -q family-dash-kiosk ~/.config/wayfire.ini 2>/dev/null; then :
+    elif grep -q '^\[autostart\]' ~/.config/wayfire.ini 2>/dev/null; then
+      sed -i "/^\[autostart\]/a kiosk = $KIOSK" ~/.config/wayfire.ini
+    else
+      printf '\n[autostart]\nkiosk = %s\n' "$KIOSK" >> ~/.config/wayfire.ini
+    fi
+    ;;
+  Xorg)
+    mkdir -p ~/.config/autostart
+    printf '[Desktop Entry]\nType=Application\nName=Family Dashboard\nExec=%s\nX-GNOME-Autostart-enabled=true\n' \
+      "$KIOSK" > ~/.config/autostart/family-dash-kiosk.desktop
+    ;;
+  *)
+    echo "No desktop session found. Enable auto-login (step 1), reboot, then run this again."
+    ;;
+esac
 ```
 
-Then `sudo reboot` and it should come up on its own.
+Then `sudo reboot`. Nothing before this step makes the kiosk start on its own — the launcher is
+just a script until something references it.
+
+If the screen comes up showing a connection error rather than the dashboard, the browser got
+there before the containers did. `make ps` from SSH will show whether they are up; a reload fixes
+the screen. The systemd unit above reaches `multi-user.target` before the graphical session
+starts, so this should not happen, but it is worth recognising rather than debugging.
 
 #### Stopping the screen blanking
 
@@ -753,11 +813,16 @@ Nothing needs changing in the app — the layout follows the screen's orientatio
 rotation takes effect on the next repaint.
 
 ```bash
+sudo apt install -y wlr-randr              # not installed by default
+
 wlr-randr                                  # Wayland: list outputs and modes
 wlr-randr --output HDMI-A-1 --transform 90 # try it now
 
 xrandr --output HDMI-1 --rotate left       # X11 equivalent
 ```
+
+Run those from the Pi's own screen, or export `XDG_RUNTIME_DIR` and `WAYLAND_DISPLAY` first as in
+step 3 — an SSH session has no output to act on either.
 
 To make it stick under `wayfire`, put it in `~/.config/wayfire.ini` using the output name
 `wlr-randr` gave you:
@@ -765,6 +830,14 @@ To make it stick under `wayfire`, put it in `~/.config/wayfire.ini` using the ou
 ```ini
 [output:HDMI-A-1]
 transform = 90
+```
+
+`labwc` has no equivalent config file for outputs, so persist it the same way the kiosk is
+started — and put it *above* the kiosk line, so the screen is the right way round before Chromium
+opens on it:
+
+```bash
+sed -i "1i wlr-randr --output HDMI-A-1 --transform 90" ~/.config/labwc/autostart
 ```
 
 If you rotate the panel, rotate the touch input too or taps land in the wrong place. On Wayland

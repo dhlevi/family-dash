@@ -331,22 +331,165 @@ A Pi 4 or 5 with 2GB is comfortable; the stack idles at a few hundred MB. Use a 
 better, boot from USB/NVMe — Postgres on a cheap card is the main thing that will make this feel
 slow.
 
-### Install
+### Quickstart
+
+From a fresh Pi to a working dashboard. Every step ends with something to check, so a failure
+shows up where it happened rather than three steps later.
+
+**Before you start**, you need **64-bit Raspberry Pi OS** — the images are `arm64` only, and a
+32-bit install will fail at `docker compose up` with a manifest error rather than anything
+helpful. If you want the kiosk display as well, use the Desktop image rather than Lite. Check
+which you have:
 
 ```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
-sudo usermod -aG docker "$USER" && newgrp docker
+uname -m        # must print: aarch64
+```
 
-git clone <this-repo> ~/family-dash && cd ~/family-dash
-make env && $EDITOR .env
+#### 1. Install Docker
+
+Use Docker's own apt repository rather than Debian's `docker.io` package: you need the Compose
+plugin, which is what `docker compose` (no hyphen) is, and Debian does not package it. Raspberry
+Pi OS is Debian, so the Debian instructions apply directly — `VERSION_CODENAME` below resolves to
+`bookworm` or `trixie` on its own.
+
+```bash
+sudo apt update && sudo apt install -y ca-certificates curl git
+
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Then let your own user run Docker without `sudo`:
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker        # this shell only — log out and back in for the rest
+```
+
+Check it works:
+
+```bash
+docker run --rm hello-world       # should print "Hello from Docker!"
+docker compose version            # any version is fine — it just has to exist
+```
+
+> Docker also offers a one-line script at `get.docker.com`, which is quicker. Docker's own
+> documentation says it "isn't recommended for production environments", and a dashboard on your
+> wall for the next few years is closer to production than to a scratch VM — hence the repository
+> above.
+
+#### 2. Get the code
+
+```bash
+git clone <this-repo> ~/family-dash
+cd ~/family-dash
+```
+
+#### 3. Configure it
+
+```bash
+make env                 # copies .env.example to .env
+```
+
+One value is mandatory — Compose refuses to start without it, which is deliberate:
+
+```bash
+sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -base64 24)|" .env
+```
+
+Two more are worth setting now:
+
+- **`TZ`** — used for the background job schedules, date rendering and resolving the weather
+  timezone. Set it to your own (`America/Vancouver`, `Europe/London`, …).
+- **`MEDIA_PATH`** — where the photo library lives. Leave it as `./media` to start with; see
+  [Photo library](#photo-library) and [Storage](#storage) for why you may want it on a USB drive.
+
+The weather location, theme, and everything else are set in the Settings page once it is running,
+so there is nothing else to edit here.
+
+```bash
+grep -E '^(TZ|WEB_PORT|MEDIA_PATH)=' .env     # confirm what you have
+```
+
+#### 4. Build and start
+
+```bash
 make up
 ```
 
-Both images build natively on arm64. To build them elsewhere and ship them over:
+This builds both images on the Pi and starts three containers. **The first build takes a while** —
+almost all of it is `npm install` for the two packages — and later builds reuse the cache. Memory
+is not the constraint: the build steps peak around 400MB, so a 2GB Pi is fine.
+
+#### 5. Check it came up
 
 ```bash
-make build-images    # buildx, linux/amd64 + linux/arm64
+make ps          # all three services should say "healthy"
+make health      # the API's own report: status "ok", 3 migrations applied
 ```
+
+If `api` is restarting, its log says why:
+
+```bash
+make logs-api
+```
+
+#### 6. Open it
+
+```bash
+hostname -I | awk '{print $1}'      # the Pi's address on your LAN
+```
+
+Browse to `http://<that-address>:8080` from any device on the network, or
+`http://localhost:8080` on the Pi itself. Raspberry Pi OS runs Avahi, so
+`http://raspberrypi.local:8080` usually works too.
+
+On the first run the dashboard seeds its own settings, creates the local family calendar, and
+fetches news and weather straight away — so it should have something on it within a few seconds of
+loading. The calendar, tasks and notes start empty because they are yours to fill.
+
+#### 7. Then
+
+- [Kiosk display](#kiosk-display) — full-screen Chromium on boot, and turning off screen blanking.
+- [Start on boot](#start-on-boot) — the systemd unit, if you want it independent of a desktop login.
+- [Storage](#storage) and [Backups](#backups) — worth reading before you have data you care about.
+- Settings → Appearance to turn on the auto theme, the screensaver and the on-screen keyboard.
+
+#### Upgrading
+
+```bash
+cd ~/family-dash && git pull && make up
+```
+
+Migrations run at boot, and the database lives in a named Docker volume, so your data survives a
+rebuild. `make prune` afterwards reclaims the old image layers.
+
+#### Building somewhere else
+
+Both images build natively on `arm64`, so the Pi can do it itself. If you would rather not — an
+older Pi, or a slow SD card — build for `arm64` on another machine and copy the images over:
+
+```bash
+# on a machine with Docker Desktop or buildx
+docker buildx build --platform linux/arm64 --load -t family-dash-api:latest ./api
+docker buildx build --platform linux/arm64 --load -t family-dash-web:latest ./web
+
+docker save family-dash-api:latest family-dash-web:latest | gzip \
+  | ssh pi@raspberrypi 'gunzip | docker load'
+```
+
+Then on the Pi, `docker compose up -d` without `--build` uses what you just loaded. `make
+build-images` does the same for both architectures at once, for pushing to a registry.
+
+### Photo library
 
 Point `MEDIA_PATH` at wherever the photo library lives — a USB drive or an NFS mount is fine, and
 keeping it off the SD card saves a lot of write wear. The layout inside it is:

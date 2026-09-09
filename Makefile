@@ -146,7 +146,9 @@ shell-web: ## Open a shell in the web container
 	$(COMPOSE) exec web sh
 
 health: ## Print the API health check
-	@curl -fsS http://localhost:$${WEB_PORT:-8080}/api/healthCheck | (json_pp 2>/dev/null || cat)
+	@# /healthCheck, not /api/healthCheck: the probe sits outside the API's
+	@# route prefix, and nginx proxies it on its own location block.
+	@curl -fsS http://localhost:$${WEB_PORT:-8080}/healthCheck | (json_pp 2>/dev/null || cat)
 
 # --- local development (outside docker) -----------------------------------
 

@@ -589,11 +589,16 @@ gunzip -c backups/familydash-20260908-124912.sql.gz \
 
 ### Start on boot
 
-Compose already restarts the containers (`restart: unless-stopped`), so all systemd needs to do is
-bring the project up after Docker is ready:
+Docker's own service is enabled at install, and the containers are marked
+`restart: unless-stopped`, so after a reboot they come back on their own. The unit below is
+belt-and-braces: it re-creates them if they were ever removed, and gives you a `systemctl
+start`/`stop` for the whole stack.
 
-```ini
-# /etc/systemd/system/family-dash.service
+All of this works over SSH. Paste it as-is — the heredoc is unquoted so `$USER` and `$HOME`
+expand to *your* account, rather than assuming the old default of `pi`:
+
+```bash
+sudo tee /etc/systemd/system/family-dash.service > /dev/null <<EOF
 [Unit]
 Description=family-dash
 Requires=docker.service
@@ -603,40 +608,84 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/pi/family-dash
+WorkingDirectory=$HOME/family-dash
 ExecStart=/usr/bin/docker compose up -d
 ExecStop=/usr/bin/docker compose down
-User=pi
+User=$USER
 
 [Install]
 WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now family-dash
 ```
 
+Check it:
+
 ```bash
-sudo systemctl enable --now family-dash
+systemctl is-enabled family-dash     # enabled
+systemctl status family-dash --no-pager
+grep -E 'User|WorkingDirectory' /etc/systemd/system/family-dash.service   # your account, not "pi"
 ```
 
 ### Kiosk display
 
-Full-screen Chromium pointed at the dashboard, with everything that makes a browser look like a
-browser turned off:
+Also all doable over SSH, but in four parts, and the order matters: without auto-login the
+desktop never starts, so nothing autostarts and the kiosk silently never appears.
+
+#### 1. Log in to the desktop automatically
 
 ```bash
-# ~/.config/autostart/family-dash-kiosk.desktop
-[Desktop Entry]
-Type=Application
-Name=Family Dashboard
-Exec=chromium-browser --kiosk --noerrdialogs --disable-infobars --incognito \
+sudo raspi-config nonint do_boot_behaviour B4      # B4 = desktop, auto-login
+```
+
+(`B1` console, `B2` console auto-login, `B3` desktop with a login prompt.)
+
+#### 2. Find out which compositor you have
+
+This decides how the kiosk is launched, and it changed across Raspberry Pi OS releases — Bullseye
+and earlier are X11, Bookworm moved to Wayland with `wayfire`, and later Bookworm and Trixie use
+`labwc`.
+
+```bash
+ps -e -o comm= | grep -xE 'labwc|wayfire|Xorg' || echo "no desktop session running"
+```
+
+If that prints nothing, reboot after step 1 and try again — the answer comes from a session that
+is actually up.
+
+#### 3. Write the launcher
+
+One script, whichever compositor you have. `chromium-browser` and `chromium` are both used
+depending on the release, so it finds whichever exists:
+
+```bash
+mkdir -p ~/.local/bin
+tee ~/.local/bin/family-dash-kiosk > /dev/null <<'EOF'
+#!/bin/sh
+# Full-screen Chromium with everything that makes a browser look like one turned off.
+BROWSER=$(command -v chromium-browser || command -v chromium)
+
+exec "$BROWSER" --kiosk --noerrdialogs --disable-infobars --incognito \
   --disable-features=TranslateUI --check-for-update-interval=31536000 \
   --disable-pinch --overscroll-history-navigation=0 \
   --autoplay-policy=no-user-gesture-required \
-  http://raspberrypi.local:8080
-X-GNOME-Autostart-enabled=true
+  "http://$(hostname).local:8080"
+EOF
+chmod +x ~/.local/bin/family-dash-kiosk
 ```
 
-**Point it at the Pi's hostname, not `localhost`.** Both work for the kiosk itself, but the
-address in the browser is what the app offers when sharing the shopping list to a phone — and a
-QR code containing `localhost` scans perfectly and then fails to load. Using the hostname (or the
+Check it before wiring it to boot — this opens the kiosk on the attached screen, and `Alt+F4`
+from a keyboard or `pkill chromium` over SSH closes it:
+
+```bash
+~/.local/bin/family-dash-kiosk
+```
+
+**Why the hostname and not `localhost`.** Both work for the kiosk itself, but the address in the
+browser is what the app offers when sharing the shopping list to a phone — and a QR code
+containing `localhost` scans perfectly and then fails to load. Using `$(hostname).local` (or the
 Pi's IP) means what is on screen is something another device can actually reach. If you do use
 `localhost`, the app notices and asks you once for the network address instead.
 
@@ -644,34 +693,82 @@ Pi's IP) means what is on screen is something another device can actually reach.
 them a stray two-finger touch zooms the whole dashboard, and a horizontal swipe on the drawing
 page navigates back.
 
-**Stop the screen blanking.** On Wayland (Pi OS Bookworm and later):
+#### 4. Start it at login
+
+Whichever line matches step 2:
 
 ```bash
-# ~/.config/wayfire.ini
-[idle]
-dpms_timeout = -1
-screensaver_timeout = -1
+# labwc
+mkdir -p ~/.config/labwc
+echo "$HOME/.local/bin/family-dash-kiosk &" >> ~/.config/labwc/autostart
+
+# wayfire — Raspberry Pi OS already ships an [autostart] section, so add the
+# line to that one rather than appending a second section it may ignore
+if grep -q '^\[autostart\]' ~/.config/wayfire.ini 2>/dev/null; then
+  sed -i "/^\[autostart\]/a kiosk = $HOME/.local/bin/family-dash-kiosk" ~/.config/wayfire.ini
+else
+  printf '\n[autostart]\nkiosk = %s/.local/bin/family-dash-kiosk\n' "$HOME" >> ~/.config/wayfire.ini
+fi
+
+# X11 (Bullseye and earlier)
+mkdir -p ~/.config/autostart
+tee ~/.config/autostart/family-dash-kiosk.desktop > /dev/null <<EOF
+[Desktop Entry]
+Type=Application
+Name=Family Dashboard
+Exec=$HOME/.local/bin/family-dash-kiosk
+X-GNOME-Autostart-enabled=true
+EOF
 ```
 
-On X11, add to `~/.config/autostart` or your session script:
+Then `sudo reboot` and it should come up on its own.
+
+#### Stopping the screen blanking
 
 ```bash
-xset s off; xset -dpms; xset s noblank
+sudo raspi-config nonint do_blanking 1     # 1 disables, 0 enables
 ```
 
-**Rotate the display.** Portrait on Wayland — set this in `~/.config/wayfire.ini`, using the
-output name from `wlr-randr`:
+**That switch is X11-only** — it writes `/etc/X11/xorg.conf.d/10-blanking.conf`, which a Wayland
+session never reads. On `wayfire`, do it in the compositor instead:
+
+```bash
+printf '\n[idle]\ndpms_timeout = -1\nscreensaver_timeout = -1\n' >> ~/.config/wayfire.ini
+```
+
+If `wayfire.ini` already has an `[idle]` section, put those two keys in the existing one instead of
+adding a second — same reasoning as `[autostart]` above.
+
+`labwc` does not blank the screen by itself, so there may be nothing to turn off. If yours does
+blank, something else is doing it — look for an idle daemon (`pgrep -a swayidle`) and disable that
+rather than hunting for a labwc setting.
+
+Note this is separate from the app's own screensaver, which replaces the dashboard with a photo
+slideshow and is set in Settings. You want the *display* to stay on and the app to decide what is
+shown on it.
+
+#### Rotating to portrait
+
+Nothing needs changing in the app — the layout follows the screen's orientation on its own, and a
+rotation takes effect on the next repaint.
+
+```bash
+wlr-randr                                  # Wayland: list outputs and modes
+wlr-randr --output HDMI-A-1 --transform 90 # try it now
+
+xrandr --output HDMI-1 --rotate left       # X11 equivalent
+```
+
+To make it stick under `wayfire`, put it in `~/.config/wayfire.ini` using the output name
+`wlr-randr` gave you:
 
 ```ini
 [output:HDMI-A-1]
 transform = 90
 ```
 
-On X11, `xrandr --output HDMI-1 --rotate left`. Nothing needs changing in the app: the layout
-follows the screen's orientation on its own, and a rotation takes effect on the next repaint.
-
-If you rotate the panel, also rotate the touch input, or taps land in the wrong place — on
-Wayland the compositor handles it with the output; on X11 you need a matching
+If you rotate the panel, rotate the touch input too or taps land in the wrong place. On Wayland
+the compositor handles it along with the output; on X11 you need a matching
 `Coordinate Transformation Matrix` via `xinput`.
 
 ### Health and troubleshooting

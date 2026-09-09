@@ -207,6 +207,21 @@ touched the display. The two picture layers fade on a bound `opacity` instead: i
 animate, but it always ends up at the right value. Worth the care in the one component whose whole
 job is to keep showing something for hours unattended.
 
+**The on-screen keyboard is in the app, not the OS.** Chromium on Linux has no dependable touch
+keyboard of its own; the OS-level ones on Pi OS (`squeekboard`, `wvkbd`, `onboard`) need setting up
+and are unreliable about appearing when a field is focused. Doing it in the app is the only option
+that certainly works — and being in the app turns out to be an advantage rather than a compromise,
+because the layout can suit the field: a number stepper gets a keypad instead of a QWERTY nobody
+needs, and a number field starts with its value selected so the first digit replaces it.
+
+It attaches once at the app shell and finds fields by watching `focusin` on the document, rather
+than by threading props through every input. That covers fields it was never told about — the raw
+inputs in the recipe editor, the steppers in Settings — and there is nothing to remember when
+adding a form later. Every key acts on `pointerdown` and prevents the default, which is what keeps
+the field focused; without that the first tap would blur the input and there would be nothing left
+to type into. Date and time fields are left alone, because Chromium's own picker is tappable and
+beats spelling a date out.
+
 **Only deliberate actions count as activity.** The idle watcher listens for taps, keys and
 scrolls, not pointer movement: a wall display with a mouse plugged in would otherwise be kept
 awake for weeks by a cursor sitting still under a draught. The screensaver dismisses on the press
@@ -536,8 +551,8 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 **Working now:**
 
 - **Settings** — theme (including one that follows sunrise and sunset), accent, clock, screensaver,
-  calendar defaults, dashboard widgets, household names, location and units, plus service
-  diagnostics. Changes save as you make them.
+  on-screen keyboard, calendar defaults, dashboard widgets, household names, location and units,
+  plus service diagnostics. Changes save as you make them.
 - **Calendar** — month, week and agenda views merged across the local family calendar, any number
   of ICS subscriptions and a connected Google account, with background sync, tap-a-day to add,
   and read-only handling for events a feed owns.
@@ -573,6 +588,11 @@ feed reports as *degraded* with a 200, so one bad feed does not make Docker rest
 - **Dashboard** — every widget reads live data: next events, today's tasks, pinned notes,
   tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
   a slowly cycling photo.
+- **On-screen keyboard** — for a wall display with no keyboard attached. Appears when a text field
+  is tapped, with a keypad for number fields and a QWERTY for everything else; `Done` sends a real
+  Enter, so the forms that act on it still work. Anything anchored to the bottom of the screen —
+  a dialog, most of all — moves clear of it. Set to auto by default, which means on for a
+  touchscreen and off where there is a mouse, decided per screen rather than per install.
 - **Screensaver** — after a configurable idle spell the screen becomes a clock, the current
   temperature and a slow slideshow of the favourited photos, which is more use from across a
   kitchen than the dashboard it replaces and keeps one layout from burning into the panel. Any

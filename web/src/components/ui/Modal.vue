@@ -54,9 +54,14 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
       enter-from-class="opacity-0"
       leave-to-class="opacity-0"
     >
+      <!-- The bottom inset keeps the panel clear of the on-screen keyboard,
+           which is set while one is up and zero otherwise. It matters most in
+           portrait, where this dialog is anchored to the bottom edge and
+           would otherwise be entirely behind the keys. -->
       <div
         v-if="open"
         class="fixed inset-0 z-50 flex bg-black/60 landscape:items-center landscape:justify-center landscape:p-6 portrait:items-end portrait:justify-stretch"
+        style="padding-bottom: var(--fd-keyboard-inset, 0px)"
         role="presentation"
         @click.self="requestClose"
       >

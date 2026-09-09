@@ -3,8 +3,10 @@ import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import AppHeader from '@/components/ui/AppHeader.vue'
 import AppNav from '@/components/ui/AppNav.vue'
+import OnScreenKeyboard from '@/components/ui/OnScreenKeyboard.vue'
 import Screensaver from '@/components/ui/Screensaver.vue'
 import { useIdle } from '@/composables/useIdle'
+import { useOnScreenKeyboard } from '@/composables/useOnScreenKeyboard'
 import { useSolarTheme } from '@/composables/useSolarTheme'
 import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
@@ -26,6 +28,10 @@ const settings = useSettingsStore()
 useSolarTheme()
 
 const { idle, wake } = useIdle(computed(() => settings.screensaverMinutes))
+
+// Watches for a text field being focused anywhere in the app. Does nothing
+// on a device with a mouse unless the setting says otherwise.
+const keyboard = useOnScreenKeyboard()
 
 onMounted(() => {
   system.startPolling()
@@ -51,6 +57,16 @@ onBeforeUnmount(() => system.stopPolling())
         </Suspense>
       </RouterView>
     </main>
+
+    <!-- Above modals, since that is where most typing happens, and below the
+         screensaver. -->
+    <OnScreenKeyboard
+      v-if="keyboard.visible.value"
+      :layout="keyboard.layout.value"
+      @press="keyboard.press"
+      @submit="keyboard.submit"
+      @dismiss="keyboard.dismiss"
+    />
 
     <!-- Over everything, the nav rail included: an idle wall display should
          be showing photographs, not a dimmed copy of the dashboard. -->

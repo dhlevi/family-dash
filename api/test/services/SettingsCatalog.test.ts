@@ -110,6 +110,14 @@ describe('SettingsCatalog', () => {
       expect(parse('appearance.autoThemeOffsetMinutes', 30.5)).toBe(false)
     })
 
+    it('accepts the keyboard modes and nothing else', () => {
+      expect(parse('input.onScreenKeyboard', 'auto')).toBe(true)
+      expect(parse('input.onScreenKeyboard', 'always')).toBe(true)
+      expect(parse('input.onScreenKeyboard', 'never')).toBe(true)
+      expect(parse('input.onScreenKeyboard', true)).toBe(false)
+      expect(parse('input.onScreenKeyboard', 'sometimes')).toBe(false)
+    })
+
     it('trims and bounds the assignee shortcut list', () => {
       expect(parse('tasks.assignees', ['Skye', 'Dylan'])).toBe(true)
       expect(parse('tasks.assignees', [''])).toBe(false)

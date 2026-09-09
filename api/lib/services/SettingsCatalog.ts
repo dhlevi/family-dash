@@ -61,6 +61,16 @@ export const SETTINGS: Record<string, SettingDefinition> = {
       'Idle minutes before the screen turns into a photo slideshow. Any tap or key dismisses it. ' + '0 disables it.'
   },
 
+  // --- input ---------------------------------------------------------------
+  'input.onScreenKeyboard': {
+    schema: z.enum(['auto', 'always', 'never']),
+    default: () => 'auto',
+    description:
+      'Show a keyboard on screen when a text field is tapped. Auto decides per device — on for a ' +
+      'touchscreen, off where there is a mouse — which matters because this setting is shared by ' +
+      'every screen looking at the same install.'
+  },
+
   // --- dashboard ----------------------------------------------------------
   'dashboard.widgets': {
     schema: z.array(z.enum(DASHBOARD_WIDGETS)),

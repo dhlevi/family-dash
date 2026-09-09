@@ -22,7 +22,7 @@ import Toggle from '@/components/ui/Toggle.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
-import type { CalendarSource, DashboardWidget, NewsFeed, SystemInfo, ThemePreference } from '@/api/types'
+import type { CalendarSource, DashboardWidget, KeyboardMode, NewsFeed, SystemInfo, ThemePreference } from '@/api/types'
 
 /**
  * Settings.
@@ -77,6 +77,7 @@ onMounted(load)
 // --- appearance -------------------------------------------------------------
 
 const theme = ref<ThemePreference>('dark')
+const onScreenKeyboard = ref<KeyboardMode>('auto')
 const autoThemeOffset = ref(30)
 const screensaverMinutes = ref(0)
 const slideshowSeconds = ref(20)
@@ -123,6 +124,7 @@ watch(
     if (!values) return
 
     theme.value = values['appearance.theme']
+    onScreenKeyboard.value = values['input.onScreenKeyboard']
     autoThemeOffset.value = values['appearance.autoThemeOffsetMinutes']
     screensaverMinutes.value = values['appearance.screensaverMinutes']
     slideshowSeconds.value = values['photos.slideshowSeconds']
@@ -298,6 +300,22 @@ async function runTask(name: string): Promise<void> {
               :step="5"
               suffix="min"
               @update:model-value="persist({ 'appearance.screensaverMinutes': screensaverMinutes })"
+            />
+          </Field>
+
+          <Field
+            label="On-screen keyboard"
+            hint="Auto turns it on for a touchscreen and off where there is a mouse, decided per screen"
+          >
+            <SegmentedControl
+              v-model="onScreenKeyboard"
+              :options="[
+                { value: 'auto', label: 'Auto' },
+                { value: 'always', label: 'Always' },
+                { value: 'never', label: 'Never' }
+              ]"
+              block
+              @update:model-value="persist({ 'input.onScreenKeyboard': onScreenKeyboard })"
             />
           </Field>
 

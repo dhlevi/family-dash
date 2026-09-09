@@ -85,6 +85,7 @@ export const useSettingsStore = defineStore('settings', () => {
   )
 
   const accent = computed(() => get('appearance.accent', '#4f8ef7'))
+  const onScreenKeyboard = computed(() => get('input.onScreenKeyboard', 'auto'))
   const clock24Hour = computed(() => get('appearance.clock24Hour', true))
   const weekStartsOn = computed(() => get('calendar.weekStartsOn', 0))
   const dashboardWidgets = computed(() => get('dashboard.widgets', []))
@@ -180,6 +181,7 @@ export const useSettingsStore = defineStore('settings', () => {
     sunTimes,
     setSunTimes,
     accent,
+    onScreenKeyboard,
     clock24Hour,
     weekStartsOn,
     dashboardWidgets,

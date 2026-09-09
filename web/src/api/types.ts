@@ -572,12 +572,16 @@ export type ThemePreference = 'dark' | 'light' | 'auto'
 /** What is actually applied to the document. */
 export type Theme = 'dark' | 'light'
 
+/** When to put a keyboard on screen. `auto` decides per device. */
+export type KeyboardMode = 'auto' | 'always' | 'never'
+
 export interface AppSettings {
   'appearance.theme': ThemePreference
   'appearance.autoThemeOffsetMinutes': number
   'appearance.accent': string
   'appearance.clock24Hour': boolean
   'appearance.screensaverMinutes': number
+  'input.onScreenKeyboard': KeyboardMode
   'dashboard.widgets': DashboardWidget[]
   'calendar.defaultView': 'month' | 'week' | 'agenda'
   'calendar.weekStartsOn': 0 | 1

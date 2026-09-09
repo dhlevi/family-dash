@@ -4,8 +4,7 @@ import { defineConfig } from 'vitest/config'
 /**
  * The controllers rely on legacy TypeScript decorators and on
  * `emitDecoratorMetadata` for parameter type coercion. Vitest's default
- * transformer supports neither, so tests run through SWC, which does — and
- * which mirrors what `tsc` emits for the production build.
+ * transformer supports neither, so tests run through SWC
  */
 export default defineConfig({
   plugins: [

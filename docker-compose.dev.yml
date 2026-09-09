@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Development override — bind mounts and hot reload.
+# Development override - bind mounts and hot reload.
 #
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 #   (or just: make dev)

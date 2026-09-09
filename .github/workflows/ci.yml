@@ -79,7 +79,7 @@ jobs:
           docker compose up --build -d --wait --wait-timeout 180
 
       # Proves the migrations apply from an empty database and that the whole
-      # chain — nginx to API to Postgres — is wired, which unit tests cannot.
+      # chain from nginx to API to Postgres is wired, which unit tests cannot.
       - name: Verify health through the proxy
         run: |
           status=$(curl -fsS http://localhost:8080/healthCheck | jq -r .status)

@@ -14,7 +14,7 @@ DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
         reset backup restore prune install lint lint-fix format typecheck test test-watch check \
         build-images clean
 
-# Where `make backup` writes to. Point this at external storage on a Pi — a
+# Where `make backup` writes to. Point this at external storage on a Pi. A
 # backup sitting on the same SD card as the database does not survive the
 # failure it exists for.
 BACKUP_DIR ?= ./backups
@@ -26,10 +26,10 @@ help: ## Show available targets
 
 env: ## Create .env from .env.example if it does not exist yet
 	@if [ -f .env ]; then \
-		echo ".env already exists — leaving it alone"; \
+		echo ".env already exists - leaving it alone"; \
 	else \
 		cp .env.example .env; \
-		echo "Created .env from .env.example — set POSTGRES_PASSWORD before starting"; \
+		echo "Created .env from .env.example - set POSTGRES_PASSWORD before starting"; \
 	fi
 
 # --- running --------------------------------------------------------------
@@ -59,7 +59,7 @@ reset: ## Stop the stack and DELETE the database volume
 
 # --- backup ---------------------------------------------------------------
 # `set -o pipefail` is not optional here. Without it the exit status of
-# `pg_dump | gzip` is gzip's, which happily succeeds at compressing nothing —
+# `pg_dump | gzip` is gzip's, which happily succeeds at compressing nothing
 # so a failed dump would be reported as a good backup and leave a 4KB file
 # that looks like one. The dump is then checked for content before being
 # accepted, because a backup nobody has verified is not a backup. That check
@@ -69,7 +69,7 @@ reset: ## Stop the stack and DELETE the database volume
 #
 # The dump is written to a `.partial` file and moved into place only once it
 # has passed. `date` has one-second resolution, so two runs in the same second
-# produce the same filename — without the temp file, a run that failed would
+# produce the same filename without the temp file, a run that failed would
 # delete the good backup a successful run had just written.
 #
 # Everything the household has typed lives in Postgres: notes, tasks,
@@ -93,7 +93,7 @@ backup: ## Dump the database to $(BACKUP_DIR) (override with BACKUP_DIR=...)
 			--clean --if-exists --no-owner --no-privileges \
 		| gzip > "$$tmp"; then \
 		rm -f "$$tmp"; \
-		echo "Backup failed — is the stack running? (make up)" >&2; \
+		echo "Backup failed! Is the stack running? (make up)" >&2; \
 		exit 1; \
 	fi; \
 	if ! gunzip -c "$$tmp" | grep -c 'CREATE TABLE public.setting' >/dev/null; then \

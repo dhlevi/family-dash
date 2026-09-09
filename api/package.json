@@ -1,7 +1,7 @@
 {
   "name": "family-dash-api",
-  "version": "0.1.0",
-  "description": "Family dashboard API — decorator-driven Express service over PostgreSQL",
+  "version": "1.0.0",
+  "description": "Family dashboard API service over PostgreSQL",
   "license": "MIT",
   "private": true,
   "main": "build/index.js",

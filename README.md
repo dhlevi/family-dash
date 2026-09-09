@@ -2,13 +2,62 @@
 
 A self-hosted family dashboard and planner for a wall-mounted touchscreen. Calendar, tasks and
 chores, sticky notes, recipes and meal planning, photos, weather, news and a freehand drawing
-pad — running on your own hardware, with no subscription and no vendor holding your data.
+pad, running on your own hardware, with no subscription and no vendor holding your data.
 
-Built to run on a Raspberry Pi driving a 16" touchscreen, in either portrait or landscape.
+Built to run on a Raspberry Pi with a touchscreen monitor, in either portrait or landscape.
 
-```
-docker compose up --build -d      #  →  http://<pi-address>:8080
-```
+## Features
+
+**Working now:**
+
+- **Settings**: theme (including one that follows sunrise and sunset), accent, clock, screensaver, on-screen keyboard, calendar defaults, dashboard widgets, household names, location and units, plus service diagnostics. Changes save as you make them.
+- **Calendar**:month, week and agenda views merged across the local family calendar, any number
+  of ICS subscriptions and a connected Google account, with background sync, tap-a-day to add,
+  and read-only handling for events a feed owns.
+- **Tasks and chores**: grouped by when they are due, quick-add, priorities, free-text
+  assignment, and repeating chores that reappear once ticked off.
+- **News**: headlines aggregated from RSS, which needs no account. Images, bylines and summaries
+  are recovered from whatever shape each feed offers, cached locally, and pruned on a retention window. Tapping a story shows its summary and a QR code to finish reading on your device
+- **Weather**: current conditions, a 24-hour strip and a seven-day outlook from
+  [Open-Meteo](https://open-meteo.com). Set the location by searching
+  for your town rather than typing coordinates. Forecasts are cached in Postgres, so the page is instant and a network outage shows the last forecast clearly marked stale rather than an error.
+- **Meals**: a seven-day planner, a reusable recipe library, and a shopping list built from the
+  two. Ingredients are merged across the week (three recipes using flour give one line with the
+  total), grouped by supermarket aisle, and a QR code hands the live list to a phone on the same
+  wifi so ticking items off in a shop shows up on the wall.
+- **Sticky notes**: a draggable corkboard of typed *or handwritten* notes. Handwriting is
+  captured from a finger or stylus via pointer events (with pressure and palm rejection) and
+  stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
+  or shrunk into a dashboard widget. Pin a note to show it on the dashboard.
+- **Photos**: an album browser over a folder on the mounted media volume, because Google Photos
+  cannot list a library any more. Pictures arrive by uploading them or by copying them onto the
+  volume; an hourly scan reconciles the two, reads capture dates from EXIF so the library is in
+  the order things actually happened, and generates thumbnails. HEIC from a phone works. A
+  full-screen slideshow at a configurable interval, favourites for the dashboard widget, and
+  deleting a picture removes the file rather than just the index row. Can be linked to a network share.
+- **Draw**: a full-page sketch pad using the same ink control as handwritten notes, with an
+  eraser, a wider palette, five pen widths and a choice of paper colour. Drawings are saved as
+  vectors and listed in a gallery that renders its own thumbnails, so there are no image files
+  to manage and a sketch stays sharp at any size. Undo reverses whichever thing happened last.
+- **Dashboard**: every widget reads live data: next events, today's tasks, pinned notes,
+  tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
+  a slowly cycling photo.
+- **On-screen keyboard**: for a wall display with no keyboard attached. Appears when a text field
+  is tapped, with a keypad for number fields and a QWERTY for everything else; `Done` sends a real
+  Enter, so the forms that act on it still work. Anything anchored to the bottom of the screen moves clear of it. Set to auto by default, which means on for a
+  touchscreen and off where there is a mouse, decided per screen rather than per install.
+- **Screensaver**: after a configurable idle spell the screen becomes a clock, the current
+  temperature and a slow slideshow of the favourited photos, which is more use from across a
+  kitchen than the dashboard it replaces and keeps one layout from burning into the panel. Any
+  tap, key or scroll dismisses it. Off by default; set the idle minutes in Settings.
+
+Recipes carry a picture from the photo library, so one can be uploaded once and reused, and
+deleting it from the library clears the reference rather than leaving a broken image.
+
+Calendars come from three providers behind one seam: the local family calendar, any number of ICS
+subscriptions, and **Google Calendar**, two-way, so an event added on the wall is pushed to
+Google as it is created. Events that came from an upstream calendar are not editable here, since
+the next sync would undo the change; the app says so rather than losing the edit.
 
 ## Stack
 
@@ -17,19 +66,17 @@ docker compose up --build -d      #  →  http://<pi-address>:8080
 | UI       | Vue 3 + Vite + Tailwind 4, served by nginx                                   |
 | API      | TypeScript + Express 5, decorator-driven controllers                         |
 | Database | PostgreSQL 17, raw `pg` with SQL migrations applied at startup               |
-| Runtime  | Docker Compose — three containers, one published port, arm64 and amd64       |
+| Runtime  | Docker Compose: three containers, one published port, arm64 and amd64        |
 
 The API follows the conventions of
 [dhlevi/express-ts-api-boilerplate](https://github.com/dhlevi/express-ts-api-boilerplate):
 `@Route`/`@Get` decorators, a `RouteManager` that wires them onto Express, thin controllers over
 `*Endpoints` classes holding the logic, a `TaskManager` for scheduled work, and a `HealthService`
-behind `/healthCheck`. The template's Webade, Oracle and MyBatis pieces are not carried over —
-none apply to a household appliance, and `oracledb` is a native module that would need to compile
-on ARM for nothing.
+behind `/healthCheck`.
 
 ## Getting started
 
-You need Docker with Compose v2. Nothing else — no Node, no Postgres on the host.
+You need Docker with Compose v2. Nothing else.
 
 ```bash
 git clone <this-repo> family-dash && cd family-dash
@@ -58,15 +105,14 @@ make check       # lint, typecheck and test both packages
 
 Runtime configuration lives in two places, and environment always wins:
 
-- **`.env`** — secrets and per-install values, read by Docker Compose. See `.env.example`.
-- **`api/config/application.properties`** — defaults, pool sizes, cron schedules, media paths.
+- **`.env`**: secrets and per-install values, read by Docker Compose. See `.env.example`.
+- **`api/config/application.properties`**: defaults, pool sizes, cron schedules, media paths.
 
 Anything in the properties file can be overridden by an environment variable: `media.thumbnail.width`
 becomes `MEDIA_THUMBNAIL_WIDTH`. A handful have conventional names instead (`server.port` → `PORT`);
 see `ENV_OVERRIDES` in `api/lib/core/AppProperties.ts`.
 
-Application preferences — theme, dashboard widgets, calendar sources, feeds, API keys — are stored
-in the database and edited in the Settings page, not in a file.
+Application preferences, theme, dashboard widgets, calendar sources, feeds, API keys,  are stored in the database and edited in the Settings page, not in a file.
 
 ### External services
 
@@ -98,23 +144,22 @@ calendar, subscribing to its secret `.ics` address is simpler and never needs re
 1. In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), create an
    **OAuth 2.0 Client ID** of type **Web application**.
 2. Add an **authorised redirect URI**. Google matches these exactly, and it depends on the address
-   you open the dashboard at — so the Settings page prints the one to use. From the Pi's own
+   you open the dashboard at, so the Settings page prints the one to use. From the Pi's own
    screen that is `http://localhost:8080/api/calendar/google/callback`.
 3. Put the id and secret in `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, then
    `docker compose up -d`.
 4. Set the OAuth **consent screen to "In production"**, not "Testing". You will see an
-   "unverified app" warning when you connect, which is expected for an app only you use — click
-   through it. Leaving the screen in Testing is what expires the refresh token after a week.
+   "unverified app" warning when you connect, which is expected for an app only you use, click through it. Leaving the screen in Testing is what expires the refresh token after a week.
 5. In Settings → Calendars, add a calendar of kind **Google account**, then connect it in the
    Google Calendar section below and pick which calendar to show.
 
 Google only permits `http://` redirect URIs on `localhost`, so the connect step has to be done
-from a browser that reaches the dashboard as `localhost` — the Pi's own screen, or an SSH tunnel
+from a browser that reaches the dashboard as `localhost`, the Pi's own screen, or an SSH tunnel
 (`ssh -L 8080:localhost:8080 you@your-pi`). Everything afterwards works from any device.
 
 If a connection dies, `/healthCheck` reports it under `calendar-sources` and Settings shows the
 reason on the calendar itself. A calendar you have created but not yet connected is not treated
-as a fault — it is a setup step, not a failure.
+as a fault.
 
 ## Architecture
 
@@ -127,9 +172,9 @@ family-dash/
 │       │                       HealthService, AppProperties, OpenApiGenerator
 │       ├── db/                 pool singleton, Migrator, migrations/*.sql
 │       ├── controllers/        thin, decorated route declarations
-│       ├── services/           *Endpoints.ts — the business logic
+│       ├── services/           *Endpoints.ts (the business logic)
 │       ├── repositories/       SQL, one module per table
-│       ├── providers/          calendar/ weather/ news/ — the pluggable seams
+│       ├── providers/          calendar/ weather/ news/ (the pluggable seams)
 │       ├── scheduled-tasks/    background refresh jobs
 │       └── health-checks/      probes behind /healthCheck
 └── web/
@@ -141,124 +186,57 @@ family-dash/
         └── views/              one per tab
 ```
 
-There is no `providers/photos/`. The plan called for one, but Google Photos cannot list a library
-and a mounted folder is the only source there is — an interface with a single implementation and
-no plausible second is worse than a well-named service, so the scanner lives in
-`services/PhotoService.ts`. The seams that exist earned it: there really are several calendars and
-several weather APIs.
+There is no `providers/photos/`. I intended to use google photos, but Google Photos API is deprecated and cannot list a library.
 
-Two decisions do most of the work:
+- External data is cached in Postgres, never fetched on page load.
+- The UI is touch-first and orientation-agnostic.
+- Feed content is treated as untrusted input.
+- Ink is stored as vectors, not pixels.
+- The screensaver's crossfade avoids `<Transition>` on purpose. Vue advances transition classes
+- on a `requestAnimationFrame`, which does not run while a page is hidden. The screensaver caught mid-fade would sit at `opacity: 0` indefinitely. The two picture layers fade on a bound `opacity` instead: it may or may not animate, but it always ends up at the right value.
+- The on-screen keyboard is in the app, not the OS. Note that Pi does have an onscreen keyboard option, so if you prefer to use that, you can disable the app one.
+- An empty photo library is treated as an unmounted volume, not as an empty library.
 
-**External data is cached in Postgres, never fetched on page load.** Scheduled tasks pull calendar
-feeds, news and weather into the database; the UI only reads the database. So a page load never
-blocks on somebody else's API, and when the network drops or a token expires, the last good data
-stays on the wall instead of the dashboard emptying out.
+## Development
 
-**The UI is touch-first and orientation-agnostic.** Targets are at least 48px, there are no
-hover-only affordances, and the page itself never scrolls — each panel scrolls internally. The nav
-rail sits down the left edge in landscape and along the bottom in portrait, from the same markup.
-Anything positioned by hand — a sticky note on the corkboard — is stored as a *fraction* of the
-board rather than in pixels, so the arrangement survives the screen being rotated.
+Hot reload for both packages, with Postgres in Docker:
 
-**Feed content is treated as untrusted input.** RSS is arbitrary HTML from the open internet, so
-titles and summaries are stripped to plain text at the API boundary and stored that way — markup
-never reaches the database, let alone the browser, and the UI only ever renders text nodes.
+```bash
+make dev      # API under tsx watch, Vite dev server, db published on 5432
+```
 
-**Outbound requests do not advertise a URL in their user-agent.** The `(+https://…)` crawler
-convention is polite, but at least one major publisher's edge silently blackholes requests that
-use it: the connection hangs until it times out, with no status and no error, which reads as a
-network fault rather than a rejection. Measured while building this — 20s timeout with the URL,
-115ms without. See `api/lib/providers/userAgent.ts`.
+Or work outside Docker against the containerised database:
 
-**Ink is stored as vectors, not pixels.** A handwritten note or a drawing keeps its strokes as
-points in the coordinate space they were made in, so an SVG viewBox reproduces them at any size
-without distortion or rasterising. Strokes are simplified on commit (Ramer–Douglas–Peucker) and
-rendered through a Catmull-Rom spline with corner detection, so a hand-drawn box keeps its
-corners instead of rounding into a blob. A legible handwritten note costs well under a kilobyte.
-Stylus pressure is captured and kept even though strokes currently draw at a constant width.
+```bash
+make install
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+cd api && npm run dev     # reads PG* from your environment
+cd web && npm run dev     # proxies /api to localhost:3000
+```
 
-Notes and the drawing page share one control (`web/src/components/ink/`) — same pointer
-handling, palm rejection and storage — differing only in props: the palette offered, whether an
-eraser appears, and whether the surface is a fixed-aspect card or fills the panel. A fix to
-stylus handling improves both places at once.
+Before pushing: `make check` (lint, typecheck, tests for both packages). CI runs the same, plus a
+compose smoke test that boots the whole stack from an empty database, and a multi-arch image build.
 
-**Undo records operations, not snapshots.** A stack of strokes is enough while drawing is the
-only thing that happens, but an eraser breaks it: undoing an erase has to *restore* strokes,
-which is the opposite of undoing a draw. Each action is kept as what it was — a draw, an erase,
-or a clear — so one undo reverses one action whichever kind it was, and a swipe that removed four
-strokes returns them together rather than four undos later. Because operations identify strokes
-by reference, rotating the screen (which rescales the ink into the new shape, making new objects)
-carries the history across with it, including strokes that are currently erased and waiting to
-come back.
+### Migrations
 
-**The automatic theme follows the sun, not the clock.** `appearance.theme` accepts `auto`, which
-resolves against today's sunrise and sunset for the location already set for the weather — the
-forecast carries them, so it costs nothing extra to fetch and it tracks the seasons rather than
-guessing at a fixed hour. Both ends are pulled in by a configurable offset, because daybreak is
-an unkind moment for a screen in a dim kitchen to turn white. `prefers-color-scheme` is
-deliberately not used: a kiosk Chromium reports whatever the Pi's OS says, and nobody is changing
-that at dusk. With no forecast to work from it falls back to fixed local hours rather than
-sticking on whichever theme it happened to be.
+Add a numbered file to `api/lib/db/migrations/002_add_thing.sql`. It is applied inside a
+transaction on the next boot and recorded with a checksum. **Migrations are immutable once
+applied**: editing one that has already run fails startup with a checksum mismatch rather than
+letting two installs diverge. Add a new file instead. Note: This may change to a liquibase or flyway runner at some point, if I get that excitable or the DB really needs more than we're doing here now. For the time being, it's simple enough that a full devops build is kinda overkill outside of practice
 
-**The screensaver's crossfade avoids `<Transition>` on purpose.** Vue advances transition classes
-on a `requestAnimationFrame`, which does not run while a page is hidden — and a screensaver caught
-mid-fade would sit at `opacity: 0` indefinitely, a black screen with a clock on it, until somebody
-touched the display. The two picture layers fade on a bound `opacity` instead: it may or may not
-animate, but it always ends up at the right value. Worth the care in the one component whose whole
-job is to keep showing something for hours unattended.
+The checksum covers the whole file, comments included, so correcting a typo in an applied
+migration stops the API booting even though the schema is untouched. When that is genuinely all
+that changed, record the new checksum rather than reverting the edit:
 
-**The on-screen keyboard is in the app, not the OS.** Chromium on Linux has no dependable touch
-keyboard of its own; the OS-level ones on Pi OS (`squeekboard`, `wvkbd`, `onboard`) need setting up
-and are unreliable about appearing when a field is focused. Doing it in the app is the only option
-that certainly works — and being in the app turns out to be an advantage rather than a compromise,
-because the layout can suit the field: a number stepper gets a keypad instead of a QWERTY nobody
-needs, and a number field starts with its value selected so the first digit replaces it.
+```bash
+docker compose run --rm --entrypoint sh api -c "node build/db/cli.js --reseal 001_init.sql"
+```
 
-It attaches once at the app shell and finds fields by watching `focusin` on the document, rather
-than by threading props through every input. That covers fields it was never told about — the raw
-inputs in the recipe editor, the steppers in Settings — and there is nothing to remember when
-adding a form later. Every key acts on `pointerdown` and prevents the default, which is what keeps
-the field focused; without that the first tap would blur the input and there would be nothing left
-to type into. Date and time fields are left alone, because Chromium's own picker is tappable and
-beats spelling a date out.
+`docker compose run` rather than `exec`, because a container that will not boot cannot be exec'd
+into. This asserts the change was cosmetic; if it was not, the database and the migration have
+diverged and nothing will tell you so later.
 
-**Only deliberate actions count as activity.** The idle watcher listens for taps, keys and
-scrolls, not pointer movement: a wall display with a mouse plugged in would otherwise be kept
-awake for weeks by a cursor sitting still under a draught. The screensaver dismisses on the press
-rather than the release, and prevents the default, so the tap that wakes the screen does not also
-land as a click on whatever was underneath it.
-
-**Photos are addressed by database id, never by path.** `/media/photos/<id>` looks the row up and
-serves the file it names, so a request cannot describe a file — which removes path traversal from
-the only routes that touch arbitrary files, rather than trying to filter it. The URL carries the
-row's `updated_at` as a version, because these responses are cached for a year: a picture
-replaced on the volume keeps its id, and without the version it would stay hidden behind that
-cache forever.
-
-**HEIC needs a decoder sharp does not ship.** Every iPhone shoots HEIC by default, and sharp's
-prebuilt libheif reads the container but carries no HEVC decoder — dimensions and EXIF come back
-fine and then any attempt to decode the pixels fails. Alpine's `libheif-tools` (458 KiB, in the
-API image) does have one, so HEIC takes one extra step through `heif-convert` on the way in. No
-browser can display a HEIC either, so opening one serves a converted copy instead, generated the
-first time somebody actually looks at that picture and kept afterwards — a library full of phone
-photos costs nothing until it is browsed.
-
-**An empty photo library is treated as an unmounted volume, not as an empty library.** The scan
-reconciles the index against the filesystem, which normally means deleting rows whose files have
-gone. If the volume is a USB drive that has been unplugged, doing that would delete every row —
-and `recipe.photo_id` references those rows, so every recipe would quietly lose its picture, with
-re-indexing later giving new ids that cannot put them back. A scan that finds nothing at all when
-the index is not empty therefore changes nothing and reports itself as a failure. The trade-off is
-deliberate: somebody who really does empty the library keeps a stale index until they add a file
-or delete through the UI, which is the recoverable way round.
-
-**Ink is compared canonically, not by `JSON.stringify`.** Strokes round-trip through a Postgres
-`jsonb` column, which normalises object key order, so a saved drawing comes back with its keys
-rearranged and never string-matches the copy on the canvas. `inkSignature()` builds the
-fingerprint from arrays instead, so "are there unsaved changes?" answers honestly rather than
-warning about a drawing that was just saved.
-
-### Adding an endpoint
+### Adding an endpoint (If you want to add your own API calls, etc)
 
 ```ts
 @Route('api/tasks')
@@ -283,60 +261,17 @@ using `emitDecoratorMetadata`, and a value that cannot be coerced becomes a 400 
 handler runs.
 
 `/openapi` serves a browsable API document, generated at runtime from the same registry the router
-was built from — so it always describes the routes that actually exist, and there is no build step
-to fall out of date.
+was built from, so it always describes the routes that actually exist, and there is no build step to fall out of date.
 
-## Development
-
-Hot reload for both packages, with Postgres in Docker:
-
-```bash
-make dev      # API under tsx watch, Vite dev server, db published on 5432
-```
-
-Or work outside Docker against the containerised database:
-
-```bash
-make install
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
-cd api && npm run dev     # reads PG* from your environment
-cd web && npm run dev     # proxies /api to localhost:3000
-```
-
-Before pushing: `make check` (lint, typecheck, tests for both packages). CI runs the same, plus a
-compose smoke test that boots the whole stack from an empty database, and a multi-arch image build.
-
-### Migrations
-
-Add a numbered file to `api/lib/db/migrations/` — `002_add_thing.sql`. It is applied inside a
-transaction on the next boot and recorded with a checksum. **Migrations are immutable once
-applied**: editing one that has already run fails startup with a checksum mismatch rather than
-letting two installs diverge. Add a new file instead.
-
-The checksum covers the whole file, comments included, so correcting a typo in an applied
-migration stops the API booting even though the schema is untouched. When that is genuinely all
-that changed, record the new checksum rather than reverting the edit:
-
-```bash
-docker compose run --rm --entrypoint sh api -c "node build/db/cli.js --reseal 001_init.sql"
-```
-
-`docker compose run` rather than `exec`, because a container that will not boot cannot be exec'd
-into. This asserts the change was cosmetic; if it was not, the database and the migration have
-diverged and nothing will tell you so later.
+You can go to the boilerplate project to see more about how the API works: [dhlevi/express-ts-api-boilerplate](https://github.com/dhlevi/express-ts-api-boilerplate)
 
 ## Raspberry Pi
 
-A Pi 4 or 5 with 2GB is comfortable; the stack idles at a few hundred MB. Use a good SD card, or
-better, boot from USB/NVMe — Postgres on a cheap card is the main thing that will make this feel
-slow.
+A Pi 4 or 5 with 2GB is comfortable; the stack idles at a few hundred MB. Use a good SD card, or better, boot from USB/NVMe. Postgres on a cheap card is the main thing that will make this feel slow.
 
 ### Quickstart
 
-From a fresh Pi to a working dashboard. Every step ends with something to check, so a failure
-shows up where it happened rather than three steps later.
-
-**Before you start**, you need **64-bit Raspberry Pi OS** — the images are `arm64` only, and a
+**Before you start**, you need **64-bit Raspberry Pi OS** the images are `arm64` only, and a
 32-bit install will fail at `docker compose up` with a manifest error rather than anything
 helpful. If you want the kiosk display as well, use the Desktop image rather than Lite. Check
 which you have:
@@ -346,15 +281,13 @@ uname -m        # must print: aarch64
 ```
 
 Everything below is done over SSH, which Raspberry Pi Imager can enable (and set your username,
-password and wifi) when you write the card — under the gear/⚙ advanced options. Otherwise turn it
-on from the Pi itself with `sudo raspi-config nonint do_ssh 0`.
+password and wifi) when you write the card, under the gear/⚙ advanced options. Otherwise turn it on from the Pi itself with `sudo raspi-config nonint do_ssh 0`.
 
 #### 1. Install Docker
 
 Use Docker's own apt repository rather than Debian's `docker.io` package: you need the Compose
 plugin, which is what `docker compose` (no hyphen) is, and Debian does not package it. Raspberry
-Pi OS is Debian, so the Debian instructions apply directly — `VERSION_CODENAME` below resolves to
-`bookworm` or `trixie` on its own.
+Pi OS is Debian, so the Debian instructions apply directly, `VERSION_CODENAME` below resolves to `bookworm` or `trixie` on its own.
 
 ```bash
 sudo apt update && sudo apt install -y ca-certificates curl git
@@ -375,19 +308,19 @@ Then let your own user run Docker without `sudo`:
 
 ```bash
 sudo usermod -aG docker "$USER"
-newgrp docker        # this shell only — log out and back in for the rest
+newgrp docker        # this shell only. log out and back in for the rest
 ```
 
 Check it works:
 
 ```bash
 docker run --rm hello-world       # should print "Hello from Docker!"
-docker compose version            # any version is fine — it just has to exist
+docker compose version            # any version is fine, it just has to exist
 ```
 
 > Docker also offers a one-line script at `get.docker.com`, which is quicker. Docker's own
 > documentation says it "isn't recommended for production environments", and a dashboard on your
-> wall for the next few years is closer to production than to a scratch VM — hence the repository
+> wall for the next few years is closer to production than to a scratch VM, hence the repository
 > above.
 
 #### 2. Get the code
@@ -403,7 +336,7 @@ cd ~/family-dash
 make env                 # copies .env.example to .env
 ```
 
-One value is mandatory — Compose refuses to start without it, which is deliberate:
+One value is mandatory. Compose refuses to start without it, which is deliberate:
 
 ```bash
 sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -base64 24)|" .env
@@ -411,9 +344,9 @@ sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -base64 24)|" .
 
 Two more are worth setting now:
 
-- **`TZ`** — used for the background job schedules, date rendering and resolving the weather
+- **`TZ`** used for the background job schedules, date rendering and resolving the weather
   timezone. Set it to your own (`America/Vancouver`, `Europe/London`, …).
-- **`MEDIA_PATH`** — where the photo library lives. Leave it as `./media` to start with; see
+- **`MEDIA_PATH`** where the photo library lives. Leave it as `./media` to start with; see
   [Photo library](#photo-library) and [Storage](#storage) for why you may want it on a USB drive.
 
 The weather location, theme, and everything else are set in the Settings page once it is running,
@@ -429,9 +362,7 @@ grep -E '^(TZ|WEB_PORT|MEDIA_PATH)=' .env     # confirm what you have
 make up
 ```
 
-This builds both images on the Pi and starts three containers. **The first build takes a while** —
-almost all of it is `npm install` for the two packages — and later builds reuse the cache. Memory
-is not the constraint: the build steps peak around 400MB, so a 2GB Pi is fine.
+This builds both images on the Pi and starts three containers. **The first build takes a while!** almost all of it is `npm install` for the two packages and later builds reuse the cache. Memory is not the constraint: the build steps peak around 400MB, so a 2GB Pi is fine.
 
 #### 5. Check it came up
 
@@ -457,15 +388,15 @@ Browse to `http://<that-address>:8080` from any device on the network, or
 `http://raspberrypi.local:8080` usually works too.
 
 On the first run the dashboard seeds its own settings, creates the local family calendar, and
-fetches news and weather straight away — so it should have something on it within a few seconds of
+fetches news and weather straight away, so it should have something on it within a few seconds of
 loading. The calendar, tasks and notes start empty because they are yours to fill.
 
 #### 7. Then
 
-- [Kiosk display](#kiosk-display) — full-screen Chromium on boot, and turning off screen blanking.
-- [Start on boot](#start-on-boot) — the systemd unit, if you want it independent of a desktop login.
-- [Storage](#storage) and [Backups](#backups) — worth reading before you have data you care about.
-- Settings → Appearance to turn on the auto theme, the screensaver and the on-screen keyboard.
+- [Kiosk display](#kiosk-display): full-screen Chromium on boot, and turning off screen blanking.
+- [Start on boot](#start-on-boot): the systemd unit, if you want it independent of a desktop login.
+- [Storage](#storage) and [Backups](#backups): worth reading before you have data you care about.
+- Settings: Turn on the auto theme, the screensaver and the on-screen keyboard, etc.
 
 #### Upgrading
 
@@ -478,8 +409,8 @@ rebuild. `make prune` afterwards reclaims the old image layers.
 
 #### Building somewhere else
 
-Both images build natively on `arm64`, so the Pi can do it itself. If you would rather not — an
-older Pi, or a slow SD card — build for `arm64` on another machine and copy the images over:
+Both images build natively on `arm64`, so the Pi can do it itself. If you would rather not, an
+older Pi, or a slow SD card, build for `arm64` on another machine and copy the images over:
 
 ```bash
 # on a machine with Docker Desktop or buildx
@@ -495,15 +426,14 @@ build-images` does the same for both architectures at once, for pushing to a reg
 
 ### Photo library
 
-Point `MEDIA_PATH` at wherever the photo library lives — a USB drive or an NFS mount is fine, and
-keeping it off the SD card saves a lot of write wear. The layout inside it is:
+Point `MEDIA_PATH` at wherever the photo library lives. A USB drive or an NFS mount is fine, and keeping it off the SD card saves a lot of write wear. The layout inside it is:
 
 ```
 <MEDIA_PATH>/
 ├── photos/          the library. Top-level folders become albums.
 │   ├── Holiday/
 │   └── Garden/
-└── thumbs/          generated, and safe to delete — a rescan rebuilds it
+└── thumbs/          generated, and safe to delete, a rescan rebuilds it
 ```
 
 Copy pictures straight into `photos/` if that is easier than uploading them; the hourly scan
@@ -511,7 +441,7 @@ indexes whatever it finds, and `Rescan` on the Pictures page does it now. Nothin
 `photos/` except uploads, so the folder stays yours.
 
 If the library lives on a removable drive, note that the scan will not delete the index when the
-drive is absent — it reports that instead, so unplugging the drive does not lose the pictures'
+drive is absent, it reports that instead, so unplugging the drive does not lose the pictures'
 favourites or the recipe photos pointing at them.
 
 ### Storage
@@ -523,14 +453,14 @@ install:
 |---|---|---|
 | Container images (api, web, postgres) | ~970 MB | no |
 | Postgres volume | 63 MB, of which the database itself is ~9 MB | barely |
-| Photos | ~2 MB each | yes — the only unbounded thing |
+| Photos | ~2 MB each | yes unbounded |
 | Thumbnails | ~25 KB each | with the photos |
 
 The database stays small by design: news is pruned on a retention window, the weather cache is a
 single row, and everything else is short text. On a 32 GB card that leaves room for something like
 ten to fifteen thousand photos.
 
-**Space is not the risk; the card is.** Postgres writes continuously — every transaction hits the
+Postgres writes continuously, every transaction hits the
 write-ahead log, and four background tasks write every 15 to 30 minutes, for years. SD cards are
 the most common way a Raspberry Pi dies, and when one goes it takes the notes, tasks, recipes,
 meal plans, drawings and photo favourites with it. The calendar, news and weather all re-sync
@@ -541,9 +471,7 @@ So, in order of preference:
 1. **Boot a Pi 4 or 5 from a USB SSD and skip the card entirely.** Images, the Postgres volume and
    the media folder all land on the SSD, there is nothing to configure here, and it is faster as
    well as more durable. This is the one change that actually solves the problem.
-2. **Keep the card, but move what you can off it.** Point `MEDIA_PATH` at external storage or a
-   network share — that keeps the photo writes away from the card, though not Postgres'. Use a
-   *high-endurance* card (the ones sold for dashcams), not a standard one.
+2. **Keep the card, but move what you can off it.** Point `MEDIA_PATH` at external storage or a network share. That keeps the photo writes away from the card, though not Postgres'. Use a *high-endurance* card (the ones sold for dashcams and such), not a standard one.
 3. **Keep everything on the card and take backups.** Which you should do regardless.
 
 Relocating just the database is more trouble than it looks: `pgdata` is a named Docker volume, so
@@ -566,11 +494,9 @@ A dump of a full household is around 30 KB compressed, so keeping months of them
 Two things worth knowing:
 
 - **Put the backups somewhere other than the card.** A backup on the same SD card as the database
-  does not survive the failure it exists for. `BACKUP_DIR` is there for exactly that.
+  does not survive a failure state. `BACKUP_DIR` is there for exactly that.
 - **Photo files are not in the dump.** They live on the media volume, are usually copies of what is
-  already on somebody's phone, and a nightly tar of a 15 GB library is not a backup anyone keeps
-  running. Back that folder up with whatever backs up the drive it sits on. Thumbnails need no
-  backup at all — a rescan rebuilds them.
+  already on somebody's phone, and a nightly tar of a 15 GB library is not a backup anyone keeps running. Back that folder up with whatever backs up the drive it sits on. Thumbnails need no backup at all as a rescan rebuilds them.
 
 Nightly, via the Pi's own crontab (`crontab -e`):
 
@@ -580,8 +506,7 @@ Nightly, via the Pi's own crontab (`crontab -e`):
 40 3 * * * find /mnt/usb/family-dash -name 'familydash-*.sql.gz' -mtime +30 -delete
 ```
 
-Test the restore before you need it. Restoring into a scratch database proves the dump is good
-without touching the live one:
+Test the restore before you need it. Restoring into a scratch database proves the dump is good without touching the live one:
 
 ```bash
 make psql   # then, at the prompt:
@@ -598,7 +523,7 @@ Docker's own service is enabled at install, and the containers are marked
 belt-and-braces: it re-creates them if they were ever removed, and gives you a `systemctl
 start`/`stop` for the whole stack.
 
-All of this works over SSH. Paste it as-is — the heredoc is unquoted so `$USER` and `$HOME`
+If you've already got the host raspberry pi and equipment all setup and waht to remote to the device, you can do it all from a second machine. All of this works over SSH. Paste it as-is, the heredoc is unquoted so `$USER` and `$HOME`
 expand to *your* account, rather than assuming the old default of `pi`:
 
 ```bash
@@ -625,7 +550,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now family-dash
 ```
 
-Check it — this asserts the substitution actually happened rather than leaving you to eyeball it:
+This asserts the substitution actually happened rather than leaving you to eyeball it:
 
 ```bash
 systemctl is-enabled family-dash                                    # enabled
@@ -635,8 +560,7 @@ systemctl is-enabled family-dash                                    # enabled
   && echo "path ok" || echo "WRONG PATH: $(systemctl show -P WorkingDirectory family-dash)"
 ```
 
-A successful start shows `active (exited)`, because the unit is `Type=oneshot` — the containers
-keep running after it finishes.
+A successful start shows `active (exited)`, because the unit is `Type=oneshot`. The containers keep running after it finishes.
 
 **If it fails to start**, the exit status says which of three things went wrong:
 
@@ -647,10 +571,10 @@ sudo journalctl -u family-dash -n 30 --no-pager
 
 | Status | Meaning | Fix |
 |---|---|---|
-| `217/USER` | The `User=` account does not exist | Re-run the `tee` above from *your own* shell — not from `sudo -i` or `sudo su`, where `$USER` is `root`. Older versions of this file hardcoded `pi`, which is no longer the default account name. |
+| `217/USER` | The `User=` account does not exist | Re-run the `tee` above from *your own* shell, not from `sudo -i` or `sudo su`, where `$USER` is `root`. Older versions of this file hardcoded `pi`, which is no longer the default account name. |
 | `200/CHDIR` | `WorkingDirectory` does not exist | Check where you actually cloned it, and correct the path |
 | `203/EXEC` | `/usr/bin/docker` is not there | `command -v docker`, and use that path instead |
-| `1` | Docker ran and refused | The journal carries Compose's own message — usually `POSTGRES_PASSWORD` still unset in `.env` |
+| `1` | Docker ran and refused | The journal carries Compose's own message, usually `POSTGRES_PASSWORD` still unset in `.env` |
 
 ### Kiosk display
 
@@ -667,7 +591,7 @@ sudo raspi-config nonint do_boot_behaviour B4      # B4 = desktop, auto-login
 
 #### 2. Find out which compositor you have
 
-This decides how the kiosk is launched, and it changed across Raspberry Pi OS releases — Bullseye
+This decides how the kiosk is launched, and it changed across Raspberry Pi OS releases. Bullseye
 and earlier are X11, Bookworm moved to Wayland with `wayfire`, and later Bookworm and Trixie use
 `labwc`.
 
@@ -675,8 +599,7 @@ and earlier are X11, Bookworm moved to Wayland with `wayfire`, and later Bookwor
 ps -e -o comm= | grep -xE 'labwc|wayfire|Xorg' || echo "no desktop session running"
 ```
 
-If that prints nothing, reboot after step 1 and try again — the answer comes from a session that
-is actually up.
+If that prints nothing, reboot after step 1 and try again.
 
 #### 3. Write the launcher
 
@@ -705,7 +628,7 @@ EOF
 chmod +x ~/.local/bin/family-dash-kiosk
 ```
 
-**Running this straight from SSH will not work** — an SSH session has no display attached, so
+**Running this straight from SSH will not work** an SSH session has no display attached, so
 Chromium exits with `Missing X server or $DISPLAY` whatever backend it picks. To try it on the
 Pi's own screen from SSH you have to point at the session that is already running there:
 
@@ -724,24 +647,23 @@ export WAYLAND_DISPLAY=$(ls "$XDG_RUNTIME_DIR" | grep -m1 -E '^wayland-[0-9]+$')
 
 On X11, `export DISPLAY=:0` instead. Either way `pkill chromium` from SSH closes it again.
 
-If neither command prints anything, there is no desktop session to attach to — which is the
+If neither command prints anything, there is no desktop session to attach to, which is the
 answer in itself. Finish step 1, reboot, and check again. Honestly the simpler path is to skip
-testing by hand: wire up step 4, reboot, and watch the screen.
+testing by hand: wire up step 4, reboot, and watch the screen. It should just work at this point.
 
 **Why the hostname and not `localhost`.** Both work for the kiosk itself, but the address in the
-browser is what the app offers when sharing the shopping list to a phone — and a QR code
-containing `localhost` scans perfectly and then fails to load. Using `$(hostname).local` (or the
+browser is what the app offers when sharing the shopping list to a phone (or connecting via another device). A QR code containing `localhost` scans perfectly and then fails to load. Using `$(hostname).local` (or the
 Pi's IP) means what is on screen is something another device can actually reach. If you do use
-`localhost`, the app notices and asks you once for the network address instead.
+`localhost`, the app notices and asks you once for the network address instead. 
 
 `--disable-pinch` and `--overscroll-history-navigation=0` matter more than they sound: without
 them a stray two-finger touch zooms the whole dashboard, and a horizontal swipe on the drawing
-page navigates back.
+page navigates back (we're in chromium afterall). You can reenable them if you want to.
 
 #### 4. Start it at login
 
 Each compositor has its own mechanism, so this detects which one is running and writes the
-matching file. Safe to re-run — it will not add a second entry:
+matching file. Safe to re-run as it will not add a second entry:
 
 ```bash
 KIOSK="$HOME/.local/bin/family-dash-kiosk"
@@ -775,8 +697,7 @@ case "$COMPOSITOR" in
 esac
 ```
 
-Then `sudo reboot`. Nothing before this step makes the kiosk start on its own — the launcher is
-just a script until something references it.
+Then `sudo reboot`. Nothing before this step makes the kiosk start on its own.
 
 If the screen comes up showing a connection error rather than the dashboard, the browser got
 there before the containers did. `make ps` from SSH will show whether they are up; a reload fixes
@@ -789,7 +710,7 @@ starts, so this should not happen, but it is worth recognising rather than debug
 sudo raspi-config nonint do_blanking 1     # 1 disables, 0 enables
 ```
 
-**That switch is X11-only** — it writes `/etc/X11/xorg.conf.d/10-blanking.conf`, which a Wayland
+**That switch is X11-only** it writes `/etc/X11/xorg.conf.d/10-blanking.conf`, which a Wayland
 session never reads. On `wayfire`, do it in the compositor instead:
 
 ```bash
@@ -797,20 +718,20 @@ printf '\n[idle]\ndpms_timeout = -1\nscreensaver_timeout = -1\n' >> ~/.config/wa
 ```
 
 If `wayfire.ini` already has an `[idle]` section, put those two keys in the existing one instead of
-adding a second — same reasoning as `[autostart]` above.
+adding a second, same reasoning as `[autostart]` above.
 
 `labwc` does not blank the screen by itself, so there may be nothing to turn off. If yours does
-blank, something else is doing it — look for an idle daemon (`pgrep -a swayidle`) and disable that
+blank, something else is doing it. Look for an idle daemon (`pgrep -a swayidle`) and disable that
 rather than hunting for a labwc setting.
 
 Note this is separate from the app's own screensaver, which replaces the dashboard with a photo
 slideshow and is set in Settings. You want the *display* to stay on and the app to decide what is
-shown on it.
+shown on it. If you prefer the screen blanking though, feel free to leave those settings on and let it disable (powersaving, etc). Useful if you use a battery backup or something instead of always powered.
 
 #### Rotating to portrait
 
-Nothing needs changing in the app — the layout follows the screen's orientation on its own, and a
-rotation takes effect on the next repaint.
+Nothing needs changing in the app as the layout follows the screen's orientation on its own, and a
+rotation takes effect on the next repaint. You'll have to set the rotation on the OS itself. You can do this in the raspberry pi settings, or:
 
 ```bash
 sudo apt install -y wlr-randr              # not installed by default
@@ -822,7 +743,7 @@ xrandr --output HDMI-1 --rotate left       # X11 equivalent
 ```
 
 Run those from the Pi's own screen, or export `XDG_RUNTIME_DIR` and `WAYLAND_DISPLAY` first as in
-step 3 — an SSH session has no output to act on either.
+step 3, an SSH session has no output to act on either.
 
 To make it stick under `wayfire`, put it in `~/.config/wayfire.ini` using the output name
 `wlr-randr` gave you:
@@ -833,7 +754,7 @@ transform = 90
 ```
 
 `labwc` has no equivalent config file for outputs, so persist it the same way the kiosk is
-started — and put it *above* the kiosk line, so the screen is the right way round before Chromium
+started and put it *above* the kiosk line, so the screen is the right way round before Chromium
 opens on it:
 
 ```bash
@@ -852,79 +773,14 @@ docker compose ps           # container state; api and web have healthchecks
 make logs-api               # API logs
 ```
 
-The Settings page shows the same information on the screen itself — service status, health probes
-and background task state — which is what you want when the Pi is on a wall and there is no
-keyboard nearby.
+These commands will let you know if things are running as expeected. Logs will show you failures and issues you may need to resolve.
+
+The Settings page shows the same information on the screen itself: service status, health probes
+and background task state, which is what you want when the Pi is on a wall and there is no
+keyboard nearby (or you can't remote in for whatever reason).
 
 `/healthCheck` returns 503 only when something **critical** fails (the database). A broken calendar
 feed reports as *degraded* with a 200, so one bad feed does not make Docker restart the container.
-
-## Status
-
-**Working now:**
-
-- **Settings** — theme (including one that follows sunrise and sunset), accent, clock, screensaver,
-  on-screen keyboard, calendar defaults, dashboard widgets, household names, location and units,
-  plus service diagnostics. Changes save as you make them.
-- **Calendar** — month, week and agenda views merged across the local family calendar, any number
-  of ICS subscriptions and a connected Google account, with background sync, tap-a-day to add,
-  and read-only handling for events a feed owns.
-- **Tasks and chores** — grouped by when they are due, quick-add, priorities, free-text
-  assignment, and repeating chores that reappear once ticked off.
-- **News** — headlines aggregated from RSS, which needs no account. Images, bylines and summaries
-  are recovered from whatever shape each feed offers, cached locally, and pruned on a retention
-  window. Tapping a story shows its summary and a QR code to finish reading on a phone — a kiosk
-  browser has no back button, so following a link would strand the dashboard on a news site.
-- **Weather** — current conditions, a 24-hour strip and a seven-day outlook from
-  [Open-Meteo](https://open-meteo.com), which needs **no API key**. Set the location by searching
-  for your town rather than typing coordinates. Forecasts are cached in Postgres, so the page is
-  instant and a network outage shows the last forecast clearly marked stale rather than an error.
-- **Meals** — a seven-day planner, a reusable recipe library, and a shopping list built from the
-  two. Ingredients are merged across the week (three recipes using flour give one line with the
-  total), grouped by supermarket aisle, and a QR code hands the live list to a phone on the same
-  wifi so ticking items off in a shop shows up on the wall.
-- **Sticky notes** — a draggable corkboard of typed *or handwritten* notes. Handwriting is
-  captured from a finger or stylus via pointer events (with pressure and palm rejection) and
-  stored as smoothed vector strokes, so a note stays crisp whether it is full size on the board
-  or shrunk into a dashboard widget. Pin a note to show it on the dashboard.
-- **Photos** — an album browser over a folder on the mounted media volume, because Google Photos
-  cannot list a library any more. Pictures arrive by uploading them or by copying them onto the
-  volume; an hourly scan reconciles the two, reads capture dates from EXIF so the library is in
-  the order things actually happened, and generates thumbnails. HEIC from a phone works. A
-  full-screen slideshow at a configurable interval, favourites for the dashboard widget, and
-  deleting a picture removes the file rather than just the index row.
-- **Draw** — a full-page sketch pad using the same ink control as handwritten notes, with an
-  eraser, a wider palette, five pen widths and a choice of paper colour. Drawings are saved as
-  vectors and listed in a gallery that renders its own thumbnails, so there are no image files
-  to manage and a sketch stays sharp at any size. Undo reverses whichever thing happened last —
-  a swipe that erased four strokes puts all four back in one step.
-- **Dashboard** — every widget reads live data: next events, today's tasks, pinned notes,
-  tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
-  a slowly cycling photo.
-- **On-screen keyboard** — for a wall display with no keyboard attached. Appears when a text field
-  is tapped, with a keypad for number fields and a QWERTY for everything else; `Done` sends a real
-  Enter, so the forms that act on it still work. Anything anchored to the bottom of the screen —
-  a dialog, most of all — moves clear of it. Set to auto by default, which means on for a
-  touchscreen and off where there is a mouse, decided per screen rather than per install.
-- **Screensaver** — after a configurable idle spell the screen becomes a clock, the current
-  temperature and a slow slideshow of the favourited photos, which is more use from across a
-  kitchen than the dashboard it replaces and keeps one layout from burning into the panel. Any
-  tap, key or scroll dismisses it. Off by default; set the idle minutes in Settings.
-
-Recipes carry a picture from the photo library, so one can be uploaded once and reused, and
-deleting it from the library clears the reference rather than leaving a broken image.
-
-Calendars come from three providers behind one seam: the local family calendar, any number of ICS
-subscriptions, and **Google Calendar** — two-way, so an event added on the wall is pushed to
-Google as it is created. Events that came from an upstream calendar are not editable here, since
-the next sync would undo the change; the app says so rather than losing the edit.
-
-**Still to come:**
-
-1. **Depth** — polish, empty and error states, and whatever the screen reveals once it is
-   actually on the wall.
-
-Every tab is built and every page reads live data.
 
 ## License
 

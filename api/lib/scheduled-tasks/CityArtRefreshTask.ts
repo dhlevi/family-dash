@@ -9,7 +9,7 @@ const service = new CityArtService()
  *
  * One at a time rather than filling the pool in a burst: each picture costs a
  * few megabytes of vector tiles from a service that charges nothing for them,
- * and there is no hurry — the screensaver has whatever was drawn before, and
+ * and there is no hurry, the screensaver has whatever was drawn before, and
  * the pool fills itself over the first day.
  *
  * Does nothing at all while the screensaver is set to photographs, so an

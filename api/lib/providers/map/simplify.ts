@@ -4,7 +4,7 @@
  * Vector tiles are drawn at 4096 units across whatever size they are shown
  * at, so a tile scaled to 600 output pixels carries roughly seven times more
  * geometry than the picture can resolve. Left in, that is most of the weight
- * of the finished SVG — and every one of those points is a number librsvg has
+ * of the finished SVG, and every one of those points is a number librsvg has
  * to parse and a curve the Raspberry Pi has to flatten.
  *
  * Simplifying after projection rather than before is deliberate: the tolerance
@@ -73,13 +73,6 @@ function dropCloserThan(coordinates: number[], tolerance: number): number[] {
 
 /**
  * Beyond this many points, Douglas-Peucker is skipped.
- *
- * It is O(n²) on input that defeats it — a ring that zigzags by more than the
- * tolerance at every step never lets the recursion discard anything — and this
- * geometry arrives over the network from a tile server. Simplification is an
- * optimisation rather than a correctness requirement, so the right failure mode
- * is a slightly heavier path, not a background task that stops responding.
- * Real tile rings are two orders of magnitude below this.
  */
 const MAX_DOUGLAS_PEUCKER_POINTS = 12_000
 

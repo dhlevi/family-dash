@@ -15,7 +15,7 @@ import { albumLabel, type Photo, type PhotoAlbum } from '@/api/types'
  * uploaded once and reused, gets the same thumbnail treatment, and is
  * managed in one place.
  *
- * Not a Modal, because it is opened from inside one — nesting two would
+ * Not a Modal, because it is opened from inside one nesting two would
  * stack backdrops and trap focus in the wrong layer. It renders inline
  * instead, replacing the field it belongs to while it is open.
  */
@@ -41,11 +41,7 @@ const fileInput = ref<HTMLInputElement | null>(null)
 
 const chosen = computed(() => photos.value.find(photo => photo.id === props.modelValue) ?? null)
 
-/**
- * The chosen photo may not be in the loaded page — it could be an older
- * picture, or the list may not have loaded yet — so it is fetched on its own
- * to render the preview.
- */
+// The chosen photo may not be in the loaded page so it is fetched on its ownto render the preview.
 const preview = ref<Photo | null>(null)
 
 async function loadPreview(id: string | null): Promise<void> {

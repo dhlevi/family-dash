@@ -10,8 +10,7 @@ import type { Photo } from '@/api/types'
 /**
  * A slowly cycling picture from the library.
  *
- * Shows the same pool as the screensaver — favourites, or the newest
- * pictures if nothing has been starred — so what the wall shows is decided
+ * Shows the same pool as the screensaver so what the wall shows is decided
  * in one place.
  *
  * Only the thumbnail is fetched. A full-size picture would be several

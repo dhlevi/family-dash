@@ -3,6 +3,7 @@ import { TaskManager } from '../core/TaskManager'
 import { calendarSyncTask } from './CalendarSyncTask'
 import { cityArtRefreshTask } from './CityArtRefreshTask'
 import { newsFetchTask } from './NewsFetchTask'
+import { notificationSweepTask } from './NotificationSweepTask'
 import { photoScanTask } from './PhotoScanTask'
 import { weatherRefreshTask } from './WeatherRefreshTask'
 
@@ -14,11 +15,17 @@ import { weatherRefreshTask } from './WeatherRefreshTask'
  *
  * Cron expressions come from the `[tasks]` section of
  * config/application.properties so they can be tuned per install without a
- * rebuild — a Pi on a metered connection may not want a sync every 15
- * minutes.
+ * rebuild.
  */
 export function registerTasks(): void {
-  TaskManager.register(calendarSyncTask, weatherRefreshTask, newsFetchTask, photoScanTask, cityArtRefreshTask)
+  TaskManager.register(
+    calendarSyncTask,
+    weatherRefreshTask,
+    newsFetchTask,
+    photoScanTask,
+    cityArtRefreshTask,
+    notificationSweepTask
+  )
 
   const registered = TaskManager.names()
   console.info(

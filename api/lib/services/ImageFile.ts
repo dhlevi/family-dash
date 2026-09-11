@@ -14,8 +14,8 @@ const run = promisify(execFile)
  * Reading and resizing image files.
  *
  * Wraps sharp so the rest of the code never touches it directly: everything
- * that follows from the choice of image library — which formats are
- * accepted, how orientation is applied, what a thumbnail is — is decided
+ * that follows from the choice of image library, which formats are
+ * accepted, how orientation is applied, what a thumbnail is, is decided
  * here.
  */
 
@@ -43,7 +43,7 @@ const MIME_BY_EXTENSION: Record<string, string> = {
  * decoder, so an iPhone photo yields its dimensions and EXIF and then fails
  * on any attempt to actually decode it ("bad seek", from libheif running off
  * the end of the data it could not parse). `heif-convert` from
- * libheif-tools, installed in the image, does have the decoder — so these
+ * libheif-tools, installed in the image, does have the decoder, so these
  * take one extra step through it on the way in.
  */
 const HEVC_CODED = new Set(['.heic', '.heif'])
@@ -128,8 +128,7 @@ export class ImageFile {
    * Writes a copy a browser can display, for a format it cannot.
    *
    * Only HEIC reaches this. Sized for the screen rather than for a tile,
-   * because this is what the slideshow and the full-screen view show — the
-   * 480px thumbnail would be visibly soft on a 16" panel.
+   * because this is what the slideshow and the full-screen view show.
    */
   public static async writeDisplayCopy(sourcePath: string, destinationPath: string): Promise<boolean> {
     return ImageFile.resizeInto(sourcePath, destinationPath, ImageFile.displayWidth(), 86)
@@ -140,9 +139,7 @@ export class ImageFile {
    *
    * Rasterised from the SVG rather than resampled from the WebP, so the tile
    * is drawn at its own size instead of being a shrunk copy of a compressed
-   * one — line art resamples badly, and the thin strokes are the whole
-   * picture. Returns null rather than throwing: a missing tile in a settings
-   * grid is not worth failing a page over.
+   * one.
    */
   public static async renderCityArtThumbnail(svgPath: string): Promise<Buffer | null> {
     try {
@@ -209,10 +206,9 @@ export class ImageFile {
    * The capture date from an EXIF block.
    *
    * EXIF timestamps carry no timezone, and exif-reader reads them as if they
-   * were UTC. For sorting a family library that is close enough — the only
-   * pictures it can place on the wrong day are ones taken within a few hours
-   * of midnight — and it beats the file's own date, which is when the file
-   * was copied rather than when the photo was taken.
+   * were UTC. For sorting a family library that is close enough  and it beats 
+   * the file's own date, which is when the file was copied rather than when the 
+   * photo was taken.
    */
   private static takenAtFrom(exif: Buffer | undefined): Date | null {
     if (!exif) return null

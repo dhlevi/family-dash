@@ -6,7 +6,7 @@ import { WeatherProviderRegistry } from './WeatherProvider'
  * Registers the weather providers. Called once at startup.
  *
  * Open-Meteo goes first so it is the fallback when a preferred provider is
- * unconfigured — it needs no key, so it is always available.
+ * unconfigured.
  */
 export function registerWeatherProviders(): void {
   WeatherProviderRegistry.register(new OpenMeteoProvider(), new OpenWeatherMapProvider())

@@ -98,8 +98,7 @@ export class NewsFeedRepository {
    * Record the outcome of a fetch.
    *
    * Storing the error rather than only logging it is what lets the Settings
-   * page explain why a feed has gone quiet — a publisher moving a URL is the
-   * most common reason headlines stop appearing.
+   * page explain why a feed is broken.
    */
   public async recordFetch(id: string, error: string | null): Promise<void> {
     await PostgresDatabase.execute('UPDATE news_feed SET last_fetch_at = now(), last_error = $2 WHERE id = $1', [

@@ -12,8 +12,8 @@ import type { BinOutlook, CalendarSource } from '@/api/types'
  * Which calendars carry the collection schedule, and when to start asking.
  *
  * The preview underneath is the important part of this panel. Collection
- * calendars word things very differently — "Blue Box", "Refuse", "Food Scraps
- * & Yard Waste" — and the only way to know whether this install reads yours
+ * calendars word things very differently: "Blue Box", "Refuse", "Food Scraps
+ * & Yard Waste", eetc. The only way to know whether this install reads yours
  * correctly is to show what it currently thinks.
  */
 const props = defineProps<{ sources: CalendarSource[] }>()
@@ -91,7 +91,7 @@ async function saveHour(): Promise<void> {
       </p>
       <div v-else class="text-sm">
         <p class="font-medium text-ink">
-          {{ urgencyLabel(outlook.next) }} —
+          {{ urgencyLabel(outlook.next) }} -
           {{ outlook.next.kinds.map(kind => BIN_LABELS[kind]).join(', ') || 'unrecognised' }}
         </p>
         <p class="mt-1 text-xs text-faint">

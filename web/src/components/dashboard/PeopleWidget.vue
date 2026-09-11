@@ -17,8 +17,7 @@ import type { PersonDay, TaskItem } from '@/api/types'
  * The household has always been shared, which is right for a kitchen wall and
  * unhelpful for the question actually asked in front of it: not "what is on
  * today" but "what have *I* got on". One column each answers that from across
- * the room, and a task can be ticked off without going anywhere — the single
- * most common interaction this display gets.
+ * the room, and a task can be ticked off without going anywhere.
  *
  * Columns scroll sideways rather than wrapping, so a household of seven looks
  * the same as a household of three and the widget keeps its height in both
@@ -60,7 +59,7 @@ async function complete(person: PersonDay, task: TaskItem): Promise<void> {
 
       const remaining = entry.tasks.filter(candidate => candidate.id !== task.id)
 
-      // A repeating chore reappears only if its next turn is also today —
+      // A repeating chore reappears only if its next turn is also today
       // otherwise it correctly leaves the column until the day comes round.
       const next = result.next?.dueAt && new Date(result.next.dueAt) <= endOfDay(new Date()) ? [result.next] : []
 

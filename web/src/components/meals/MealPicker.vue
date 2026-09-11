@@ -14,9 +14,8 @@ import { MEAL_SLOT_LABELS, type MealPlanEntry, type MealSlot, type Recipe } from
 /**
  * Choosing what goes in one slot of the week.
  *
- * Offers the recipe library *and* a free-text box, because half of what a
- * household eats is "leftovers" or "fish and chips" — things that will never
- * be recipes, and forcing them to be would make the planner unusable.
+ * Offers the recipe library *and* a free-text box, because we may want to handle
+ * takeout, leftovers, and other non-recipe meals.
  */
 const props = withDefaults(
   defineProps<{
@@ -104,8 +103,7 @@ const matches = computed(() => {
 
 function choose(recipe: Recipe): void {
   selectedRecipeId.value = recipe.id
-  // A recipe and free text are mutually exclusive — the slot has to mean
-  // one thing.
+  // A recipe and free text are mutually exclusive
   customText.value = ''
 }
 
@@ -128,7 +126,7 @@ function submit(): void {
       <p v-if="error" class="rounded-card bg-danger/15 px-3 py-2 text-sm text-danger">{{ error }}</p>
 
       <!-- Free text first: it is the quicker of the two most of the time. -->
-      <Field label="Something simple" for="meal-custom" hint="Leftovers, takeaway, out — anything without a recipe">
+      <Field label="Something simple" for="meal-custom" hint="Leftovers, takeout - anything without a recipe">
         <TextInput
           id="meal-custom"
           v-model="customText"
@@ -186,7 +184,7 @@ function submit(): void {
         </li>
       </ul>
 
-      <Field label="Note" for="meal-notes" hint="Optional — 'defrost the mince', 'Skye is out'">
+      <Field label="Note" for="meal-notes" hint="Optional - 'defrost the chicken', 'Skye is out'">
         <TextInput id="meal-notes" v-model="notes" placeholder="Optional" :disabled="saving" />
       </Field>
     </div>

@@ -9,8 +9,7 @@ const endpoints = new ShoppingEndpoints()
  * The shopping list: whatever the meal plan implies, plus whatever anyone
  * adds by hand.
  *
- * This is the one part of the app used away from the wall display — on a
- * phone, in a shop — so it is deliberately small and quick to poll.
+ * This is the one part of the app used away from the wall display.
  */
 @Route('api/shopping')
 export class ShoppingController extends Controller {

@@ -22,8 +22,7 @@ const endpoints = new NoteEndpoints()
  *
  * A note is either typed or handwritten. Handwritten notes carry their
  * strokes in the coordinate space they were drawn in, so they can be
- * re-rendered at any size — on the board, or shrunk into a dashboard widget
- * — without distorting the writing.
+ * re-rendered at any size.
  */
 @Route('api/notes')
 export class NoteController extends Controller {

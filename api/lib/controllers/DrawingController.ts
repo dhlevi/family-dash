@@ -20,8 +20,8 @@ const endpoints = new DrawingEndpoints()
 /**
  * Freehand drawings.
  *
- * Stored as vector strokes in the coordinate space they were drawn in — the
- * same model as a handwritten sticky note — so the gallery can render its
+ * Stored as vector strokes in the coordinate space they were drawn in. This is the
+ * same model as a handwritten sticky note, so the gallery can render its
  * own thumbnails at any size without keeping a rasterised copy in step.
  */
 @Route('api/drawings')

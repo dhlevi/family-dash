@@ -9,7 +9,7 @@ import type { CalendarSource, DateRange, ProviderEvent } from '../../types/domai
  * One provider among several rather than the foundation, deliberately. A
  * Google OAuth app left in "Testing" mode expires its refresh tokens after
  * seven days, which on a wall display means the calendar silently stops
- * updating a week after somebody set it up — so ICS subscriptions remain the
+ * updating a week after somebody set it up, so ICS subscriptions remain the
  * resilient default and this is for the household that wants to write events
  * back to a shared Google calendar.
  *
@@ -237,10 +237,6 @@ export class GoogleProvider implements CalendarProvider {
 
   /**
    * Turns a Google error into something a person can act on.
-   *
-   * The raw bodies are JSON several levels deep, and the two that actually
-   * happen on a household install — a calendar that was shared and then
-   * unshared, and a scope that was never granted — are worth naming.
    */
   private static describeFailure(status: number, body: string): string {
     const reason = GoogleProvider.reasonFrom(body)
@@ -289,7 +285,7 @@ export class GoogleProvider implements CalendarProvider {
       startsAt,
       endsAt,
       allDay,
-      // Occurrences are already expanded, so no rule is carried through —
+      // Occurrences are already expanded, so no rule is carried through
       // storing one would make the cache expand it a second time.
       rrule: null
     }

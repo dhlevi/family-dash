@@ -9,8 +9,7 @@ import type { IconName } from '@/components/ui/icons'
  * page, and a body that scrolls independently.
  *
  * Each widget owns its own loading and error state rather than the dashboard
- * gating on all of them — one slow feed should not keep the calendar and the
- * task list off the screen.
+ * gating on all of them.
  */
 defineProps<{
   title: string

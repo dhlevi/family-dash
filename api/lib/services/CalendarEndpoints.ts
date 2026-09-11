@@ -358,8 +358,7 @@ export class CalendarEndpoints {
 
     // Recurrence is a local-calendar feature. A writable remote calendar is
     // pushed to as individual events, and inventing an RRULE for it would
-    // create a series upstream that this app could not then keep in step —
-    // far worse than saying so.
+    // create a series upstream that this app could not then keep in step.
     if (parsed.recurrence && source.type !== 'local') {
       throw ApiError.badRequest(
         `Repeating events can only be added to the local family calendar, not to '${source.name}'. ` +
@@ -435,7 +434,7 @@ export class CalendarEndpoints {
 
     // Exceptions are recorded as instants. Moving the series moves every
     // occurrence off those instants, so the skips would silently stop
-    // applying — and, worse, could start matching an unrelated occurrence.
+    // applying, and worse, could start matching an unrelated occurrence.
     if (parsed.startsAt !== undefined || parsed.recurrence !== undefined) {
       await events.clearExclusions(seriesId)
     }

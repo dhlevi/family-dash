@@ -7,7 +7,7 @@ import Icon from './Icon.vue'
  * The persistent tab bar.
  *
  * A vertical rail down the left edge in landscape, a horizontal bar across
- * the bottom in portrait — in both cases along the edge a hand reaches
+ * the bottom in portrait. In both cases along the edge a hand reaches
  * first. Targets are at least 48px in the direction of travel, and labels
  * stay visible: on a shared family display, an icon-only rail means somebody
  * always has to guess.

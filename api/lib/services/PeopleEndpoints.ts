@@ -15,13 +15,6 @@ interface PersonProfile {
 
 /**
  * Everybody's day, side by side.
- *
- * The household has always been shared — one calendar, one task list, no
- * accounts — which is right for a kitchen wall but makes it hard to answer the
- * question actually being asked in front of it, which is "what have *I* got
- * on?". This assembles that view without introducing members: names come from
- * the Settings roster, tasks are matched on the free-text assignee they
- * already carry, and events are attributed by which calendar they came from.
  */
 export class PeopleEndpoints {
   /** At most this many tasks per column; the rest become a count. */

@@ -51,6 +51,10 @@ Built to run on a Raspberry Pi with a touchscreen monitor, in either portrait or
   collection schedule subscribed to like any other calendar, works out from the event titles
   whether it is garbage, recycling, food or garden waste, merges a morning's separate events into
   one trip to the curb, and switches to "put them out tonight" on the evening before.
+- **Notifications**: reminders on people's phones through [ntfy](https://ntfy.sh), self-hosted as
+  part of this stack. A task goes to whoever it is assigned to, an event to whoever owns the calendar, and a fault the dashboard cannot fix itself to everyone. Quiet
+  hours, and a staleness rule so a display that was switched off overnight does not empty a
+  backlog onto five phones at once.
 - **Dashboard**: every widget reads live data: next events, today's tasks, pinned notes,
   tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
   a slowly cycling photo.
@@ -517,6 +521,68 @@ A few settings worth knowing:
 
 Places with very little in OpenStreetMap produce an almost empty picture, so the generator counts
 what it drew and moves on to somewhere else rather than putting a blank rectangle on your wall.
+
+### Notifications
+
+An `ntfy` container runs alongside the dashboard, so messages are published by the API over the
+compose network and phones subscribe to it directly. Nothing about the household's chores passes
+through anybody else's server.
+
+**Setting it up.**
+
+1. Put this machine's address on your network in `.env` the port is published, so this is what
+   phones will talk to:
+
+   ```
+   NTFY_PUBLIC_URL=http://192.168.1.50:2586
+   ```
+
+   `localhost` will not do: it has to resolve from a phone.
+2. `docker compose up -d` and open **Settings → Notifications**.
+3. **Generate topics.** One per person plus one for the household. They are generated rather than
+   chosen, because on ntfy the topic *is* the password. `family-tasks` would be a password of
+   "password".
+4. Install the ntfy app on each phone and scan that person's QR code. There is a `Test` button
+   beside each one.
+5. Turn **Send notifications** on.
+
+**What gets sent.** Tasks, the family calendar, and faults (deliberately not everything to prevent too much noise). An event
+from a subscribed Google or iCloud calendar is already being announced by the phone it came from,
+and saying it twice is how people end up turning notifications off. Under **Which calendars**,
+leave everything unticked for the family calendar only, and tick a feed that nothing else is
+watching. For example, a collection schedule is an obvious one.
+
+All-day events get a time of day rather than a lead time, because "thirty minutes before" means
+nothing for something starting at midnight. Set **1 day before at 18:00** and bin day arrives the
+evening before, which is the only version of it that is any use.
+
+Anything falling inside the quiet window waits until the window
+closes. Anything more than `staleAfterMinutes` late is recorded as handled and *not* sent.
+
+#### iPhones, and going beyond the LAN
+
+Two limitations are worth knowing before relying on this away from home.
+
+A self-hosted server only delivers while the phone can reach it. On your own wifi that is fine. From outside, the Pi has to be reachable. A VPN such as Tailscale is the least alarming way, and a forwarded port is the most alarming.
+
+Apple only delivers push through APNs, which a self-hosted server cannot talk to. `ntfy/server.yml` therefore sets `upstream-base-url: https://ntfy.sh`, which forwards a *wake-up ping* carrying no message content; the phone then fetches the actual message from your server. Without it, iOS
+delivery takes anywhere from twenty minutes to several hours. Android needs none of this. Delete
+the line if nobody has an iPhone and you would rather the server spoke to nothing outside the
+house at all.
+
+**Before exposing the server**, note that it is configured `auth-default-access: read-write`
+open, like the rest of this appliance, which has no accounts anywhere and relies on being on a
+home network. That is a reasonable trade on a LAN and a bad one on the open internet, where an
+open ntfy server is a spam relay. Lock it down with a user and an access token before forwarding
+anything to it:
+
+```bash
+docker compose exec ntfy ntfy user add --role=admin family
+docker compose exec ntfy ntfy token add family
+```
+
+then set `auth-default-access: "deny-all"` in `ntfy/server.yml`, put the token in `.env` as
+`NTFY_TOKEN`, and add the same token to each phone's subscription.
 
 ### Bin day
 

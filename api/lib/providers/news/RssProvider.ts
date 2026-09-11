@@ -6,7 +6,7 @@ import { OUTBOUND_USER_AGENT } from '../userAgent'
  * Reads an RSS or Atom feed.
  *
  * There is no official Google News API, and every paid aggregator wants an
- * account — but essentially every news organisation still publishes RSS, for
+ * account, but essentially every news organisation still publishes RSS, for
  * free, with no key. That is the whole integration.
  *
  * The custom fields are not decoration: `media:content` and `media:thumbnail`
@@ -62,7 +62,7 @@ export class RssProvider {
   /**
    * Check a feed before it is saved.
    *
-   * Returns a readable problem, or the feed's own title on success — which
+   * Returns a readable problem, or the feed's own title on success, which
    * the UI offers as a default name, saving the user from typing one.
    */
   public async validate(url: string): Promise<{ error: string | null; title: string | null }> {

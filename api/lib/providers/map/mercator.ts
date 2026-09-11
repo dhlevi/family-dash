@@ -4,9 +4,7 @@
  * Everything here works in the coordinate system the tile pyramid uses: at
  * zoom `z` the world is a 2^z square, so a position is a fractional tile index
  * and the integer part of it names the tile you need to fetch. Keeping the
- * whole pipeline in these units means there is exactly one conversion —
- * degrees in, tile units out — and the renderer never has to think about
- * latitude again.
+ * whole pipeline in these units means there is exactly one conversion.
  */
 
 /** The equatorial circumference, in metres. Used to turn a span into a zoom. */
@@ -42,7 +40,7 @@ export function clampLatitude(latitude: number): number {
  *
  * `y` is clamped into the world square as well as being derived from a clamped
  * latitude. At the very edge the arithmetic lands a fraction either side of the
- * boundary — a latitude of 89.9 comes out at -1e-10 rather than 0 — and that is
+ * boundary, a latitude of 89.9 comes out at -1e-10 rather than 0, and that is
  * enough for `Math.floor` to name tile row -1, which does not exist.
  */
 export function project(latitude: number, longitude: number, zoom: number): TilePoint {
@@ -97,7 +95,7 @@ export interface ViewOptions {
    * far in quadruples the tile count. Paris at its ideal span wanted thirty
    * tiles and eighteen megabytes before this existed. Dropping a level costs
    * some fine detail and is the right trade for a picture seen from across a
-   * room — and for a tile server being given away for free.
+   * room, and for a tile server being given away for free.
    */
   maxTiles?: number
 }
@@ -169,8 +167,7 @@ export interface TileId {
  * Every tile the view touches.
  *
  * Wraps in x so a view straddling the antimeridian still works, and clamps in
- * y because there are no tiles above the pole — a request for one is a 404
- * that would otherwise look like a network fault.
+ * y because there are no tiles above the pole.
  */
 export function tilesCovering(bounds: TileBounds): TileId[] {
   const scale = 2 ** bounds.zoom

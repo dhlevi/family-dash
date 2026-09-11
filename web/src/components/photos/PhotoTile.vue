@@ -7,7 +7,7 @@ import type { Photo } from '@/api/types'
  * One picture in the album grid.
  *
  * The tile is a square, because a grid of mixed aspect ratios is much harder
- * to scan than a uniform one — the picture is cropped to fill it and shown
+ * to scan than a uniform one. The picture is cropped to fill it and shown
  * whole once opened.
  */
 const props = defineProps<{ photo: Photo }>()

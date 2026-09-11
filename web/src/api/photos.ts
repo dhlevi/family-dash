@@ -38,7 +38,7 @@ export const photosApi = {
   /**
    * The pictures to cycle through on the dashboard and the screensaver.
    *
-   * Favourites if there are any, otherwise the newest — so starring a
+   * Favourites if there are any, otherwise the newest, so starring a
    * handful of pictures is the whole of curating what the wall shows, and a
    * library nobody has starred yet still shows something.
    */

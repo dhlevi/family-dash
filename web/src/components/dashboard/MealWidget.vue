@@ -41,7 +41,7 @@ const dinner = computed(() => meals.value.find(meal => meal.slot === 'dinner') ?
 const others = computed(() => meals.value.filter(meal => meal.slot !== 'dinner'))
 
 function describe(meal: MealPlanEntry): string {
-  return meal.recipeTitle ?? meal.customText ?? '—'
+  return meal.recipeTitle ?? meal.customText ?? '-'
 }
 
 const badge = computed(() => (remaining.value > 0 ? `${remaining.value} to buy` : null))
@@ -53,7 +53,7 @@ const badge = computed(() => (remaining.value > 0 ? `${remaining.value} to buy` 
       v-if="!loading && meals.length === 0"
       icon="meals"
       title="Nothing planned today"
-      description="Plan the week on the Meals page — the shopping list builds itself from it."
+      description="Plan the week on the Meals page. The shopping list builds itself from it."
     />
 
     <div v-else class="flex min-h-0 flex-1 flex-col gap-3 p-4">

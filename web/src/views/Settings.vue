@@ -11,6 +11,7 @@ import HouseholdPeople from '@/components/settings/HouseholdPeople.vue'
 import LocationPicker from '@/components/settings/LocationPicker.vue'
 import MapArtwork from '@/components/settings/MapArtwork.vue'
 import NewsFeeds from '@/components/settings/NewsFeeds.vue'
+import Notifications from '@/components/settings/Notifications.vue'
 import Card from '@/components/ui/Card.vue'
 import ColourPicker from '@/components/ui/ColourPicker.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
@@ -518,6 +519,17 @@ async function runTask(name: string): Promise<void> {
         </p>
 
         <HouseholdPeople :sources="sources" />
+      </Card>
+
+      <!-- Notifications -->
+      <Card>
+        <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">Notifications</h2>
+        <p class="mb-3 text-xs text-faint">
+          Reminders on people's phones, through the ntfy server running alongside this dashboard. Tasks go to whoever
+          they are assigned to; faults the dashboard cannot fix itself go to everyone.
+        </p>
+
+        <Notifications :sources="sources" />
       </Card>
 
       <!-- Bin day -->

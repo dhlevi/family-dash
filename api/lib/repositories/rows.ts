@@ -22,8 +22,7 @@ export function toIsoRequired(value: Date): string {
 export function toDateOnly(value: Date | string): string {
   if (typeof value === 'string') return value.slice(0, 10)
 
-  // `date` has no time or zone, so format from the UTC fields — using the
-  // local ones would shift the day for anyone west of Greenwich.
+  // `date` has no time or zone, so format from the UTC fields.
   const year = value.getUTCFullYear()
   const month = String(value.getUTCMonth() + 1).padStart(2, '0')
   const day = String(value.getUTCDate()).padStart(2, '0')

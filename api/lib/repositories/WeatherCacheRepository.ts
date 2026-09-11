@@ -10,7 +10,7 @@ interface WeatherCacheRow {
  * The last good forecast, per provider and location.
  *
  * The whole reason this table exists is that a wall display should keep
- * showing yesterday's forecast — clearly labelled as stale — rather than an
+ * showing yesterday's forecast, clearly labelled as stale, rather than an
  * error, when the Pi's wifi drops or the provider has a bad afternoon.
  *
  * `location` is the jsonb key, and includes the units: a cached Celsius

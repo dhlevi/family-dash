@@ -14,8 +14,7 @@ import { NOTE_COLOURS, type InkStroke, type NewStickyNote, type NoteKind, type S
  * Create or edit a sticky note, typed or handwritten.
  *
  * The medium is chosen once, when the note is created, and cannot be
- * switched afterwards — the API refuses it, because discarding somebody's
- * handwriting to accept typed text (or the reverse) silently destroys work.
+ * switched afterwards.
  */
 const props = withDefaults(
   defineProps<{
@@ -131,7 +130,7 @@ const kindOptions = [
           @update:surface="surface = $event"
         />
 
-        <Field label="Label" for="note-caption" hint="Optional — helps find the note later">
+        <Field label="Label" for="note-caption" hint="Optional - helps find the note later">
           <TextInput id="note-caption" v-model="body" placeholder="Optional" :disabled="saving" />
         </Field>
       </template>

@@ -20,7 +20,7 @@ export interface SyncOutcome {
  *
  * Shared by the scheduled task and the "sync now" button in Settings. The
  * whole point of caching is that the calendar page never waits on somebody
- * else's server, and keeps working when that server is unreachable — so a
+ * else's server, and keeps working when that server is unreachable, so a
  * failure here records itself against the source and leaves the previously
  * cached events alone rather than clearing them.
  */
@@ -90,7 +90,7 @@ export class CalendarSyncService {
     }
 
     // Created but not finished being set up. Not a failure, so nothing is
-    // recorded against it — otherwise a half-configured calendar would
+    // recorded against it, otherwise a half-configured calendar would
     // report the whole dashboard as degraded every quarter of an hour. Any
     // error from a previous attempt is cleared, since it is no longer true.
     if (provider.isReadyToSync && !provider.isReadyToSync(source)) {

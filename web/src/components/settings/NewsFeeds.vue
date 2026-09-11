@@ -14,9 +14,9 @@ import type { NewsFeed } from '@/api/types'
 /**
  * Managing news feeds.
  *
- * Adding a feed validates it against the publisher first — a wrong address
+ * Adding a feed validates it against the publisher first. A wrong address
  * is caught where it was typed rather than failing quietly on the next
- * scheduled fetch — and the feed's own title is offered as its name, so
+ * scheduled fetch, and the feed's own title is offered as its name, so
  * subscribing is usually just pasting a URL.
  */
 const props = defineProps<{ feeds: NewsFeed[] }>()
@@ -171,7 +171,7 @@ function fetchLabel(feed: NewsFeed): string {
     </div>
 
     <p v-if="feeds.length === 0" class="text-sm text-faint">
-      No feeds yet. Almost every news site publishes one — look for an RSS link, or try adding
+      No feeds yet. Almost every news site publishes one. Look for an RSS link, or try adding
       <code class="font-mono text-xs">/rss</code> to its address.
     </p>
 

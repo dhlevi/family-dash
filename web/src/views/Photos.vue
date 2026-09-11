@@ -18,10 +18,10 @@ import { albumLabel, type Photo, type PhotoAlbum } from '@/api/types'
  *
  * Backed by a folder on the mounted media volume rather than Google Photos,
  * whose Library API can no longer list a user's own library.
- * 
- * An app only sees media it uploaded itself, which is useless for showing the 
+ *
+ * An app only sees media it uploaded itself, which is useless for showing the
  * family's pictures. So: albums are folders, pictures arrive either through
- * the Add button or by copying them onto the volume, and a background scan keeps 
+ * the Add button or by copying them onto the volume, and a background scan keeps
  * the two in sync.
  */
 

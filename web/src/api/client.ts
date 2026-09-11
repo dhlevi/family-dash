@@ -57,7 +57,7 @@ async function toError(response: Response): Promise<ApiRequestError> {
       payload?.details
     )
   } catch {
-    // A non-JSON error body means something upstream of the API answered —
+    // A non-JSON error body means something upstream of the API answered
     // usually nginx while the API container is restarting.
     return new ApiRequestError(response.status, response.statusText || 'Request failed')
   }

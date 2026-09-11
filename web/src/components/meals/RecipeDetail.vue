@@ -11,9 +11,9 @@ import type { Recipe } from '@/api/types'
 /**
  * Reading a recipe, with a serving-count stepper.
  *
- * Scaling is done by the API rather than in the browser so the arithmetic —
+ * Scaling is done by the API rather than in the browser so the arithmetic,
  * and the fraction formatting that keeps "2/3 cup" from becoming
- * "0.6666666666666666 cup" — lives in one place, next to the same code the
+ * "0.6666666666666666 cup", lives in one place, next to the same code the
  * shopping list uses.
  */
 const props = defineProps<{ open: boolean; recipe: Recipe | null }>()

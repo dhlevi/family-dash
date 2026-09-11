@@ -2,8 +2,8 @@
  * Translating OpenWeatherMap condition ids into WMO weather codes.
  *
  * Open-Meteo speaks WMO, which the UI already maps to icons and labels.
- * Rather than teach the front end a second vocabulary — and keep two icon
- * mappings in step forever — OpenWeatherMap's ids are normalised here, at
+ * Rather than teach the front end a second vocabulary, and keep two icon
+ * mappings in step forever. OpenWeatherMap's ids are normalised here, at
  * the edge, so everything downstream sees one kind of code.
  *
  * The mapping is approximate by nature: the two scales do not describe

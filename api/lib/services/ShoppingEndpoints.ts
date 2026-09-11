@@ -127,8 +127,7 @@ export class ShoppingEndpoints {
   /**
    * The list as plain text, for the "copy" and "share" buttons.
    *
-   * Grouped by aisle and ticked items omitted — it is meant to be pasted
-   * into a message to whoever is at the shop.
+   * Grouped by aisle and ticked items omitted.
    */
   public async asText(): Promise<{ text: string }> {
     const all = await items.all()

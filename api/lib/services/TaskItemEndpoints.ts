@@ -124,7 +124,7 @@ export class TaskItemEndpoints {
    * Tick a task off.
    *
    * A recurring task is completed *and* its next occurrence created, in one
-   * transaction — the chore stays on the list rather than needing to be
+   * transaction. The chore stays on the list rather than needing to be
    * re-entered every week.
    */
   public async complete(id: string): Promise<TaskCompletion> {
@@ -187,8 +187,7 @@ export class TaskItemEndpoints {
 
   /**
    * End of the current day in the container's timezone, which is the
-   * household's — the dashboard's "due today" needs to mean the day the
-   * people looking at the screen are having.
+   * household's.
    */
   private static endOfToday(): Date {
     const boundary = new Date()

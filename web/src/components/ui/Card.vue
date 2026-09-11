@@ -2,7 +2,7 @@
 /**
  * The surface every panel and dashboard widget sits on.
  *
- * `interactive` adds a press state — used where the whole card is a tap
+ * `interactive` adds a press state, used where the whole card is a tap
  * target (a dashboard widget that navigates to its page).
  */
 withDefaults(

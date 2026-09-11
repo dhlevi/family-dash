@@ -7,7 +7,7 @@ const library = new PhotoService()
 /**
  * Keeps the photo index in step with the media volume.
  *
- * Pictures do not only arrive through the upload button — the library is a
+ * Pictures do not only arrive through the upload button. The library is a
  * plain folder that someone can copy a card reader's worth of holiday photos
  * onto, and this is what notices. Hourly by default: often enough that a
  * folder dropped on the share turns up without anyone thinking about it,
@@ -26,11 +26,9 @@ export const photoScanTask: Task = {
   async execute() {
     const outcome = await library.scan()
 
-    // A few unreadable files is normal — a hand-filled library collects the
-    // odd truncated download — so those are logged rather than failed. They
-    // are also skipped by every future scan, never having been indexed, so
-    // failing on them would leave this task permanently red and its status
-    // worth nothing.
+    // A few unreadable files is normal so those are logged rather than failed. They
+    // are also skipped by every future scan, never having been indexed, so failing
+    // on them would leave this task permanently red and its status worth nothing.
     if (outcome.skipped > 0) {
       console.warn(
         `Photo scan skipped ${outcome.skipped} unreadable file(s): ${outcome.skippedFiles.join(', ')}` +

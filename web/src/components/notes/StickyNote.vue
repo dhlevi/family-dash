@@ -9,7 +9,7 @@ import type { StickyNote } from '@/api/types'
  *
  * Dragged with pointer events so a finger, a stylus and a mouse all behave
  * identically. A press that barely moves is a tap and opens the note; past a
- * few pixels it becomes a drag and never opens it — otherwise every attempt
+ * few pixels it becomes a drag and never opens it, otherwise every attempt
  * to move a note would also open the editor.
  *
  * Positions are fractions of the board, not pixels, so the arrangement

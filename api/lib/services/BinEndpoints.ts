@@ -34,7 +34,9 @@ export class BinEndpoints {
     // which is what makes this work before anybody has configured anything.
     const found = await events.inRange({ from, to }, sourceIds.length > 0 ? sourceIds : undefined)
 
-    const days = groupByDay(found.map(event => ({ title: event.title, startsAt: new Date(event.startsAt) })))
+    const days = groupByDay(
+      found.map(event => ({ title: event.title, startsAt: new Date(event.startsAt), allDay: event.allDay }))
+    )
 
     const view = (collection: BinCollection | undefined): BinCollectionView | null =>
       collection

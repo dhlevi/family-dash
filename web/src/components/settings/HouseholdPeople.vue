@@ -10,10 +10,6 @@ import type { CalendarSource, PersonDay, PersonProfile } from '@/api/types'
  * Per-person settings for the dashboard strip.
  *
  * Two things only: what colour somebody is, and which calendars are theirs.
- * The second is the one that matters — events carry no assignee of their own,
- * so a calendar is the only honest way to say whose day an appointment
- * belongs to. Somebody with no calendar linked still gets a column, showing
- * their tasks.
  *
  * Names are not edited here. They come from the household list above, so
  * there is one place to add a person rather than two that can disagree.
@@ -29,7 +25,7 @@ onMounted(async () => {
   try {
     resolved.value = await householdApi.peopleToday()
   } catch {
-    // Only decoration — the controls below work without it.
+    // Only decoration, the controls below work without it.
   }
 })
 

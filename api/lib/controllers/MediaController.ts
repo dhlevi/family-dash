@@ -88,7 +88,7 @@ export class MediaController extends Controller {
    * The small version.
    *
    * Falls back to the original when there is no thumbnail, so a tile always
-   * shows something — except for a HEIC, which no browser can display: for
+   * shows something, except for a HEIC, which no browser can display: for
    * those the thumbnail is the only viewable form, and its absence is a 404
    * the page handles rather than a broken image the browser cannot explain.
    */
@@ -118,8 +118,8 @@ export class MediaController extends Controller {
   /**
    * A generated map artwork, as the raster the screensaver loads.
    *
-   * Falls back to the SVG when there is no raster — which happens only if
-   * `sharp` could not rasterise it — so the picture still appears rather than
+   * Falls back to the SVG when there is no raster, which happens only if
+   * `sharp` could not rasterise it, so the picture still appears rather than
    * leaving a gap in the rotation.
    */
   @Get('city-art/{id}')
@@ -147,7 +147,7 @@ export class MediaController extends Controller {
    * The small version, for the grid on the Settings page.
    *
    * Made on demand the first time somebody looks at that page and kept
-   * afterwards, rather than during generation — the same bargain the photo
+   * afterwards, rather than during generation. The same bargain the photo
    * library's display copies make. Worth having because the full artwork is
    * around a megabyte, and a dozen of them behind 200-pixel tiles is twelve
    * megabytes for a page that only needs to show what each one looks like.
@@ -185,7 +185,7 @@ export class MediaController extends Controller {
   /**
    * The vector master.
    *
-   * Resolution independent, and the form to print or take somewhere else —
+   * Resolution independent, and the form to print or take somewhere else,
    * which is the main reason both are kept rather than only the raster.
    */
   @Get('city-art/{id}/svg')

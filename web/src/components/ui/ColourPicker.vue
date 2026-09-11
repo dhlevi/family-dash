@@ -9,8 +9,7 @@ import Icon from './Icon.vue'
  * across a room, and these are chosen to stay legible on both themes. A
  * free colour picker on a kiosk mostly produces unreadable pastels.
  *
- * Callers can supply their own set — sticky notes use paper-like pastels
- * rather than these saturated calendar colours.
+ * Callers can supply their own set.
  */
 const DEFAULT_PALETTE = [
   '#4f8ef7', // blue

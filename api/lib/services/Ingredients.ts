@@ -3,8 +3,8 @@
  *
  * A week of meals routinely calls for flour three times, and a list that
  * says "flour" three times is worse than useless in a supermarket. Merging
- * them means parsing the quantities recipes are actually written with —
- * "2", "1/2", "1 1/2", "½", "a pinch" — adding the ones that can be added,
+ * them means parsing the quantities recipes are actually written with like
+ * "2", "1/2", "1 1/2", "½", "a pinch",  adding the ones that can be added,
  * and leaving alone the ones that cannot.
  */
 
@@ -40,8 +40,7 @@ const UNICODE_FRACTIONS: Record<string, number> = {
 
 /**
  * A quantity as a number, or null when it is not really a number at all
- * ("a pinch", "to taste"). Null quantities are never merged — guessing what
- * two pinches add up to helps nobody.
+ * ("a pinch", "to taste"). Null quantities are never merged.
  */
 export function parseQuantity(raw: string | null | undefined): number | null {
   if (raw === null || raw === undefined) return null
@@ -167,10 +166,7 @@ export function normaliseUnit(unit: string | null | undefined): string | null {
  * The key two ingredient lines have to share to be added together.
  *
  * Deliberately conservative: name and unit must match after normalising
- * case and whitespace, and nothing else. Plurals are *not* folded together —
- * merging "tomato" with "tomatoes" looks clever until it merges "chip" with
- * "chips" or something that genuinely differs, and a wrong quantity in a
- * shop is worse than a duplicated line.
+ * case and whitespace, and nothing else. Plurals are *not* folded together.
  */
 function mergeKey(item: string, unit: string | null): string {
   return `${item.trim().toLowerCase().replace(/\s+/g, ' ')}|${unit ?? ''}`

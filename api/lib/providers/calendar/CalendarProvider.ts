@@ -9,7 +9,7 @@ import type { CalendarSource, CalendarSourceType, DateRange, ProviderEvent } fro
  * behind one interface means the calendar page merges whatever is configured
  * and does not care which is which.
  *
- * Reads for the UI never come through here — they come from the `event`
+ * Reads for the UI never come through here. They come from the `event`
  * table, which the background sync keeps filled. `fetch` is called by the
  * sync task alone.
  */
@@ -24,7 +24,7 @@ export interface CalendarProvider {
 
   /**
    * Pull events from upstream for caching. Implementations should expand
-   * recurrences into concrete occurrences inside `range` — the cache stores
+   * recurrences into concrete occurrences inside `range` the cache stores
    * occurrences, not rules, so the calendar grid is a single indexed query.
    */
   fetch(source: CalendarSource, range: DateRange): Promise<ProviderEvent[]>
@@ -43,9 +43,8 @@ export interface CalendarProvider {
    * A Google calendar exists before it is connected to an account: Settings
    * creates it, then sends the browser off to Google. Syncing one in that
    * state would record a failure every quarter of an hour and report the
-   * dashboard as degraded, when nothing is wrong — somebody is halfway
-   * through setting it up. Providers with nothing to wait for can leave this
-   * out.
+   * dashboard as degraded, when nothing is wrong. Providers with nothing to 
+   * wait for can leave this out.
    */
   isReadyToSync?(source: CalendarSource): boolean
 
@@ -53,7 +52,7 @@ export interface CalendarProvider {
    * Push a locally created event upstream, returning the id the upstream
    * gave it.
    *
-   * Only implemented by writable remote providers — local events need no
+   * Only implemented by writable remote providers. Local events need no
    * push, and feeds cannot accept one. The returned id is stored as the
    * event's `externalUid`, which is what stops the wall display from
    * offering to edit a copy the next sync would overwrite.

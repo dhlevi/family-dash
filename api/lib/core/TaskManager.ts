@@ -20,8 +20,7 @@ interface TrackedTask {
  * only ever reads the database. If the network drops, or a feed starts
  * failing, the last good data stays on the wall.
  *
- * Failures are recorded rather than thrown — one broken feed must not stop
- * the scheduler or crash the service — and surface in `/healthCheck`.
+ * Failures are recorded rather than thrown and surface in `/healthCheck`.
  */
 export class TaskManager {
   private static tasks = new Map<string, TrackedTask>()

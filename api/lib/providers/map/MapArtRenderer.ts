@@ -14,9 +14,7 @@ import type { TileBounds, TileId } from './mercator'
  *
  * Tiles are *not* clipped to their own edges. They carry a margin of their
  * neighbours' geometry, so drawing them whole means a little overdraw along
- * every seam — invisible with the opaque paint every theme is required to use,
- * and it avoids the hairline cracks that exact clipping leaves between abutting
- * fills.
+ * every seam.
  */
 
 export interface FetchedTile {
@@ -210,7 +208,7 @@ export function renderMapArt(tiles: FetchedTile[], bounds: TileBounds, options: 
    *
    * `tileKey` is what keeps filled shapes from cancelling each other out.
    * Fills use the even-odd rule so that polygon holes work without trusting
-   * ring winding — but even-odd also means that where two shapes *overlap*
+   * ring winding, but even-odd also means that where two shapes *overlap*
    * inside one path, the overlap becomes a hole. Neighbouring tiles each carry
    * a margin of the other's geometry, so merging every tile's ocean into a
    * single path punches a transparent cross along every seam. Filled styles
@@ -300,7 +298,7 @@ export function renderMapArt(tiles: FetchedTile[], bounds: TileBounds, options: 
           case 'transportation': {
             const tier = ROAD_CLASS_TIERS[featureClass]
             const style = tier ? theme.roads[tier] : undefined
-            // Road *areas* — pedestrian squares, service yards — arrive as
+            // Road *areas* pedestrian squares, service yards, arrive as
             // polygons in the same layer. Stroking their outline is what the
             // linework style wants; filling them would put slabs of colour
             // across the middle of a town centre.

@@ -113,8 +113,7 @@ export class MealPlanEndpoints {
   }
 
   /**
-   * Today in the container's timezone, which is the household's — "what's
-   * for dinner tonight" has to mean the day the people looking are having.
+   * Today in the container's timezone.
    */
   private static todayString(): string {
     const now = new Date()

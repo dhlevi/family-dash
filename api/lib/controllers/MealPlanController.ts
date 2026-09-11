@@ -20,8 +20,7 @@ const endpoints = new MealPlanEndpoints()
 /**
  * What the household is eating, and when.
  *
- * A plan entry is a plain date plus a slot, never an instant — dinner is
- * "Tuesday", and no timezone should be able to move it.
+ * A plan entry is a plain date plus a slot, never an instant.
  */
 @Route('api/meals')
 export class MealPlanController extends Controller {
@@ -56,8 +55,7 @@ export class MealPlanController extends Controller {
   }
 
   /**
-   * Copy a range of days forward by an offset — "copy this week to next
-   * week" is `offsetDays: 7`.
+   * Copy a range of days forward by an offset.
    */
   @Post('plan/copy')
   @SuccessResponse(200, 'OK')

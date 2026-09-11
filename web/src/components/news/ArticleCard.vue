@@ -9,7 +9,7 @@ import type { NewsArticle } from '@/api/types'
  *
  * Image-led, because a wall display is read at a glance and a picture
  * carries further than a headline does. Text comes from the API already
- * stripped of markup, and is rendered as a text node — feed content is
+ * stripped of markup, and is rendered as a text node. Feed content is
  * untrusted input and never becomes HTML.
  */
 const props = withDefaults(

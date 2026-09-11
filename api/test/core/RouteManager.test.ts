@@ -11,9 +11,8 @@ import { errorHandler, notFoundHandler } from '../../lib/middleware/ErrorMiddlew
 /**
  * Exercises the ported decorator framework end to end: a decorated
  * controller, a real Express app and real HTTP requests. This is the piece
- * every other controller depends on, and its failure mode is silence — a
- * route that was never registered — so it is worth testing for real rather
- * than by inspecting metadata.
+ * every other controller depends on, and its failure mode is silence so it
+ * is worth testing for real rather than by inspecting metadata.
  */
 
 let server: Server | null = null

@@ -11,7 +11,7 @@ import { RECURRENCES, RECURRENCE_LABELS, type NewTaskItem, type RecurrenceKind, 
 /**
  * Create or edit a task.
  *
- * A repeating task needs a due date to repeat from — the API rejects the
+ * A repeating task needs a due date to repeat from. The API rejects the
  * combination, so the form disables the repeat options until a date is set
  * rather than letting somebody hit a validation error.
  */
@@ -109,7 +109,7 @@ const recurrenceOptions = [
       </Field>
 
       <div class="grid gap-4 sm:grid-cols-2">
-        <Field label="Who" for="task-assignee" hint="Anyone — this is just a label">
+        <Field label="Who" for="task-assignee" hint="Anyone - this is just a label">
           <TextInput id="task-assignee" v-model="assignee" placeholder="Nobody in particular" :disabled="saving" />
           <div v-if="assignees.length > 0" class="mt-1.5 flex flex-wrap gap-1.5">
             <button

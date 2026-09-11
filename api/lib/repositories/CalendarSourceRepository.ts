@@ -122,8 +122,7 @@ export class CalendarSourceRepository {
    *
    * Used when a source turns out not to be ready to sync at all: whatever
    * failure is on record is no longer true, but nothing was fetched either,
-   * so `last_sync_at` must not move — the health check reads it to decide
-   * whether a calendar has gone stale.
+   * so `last_sync_at` must not move.
    */
   public async clearError(id: string): Promise<void> {
     await PostgresDatabase.execute(

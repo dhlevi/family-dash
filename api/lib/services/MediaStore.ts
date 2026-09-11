@@ -34,8 +34,8 @@ export class MediaStore {
    * Generated map artwork for the screensaver.
    *
    * Kept apart from the photo library on purpose: the library is a folder a
-   * person curates, and a background task quietly writing pictures into it —
-   * and pruning them again — would be an unpleasant surprise. Everything here
+   * person curates, and a background task quietly writing pictures into it,
+   * and pruning them again, would be an unpleasant surprise. Everything here
    * is disposable and regenerated from the city list.
    */
   public static cityArtDir(): string {

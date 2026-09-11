@@ -9,9 +9,9 @@ import { formatDate, formatRelativeDay } from '@/utils/datetime'
 import type { BinOutlook } from '@/api/types'
 
 /**
- * When the bins go out.
+ * When the bins, etc., go out to the curbside for pickup.
  *
- * The job this does is not "show the collection schedule" — a calendar
+ * The job this does is not "show the collection schedule", a calendar
  * already does that, and it is precisely where a collection goes unnoticed
  * among twenty other events. It is to make the evening before impossible to
  * miss, which is why the only loud state is the one that asks for something
@@ -78,7 +78,7 @@ const detail = computed(() => next.value?.titles.join(' · ') ?? '')
       </ul>
 
       <p v-if="following" class="mt-auto text-xs text-faint">
-        Then {{ formatRelativeDay(parseCollectionDate(following.date)) }} —
+        Then {{ formatRelativeDay(parseCollectionDate(following.date)) }} -
         {{ following.kinds.map(kind => BIN_LABELS[kind]).join(', ') || following.titles.join(', ') }}
       </p>
     </div>

@@ -2,7 +2,7 @@
  * A Mapbox Vector Tile reader, written out rather than pulled in.
  *
  * Decoding an MVT is a protobuf walk over four message types and one
- * zigzag-delta geometry encoding — about two hundred lines, with no
+ * zigzag-delta geometry encoding, about two hundred lines, with no
  * dependencies and no native build. The alternative was `@mapbox/vector-tile`
  * plus `pbf`, which is a reasonable library but brings a general protobuf
  * runtime along for a job with exactly one schema, and this project runs on a
@@ -32,7 +32,7 @@ export interface VectorFeature {
   /**
    * One entry per ring or line, each a flat `[x0, y0, x1, y1, ...]` in
    * tile-local units. A point feature is a one-coordinate entry. Polygon
-   * rings arrive in source order — exterior first, then any holes — which is
+   * rings arrive in source order: exterior first, then any holes, which is
    * all the renderer needs, since it fills with the even-odd rule rather than
    * inspecting winding.
    */
@@ -67,8 +67,7 @@ function readVarint(cursor: Cursor): number {
 
     const byte = cursor.data[cursor.offset++]!
     // Beyond 2^53 a JavaScript number stops being exact. Nothing this reader
-    // uses is that large — the widest real field is a feature id, which is
-    // skipped — so saturating is safer than silently returning a wrong value.
+    // uses is that large, so saturating is safer than silently returning a wrong value.
     if (shift < 53) result += (byte & 0x7f) * 2 ** shift
     shift += 7
 

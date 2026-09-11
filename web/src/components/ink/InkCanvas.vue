@@ -13,7 +13,7 @@ import { INK_COLOURS, type InkPoint, type InkStroke } from '@/api/types'
  * and whether the surface is a fixed-aspect card or fills its panel.
  *
  * Pointer events rather than touch or mouse events, because they are the
- * only ones that report a stylus properly — `pressure`, and a `pointerType`
+ * only ones that report a stylus properly: `pressure`, and a `pointerType`
  * that distinguishes a pen from the palm resting beside it.
  *
  * Rendered as SVG rather than a canvas: strokes stay vectors, so a note
@@ -119,7 +119,7 @@ function measure(): void {
 
   const rect = element.getBoundingClientRect()
 
-  // A surface with no area has not been laid out yet — the note editor opens
+  // A surface with no area has not been laid out yet. The note editor opens
   // inside a transition, so the first measurement there happens before the
   // modal has a size. Recording that as a 1x1 coordinate space would squash
   // any existing strokes into a single point on the way in and scale them
@@ -297,7 +297,7 @@ function onPointerCancel(event: PointerEvent): void {
   if (event.pointerId !== activePointerId.value) return
 
   // A cancelled pointer (the browser took over for a gesture) discards the
-  // partial stroke rather than leaving half a letter behind — and puts back
+  // partial stroke rather than leaving half a letter behind, and puts back
   // anything a cancelled eraser swipe had already removed.
   activePointerId.value = null
   active.value = []
@@ -314,8 +314,7 @@ function commit(): void {
 
   if (tool.value === 'eraser') {
     // The erasing already happened as the pointer moved, so committing just
-    // banks it as one operation — a swipe that took out three strokes then
-    // comes back in a single undo.
+    // banks it as one operation.
     active.value = []
 
     if (erasedThisStroke.length > 0) {
@@ -341,8 +340,7 @@ function commit(): void {
  * Remove whatever the eraser is currently over.
  *
  * Applied as the pointer moves rather than on release, so the canvas reacts
- * under the finger — waiting until release would feel like nothing was
- * happening.
+ * under the finger/stylus.
  */
 function eraseUnderPointer(): void {
   const { kept, removed } = eraseStrokes(strokes.value, active.value, ERASER_RADIUS + width.value / 2)
@@ -360,8 +358,7 @@ function eraseUnderPointer(): void {
  * A stack of strokes is enough while drawing is the only operation, but the
  * eraser breaks it: undoing an erase has to put strokes back, which is the
  * opposite of undoing a draw. Keeping the operation means one undo reverses
- * one action whichever kind it was — and an eraser swipe that removed three
- * strokes returns in a single step, as whoever swiped expects.
+ * one action whichever kind it was.
  */
 type Operation =
   | { kind: 'draw'; stroke: InkStroke }

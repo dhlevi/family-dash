@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# ntfy, self-hosted alongside the dashboard.
+#
+# Messages stay on the household's own hardware: the API publishes to this
+# container over the compose network and phones subscribe to it directly.
+# ---------------------------------------------------------------------------
+
+# How phones reach this server. Must match exactly what is entered as the
+# "Default server" in the ntfy app, or subscriptions silently fetch nothing.
+# Set NTFY_PUBLIC_URL in .env; this file is only the fallback.
+base-url: "http://localhost:2586"
+
+listen-http: ":80"
+
+# Messages are held here so a phone that was off still gets them, and so the
+# iOS app can fetch the body after being woken.
+cache-file: "/var/lib/ntfy/cache.db"
+cache-duration: "24h"
+attachment-cache-dir: "/var/lib/ntfy/attachments"
+
+# --- iOS -------------------------------------------------------------------
+# Apple only delivers push through APNs, so a self-hosted server cannot reach
+# an iPhone instantly on its own. With this set, a *wake-up ping* carrying
+# no message content is forwarded via ntfy.sh to Firebase and on to APNs;
+# the phone then comes back here for the actual message. Without it, iOS
+# delivery is delayed by twenty minutes to several hours.
+#
+# Android needs none of this and ignores it.
+#
+# Remove the line if no one in the household uses an iPhone and you would
+# rather the server talked to nothing outside the house at all.
+upstream-base-url: "https://ntfy.sh"
+
+# --- access ----------------------------------------------------------------
+# Open, like the rest of this appliance: the dashboard API has no accounts
+# either, and everything here is protected by topics that are generated rather
+# than chosen. That is a reasonable trade on a home LAN and a bad one on the
+# open internet. See the README before forwarding a port to this.
+auth-default-access: "read-write"
+enable-signup: false
+enable-login: true
+
+behind-proxy: false

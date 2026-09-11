@@ -127,7 +127,7 @@ describe('renderMapArt', () => {
   it("keeps each tile's fills in their own path", () => {
     // Vector tiles carry a margin of their neighbours' geometry, so the same
     // water appears in both. Merged into one even-odd path the overlap would
-    // cancel to a transparent stripe down every seam — which is exactly what
+    // cancel to a transparent stripe down every seam, which is exactly what
     // it did, visibly, before fills were split per tile.
     const water = { name: 'water', type: 3, geometry: square(0, 0, 4096) }
     const tiles: FetchedTile[] = [

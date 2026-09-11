@@ -57,7 +57,7 @@ export interface RegisteredRoute {
  *
  * Decorators on a controller record metadata here at import time. Because
  * TypeScript evaluates method decorators before the class decorator, and
- * bottom-up within a method, nothing is resolved eagerly — everything is
+ * bottom-up within a method, nothing is resolved eagerly. Everything is
  * keyed on the controller prototype and stitched together when
  * `initializeRoutes` runs.
  *
@@ -81,7 +81,7 @@ export class RouteManager {
 
   // -- registration (called by decorators) ----------------------------------
 
-  /** `@Route()` — records the controller's base path. Receives the constructor. */
+  /** `@Route()` records the controller's base path. Receives the constructor. */
   public static registerController(constructor: any, route: string): void {
     const meta = RouteManager.metaFor(constructor.prototype, constructor.name)
     meta.baseRoute = route
@@ -118,7 +118,7 @@ export class RouteManager {
     if (successDescription !== undefined) endpoint.successDescription = successDescription
   }
 
-  /** `@Response(code, description)` — documentation only, surfaced in the OpenAPI spec. */
+  /** `@Response(code, description)` documentation only, surfaced in the OpenAPI spec. */
   public static registerResponse(prototype: any, property: string, code: number, description?: string): void {
     const endpoint = RouteManager.endpointFor(prototype, property)
     if (!endpoint.responses.some(response => response.code === code)) {
@@ -158,7 +158,7 @@ export class RouteManager {
     else endpoint.params.push(meta)
   }
 
-  /** `@Hidden()` — keep an endpoint out of the generated OpenAPI spec. */
+  /** `@Hidden()` keep an endpoint out of the generated OpenAPI spec. */
   public static registerHidden(prototype: any, property: string): void {
     RouteManager.endpointFor(prototype, property).hidden = true
   }
@@ -179,17 +179,17 @@ export class RouteManager {
 
     for (const meta of RouteManager.controllers.values()) {
       if (meta.baseRoute === null) {
-        problems.push(`${meta.name} has endpoints but no @Route() decorator — no routes registered`)
+        problems.push(`${meta.name} has endpoints but no @Route() decorator: no routes registered`)
         continue
       }
       if (meta.instance === null) {
-        problems.push(`${meta.name} is decorated but never instantiated in routes/Routes.ts — no routes registered`)
+        problems.push(`${meta.name} is decorated but never instantiated in routes/Routes.ts: no routes registered`)
         continue
       }
 
       for (const endpoint of meta.endpoints.values()) {
         if (endpoint.route === null || endpoint.method === null) {
-          problems.push(`${meta.name}.${endpoint.property} is missing an HTTP verb decorator (@Get, @Post, ...)`)
+          problems.push(`${meta.name}.${endpoint.property} is missing an HTTP verb decorator (@Get, @Post, ...): no routes registered`)
           continue
         }
 
@@ -282,7 +282,7 @@ export class RouteManager {
   /**
    * `@Path() id: string` gives no name to work with, so fall back to reading
    * the parameter name out of the compiled function source. TypeScript does
-   * not mangle parameter names, so this is reliable — but destructured or
+   * not mangle parameter names, so this is reliable, but destructured or
    * otherwise unreadable parameters are rejected at startup with a message
    * telling the author to name the parameter explicitly.
    */

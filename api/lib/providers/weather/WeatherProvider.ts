@@ -4,10 +4,7 @@ import type { GeocodeResult, WeatherLocation, WeatherReport, WeatherUnits } from
  * A source of forecasts.
  *
  * The seam exists mostly so the default can stay keyless. Open-Meteo needs no
- * account, which matters for something a household installs on a Pi — a
- * dashboard that demands an API key signup before it can show the weather is
- * a dashboard that never gets set up. OpenWeatherMap is there for anyone who
- * already has a key and prefers it.
+ * account. OpenWeatherMap is there for anyone who already has a key and prefers it.
  */
 export interface WeatherProvider {
   readonly id: string

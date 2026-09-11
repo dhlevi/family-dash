@@ -15,8 +15,7 @@ import type { ShoppingItem } from '@/api/types'
  *
  * Used both as a tab on the wall display and as a standalone page on a
  * phone, so the layout is a single column of large tick targets either way.
- * It polls while visible, which is what keeps two people — one at the
- * fridge, one in the shop — looking at the same list.
+ * It polls while visible, which is what keeps two people looking at the same list.
  */
 const props = withDefaults(
   defineProps<{

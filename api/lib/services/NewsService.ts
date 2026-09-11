@@ -59,8 +59,7 @@ export class NewsService {
    * Fetch one feed.
    *
    * Records the outcome against the feed either way. A failure leaves the
-   * previously cached articles in place — a publisher having a bad afternoon
-   * should not blank the headlines.
+   * previously cached articles in place.
    */
   public async fetchOne(feed: NewsFeed): Promise<FetchOutcome> {
     const startedAt = Date.now()

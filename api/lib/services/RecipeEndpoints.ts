@@ -24,7 +24,7 @@ const newRecipeSchema = z.object({
   /**
    * A picture in the photo library. The column is a foreign key, so a photo
    * that does not exist is refused by the database rather than stored as a
-   * dangling reference — and deleting the photo later clears this on its own.
+   * dangling reference, and deleting the photo later clears this on its own.
    */
   photoId: z.string().uuid('Must be the id of a photo in the library').nullish(),
   sourceUrl: z.string().trim().url('Must be a URL').max(500).nullish().or(z.literal('')),
@@ -35,7 +35,7 @@ const recipeUpdateSchema = newRecipeSchema.partial()
 
 /**
  * Zod's `.nullish()` admits `undefined`, but an ingredient's optional fields
- * are explicitly nullable — so absent and empty both become null here rather
+ * are explicitly nullable, so absent and empty both become null here rather
  * than reaching the database as undefined.
  */
 function toIngredients(
@@ -66,8 +66,8 @@ export class RecipeEndpoints {
   /**
    * A recipe with its quantities scaled to a different number of servings.
    *
-   * Done here rather than in the browser so the arithmetic — and the
-   * fraction formatting that makes it readable — lives in one place.
+   * Done here rather than in the browser so the arithmetic, and the
+   * fraction formatting that makes it readable, lives in one place.
    */
   public async scaled(id: string, servings: number): Promise<Recipe> {
     const recipe = await this.byId(id)

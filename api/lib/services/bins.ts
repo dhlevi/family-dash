@@ -2,7 +2,7 @@
  * Working out what goes to the curb, and when.
  *
  * Collection schedules arrive as ordinary calendar events, because that is how
- * most councils and municipalities publish them — an ICS feed the app already
+ * most councils and municipalities publish them. An ICS feed the app already
  * knows how to subscribe to and sync. Nothing here fetches anything; it reads
  * events that are already cached and decides what they mean.
  *
@@ -61,7 +61,7 @@ const ORDER: readonly BinKind[] = ['garbage', 'recycling', 'organics', 'yard', '
 
 /**
  * Which bins a calendar event is about, or an empty list if it is not about
- * bins at all — which is how an ordinary appointment in the same calendar is
+ * bins at all, which is how an ordinary appointment in the same calendar is
  * kept out of the widget.
  */
 export function classify(title: string): BinKind[] {
@@ -87,6 +87,11 @@ export interface BinCollection {
 export interface DatedTitle {
   title: string
   startsAt: Date
+  /**
+   * All-day events are stored at UTC midnight so that they mean the same
+   * calendar date everywhere, which changes how the date must be read.
+   */
+  allDay: boolean
 }
 
 /** The local calendar day of an instant, in the timezone the process runs in. */
@@ -94,6 +99,19 @@ export function localDay(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * The calendar day an event is *about*.
+ */
+export function dayOf(event: DatedTitle): string {
+  if (!event.allDay) return localDay(event.startsAt)
+
+  const year = event.startsAt.getUTCFullYear()
+  const month = String(event.startsAt.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(event.startsAt.getUTCDate()).padStart(2, '0')
 
   return `${year}-${month}-${day}`
 }
@@ -114,7 +132,7 @@ export function groupByDay(events: readonly DatedTitle[]): BinCollection[] {
     const kinds = classify(event.title)
     if (kinds.length === 0) continue
 
-    const date = localDay(event.startsAt)
+    const date = dayOf(event)
     const existing = days.get(date)
 
     if (!existing) {

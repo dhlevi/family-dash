@@ -6,7 +6,7 @@ import { PostgresDatabase } from '../db/PostgresDatabase'
  * Critical probe: can we reach Postgres and is the schema present?
  *
  * Marked critical, so a failure makes /healthCheck answer 503 and the
- * container healthcheck go red — which is the signal that actually needs to
+ * container healthcheck go red, which is the signal that actually needs to
  * reach whoever is looking after the Pi.
  */
 export class DatabaseCheck implements HealthValidator {

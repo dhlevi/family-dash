@@ -33,11 +33,6 @@ export interface ImportRequest {
 /**
  * Keeps the `photo` index in step with the media volume.
  *
- * The library is a plain folder, so it is not only the app that changes it —
- * pictures also arrive by copying them onto the volume from a laptop or a
- * card reader. Everything about the index is therefore derived from what is
- * actually on disk, and the scan is safe to run repeatedly.
- *
  * Album is the immediate subfolder name. Deeper nesting is flattened onto
  * the top-level folder rather than ignored, so dropping in a folder tree
  * from a camera still produces something browsable.
@@ -91,13 +86,6 @@ export class PhotoService {
     /**
      * An empty library where the index is not is treated as a missing volume,
      * not as a library somebody emptied.
-     *
-     * The distinction matters because reconciling would delete every row —
-     * and `recipe.photo_id` references those rows with ON DELETE SET NULL,
-     * so an unplugged USB drive would quietly clear the picture off every
-     * recipe. Plugging it back in re-indexes the photos under new ids, which
-     * would not put them back. Nothing is deleted in this state; the next
-     * scan with the volume present reconciles normally.
      */
     if (onDisk.length === 0 && indexed.size > 0) {
       outcome.libraryMissing = true
@@ -214,7 +202,7 @@ export class PhotoService {
       height: facts.height,
       sizeBytes: file.sizeBytes ?? null,
       // Falling back to the file's own date keeps the library in a sensible
-      // order when a picture has no EXIF at all — screenshots, downloads,
+      // order when a picture has no EXIF at all; screenshots, downloads,
       // anything that has been through a messaging app.
       takenAt: facts.takenAt ?? file.modifiedAt ?? null,
       thumbPath: thumbRelPath

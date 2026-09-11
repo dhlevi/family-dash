@@ -17,7 +17,7 @@ import type { Ingredient, NewRecipe, Recipe } from '@/api/types'
  * because the shopping list has to add them up: "2 cup flour" and "1 cup
  * flour" only become "3 cup flour" if the quantity and unit are known
  * separately. Quantities stay free text so "a pinch" and "1 1/2" are both
- * allowed — the merge treats anything non-numeric as unmergeable rather
+ * allowed. The merge treats anything non-numeric as unmergeable rather
  * than rejecting it.
  */
 const props = defineProps<{
@@ -267,7 +267,7 @@ function submit(): void {
         </div>
       </Field>
 
-      <Field label="Picture" hint="A photo from the library, or upload one — it is filed under Recipes">
+      <Field label="Picture" hint="A photo from the library, or upload one. It is filed under Recipes">
         <PhotoPicker v-model="photoId" :disabled="saving" />
       </Field>
 

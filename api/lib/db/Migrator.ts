@@ -23,8 +23,7 @@ export interface MigrationOutcome {
  * `schema_migration` with a checksum, so a second boot is a no-op and an
  * edited file that has already been applied is reported loudly instead of
  * silently diverging. Keeping this in the API container means the Pi has
- * nothing to run by hand after a `git pull` — bringing the stack up is the
- * whole upgrade.
+ * nothing to run by hand after a `git pull`
  */
 export class Migrator {
   private constructor() {
@@ -53,18 +52,29 @@ export class Migrator {
     const alreadyApplied = await Migrator.appliedMigrations()
     const outcome: MigrationOutcome = { applied: [], skipped: [] }
 
+    // Every mismatch, not just the first. Reformatting a header comment tends
+    // to touch several files at once, and reporting them one at a time turns
+    // one fix into a restart-fail-reseal loop for as many files as were edited.
+    const changed = files
+      .filter(file => {
+        const previous = alreadyApplied.get(file.id)
+        return previous !== undefined && previous !== file.checksum
+      })
+      .map(file => file.name)
+
+    if (changed.length > 0) {
+      throw new Error(
+        `${changed.length} migration(s) changed since they were applied (checksum mismatch): ${changed.join(', ')}. ` +
+          'Migrations are immutable once applied. Add a new migration instead of editing one. ' +
+          'If the changes were only to comments and the schema is unchanged, reseal them:\n' +
+          `  docker compose run --rm --entrypoint sh api -c "node build/db/cli.js --reseal ${changed.join(' ')}"`
+      )
+    }
+
     for (const file of files) {
       const previous = alreadyApplied.get(file.id)
 
       if (previous) {
-        if (previous !== file.checksum) {
-          throw new Error(
-            `Migration ${file.name} has changed since it was applied (checksum mismatch). ` +
-              'Migrations are immutable once applied — add a new migration instead of editing this one. ' +
-              `If the change was only to a comment and the schema is unchanged, run ` +
-              `\`npm run migrate -- --reseal ${file.name}\` to record the new checksum.`
-          )
-        }
         outcome.skipped.push(file.name)
         continue
       }
@@ -99,7 +109,7 @@ export class Migrator {
    * so correcting a typo in a comment stops the API from booting even though
    * the schema is untouched. Without a way out, the only remedies are
    * reverting an intentional edit or editing `schema_migration` by hand on
-   * the Pi — so this is the way out, and it says plainly that the caller is
+   * the Pi, so this is the way out, and it says plainly that the caller is
    * asserting the change was cosmetic.
    *
    * It cannot invent history: a migration that was never applied is refused,

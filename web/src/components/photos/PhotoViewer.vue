@@ -10,8 +10,7 @@ import type { Photo } from '@/api/types'
  *
  * Deliberately not a Modal: this covers the nav rail as well, because a
  * picture on a wall display should be the whole screen. Everything is driven
- * by large on-screen controls rather than gestures — a stranger walking past
- * the kitchen wall should be able to work out how to get to the next photo.
+ * by large on-screen controls rather than gestures.
  */
 const props = defineProps<{
   photos: Photo[]
@@ -40,7 +39,7 @@ const confirmingRemoval = ref(false)
  * True while the full-size picture is on its way.
  *
  * Full-size images are not small, the Pi is not fast, and a HEIC is
- * converted the first time it is opened — so without this the screen goes
+ * converted the first time it is opened, so without this the screen goes
  * black for a moment and looks broken rather than busy.
  */
 const loading = ref(true)

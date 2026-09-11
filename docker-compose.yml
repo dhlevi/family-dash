@@ -6,8 +6,9 @@
 #   docker compose down               stop (keeps data)
 #   docker compose down -v            stop and wipe the database
 #
-# Only `web` publishes a port. The API and database talk over the internal
-# compose network, so nothing but the UI is reachable from your LAN.
+# `web` publishes the dashboard, and `ntfy` publishes the notification server
+# that phones subscribe to. The API and database talk over the internal compose
+# network and are not reachable from your LAN.
 # ---------------------------------------------------------------------------
 
 name: family-dash
@@ -44,6 +45,29 @@ services:
       retries: 12
       start_period: 20s
 
+  # Push notifications. Self-hosted. See ntfy/server.yml for the one exception Apple
+  # forces, and the README for what to do before exposing this beyond the LAN.
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    command: serve
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      TZ: ${TZ:-UTC}
+      # Overrides base-url in server.yml. Must be the address phones use.
+      NTFY_BASE_URL: ${NTFY_PUBLIC_URL:-http://localhost:2586}
+    volumes:
+      - ./ntfy/server.yml:/etc/ntfy/server.yml:ro
+      - ntfydata:/var/lib/ntfy
+    ports:
+      - "${NTFY_PORT:-2586}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/v1/health | grep -q '\"healthy\":true'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   api:
     build:
       context: ./api
@@ -69,11 +93,20 @@ services:
       OPENWEATHERMAP_API_KEY: ${OPENWEATHERMAP_API_KEY:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Where the API publishes to, over the compose network. Not an address
+      # any phone can resolve. NTFY_PUBLIC_URL is the one they use.
+      NTFY_URL: http://ntfy:80
+      NTFY_PUBLIC_URL: ${NTFY_PUBLIC_URL:-}
+      NTFY_TOKEN: ${NTFY_TOKEN:-}
     volumes:
       - ${MEDIA_PATH:-./media}:/media
     depends_on:
       db:
         condition: service_healthy
+      # Started, not healthy: a notification server that is slow to come up
+      # should not hold back the dashboard.
+      ntfy:
+        condition: service_started
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthCheck').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -97,3 +130,4 @@ services:
 
 volumes:
   pgdata:
+  ntfydata:

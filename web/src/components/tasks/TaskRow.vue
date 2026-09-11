@@ -8,8 +8,7 @@ import { RECURRENCE_LABELS, type RecurrenceKind, type TaskItem } from '@/api/typ
  * One task in a list.
  *
  * The checkbox is a deliberately oversized target, separate from the row
- * itself — ticking something off is the common action and must not risk
- * opening the editor by mistake.
+ * itself.
  */
 const props = defineProps<{
   task: TaskItem

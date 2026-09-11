@@ -17,6 +17,7 @@ import { HouseholdController } from '../controllers/HouseholdController'
 import { MealPlanController } from '../controllers/MealPlanController'
 import { MediaController } from '../controllers/MediaController'
 import { NewsController } from '../controllers/NewsController'
+import { NotificationController } from '../controllers/NotificationController'
 import { NoteController } from '../controllers/NoteController'
 import { PhotoController } from '../controllers/PhotoController'
 import { RecipeController } from '../controllers/RecipeController'
@@ -49,6 +50,7 @@ export default function buildRouter(): Router {
   new CalendarController()
   new TaskController()
   new HouseholdController()
+  new NotificationController()
   new NoteController()
   new RecipeController()
   new MealPlanController()

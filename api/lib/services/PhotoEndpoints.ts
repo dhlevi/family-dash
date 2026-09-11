@@ -10,7 +10,7 @@ const library = new PhotoService()
 
 /**
  * Album names become folder names on the media volume, so they are kept to
- * the characters that behave on every filesystem a household might mount —
+ * the characters that behave on every filesystem a household might mount
  * including a Windows share, which rejects rather more than Linux does.
  */
 const albumName = z

@@ -2,11 +2,15 @@
  * Standalone migration runner: `npm run migrate`.
  *
  * The API migrates on startup, so this is for the times you want to apply
- * migrations without booting the service — checking a new migration locally,
+ * migrations without booting the service, checking a new migration locally,
  * or repairing a database by hand.
  *
  *   npm run migrate
- *   npm run migrate -- --reseal 001_init.sql
+ *   npm run migrate -- --reseal 001_init.sql 002_note_ink.sql
+ *
+ * In the built container there is no tsx, so it is:
+ *
+ *   node build/db/cli.js --reseal 001_init.sql
  *
  * `--reseal` records a migration's current checksum without re-running it,
  * for when an applied file was edited but its schema was not: a corrected
@@ -25,17 +29,20 @@ async function main(): Promise<void> {
   const resealIndex = process.argv.indexOf('--reseal')
 
   if (resealIndex !== -1) {
-    const name = process.argv[resealIndex + 1]
-    if (!name) throw new Error('--reseal needs the name of a migration, e.g. --reseal 001_init.sql')
+    // Several names, because reformatting a header comment tends to touch more
+    // than one file and the startup error now reports them all together.
+    const names = process.argv.slice(resealIndex + 1).filter(argument => !argument.startsWith('--'))
+    if (names.length === 0) throw new Error('--reseal needs one or more migration names, e.g. --reseal 001_init.sql')
 
-    const resealed = await Migrator.reseal(name)
+    for (const name of names) {
+      const resealed = await Migrator.reseal(name)
+
+      console.warn(`\nResealed ${resealed.name}.\n  was ${resealed.from}\n  now ${resealed.to}`)
+    }
 
     console.warn(
-      `\nResealed ${resealed.name}.\n` +
-        `  was ${resealed.from}\n` +
-        `  now ${resealed.to}\n` +
-        'This asserts the file changed but the schema it produces did not. If that is not true, ' +
-        'the database and the migration have diverged and nothing here will tell you so later.'
+      '\nThis asserts the files changed but the schema they produce did not. If that is not true, ' +
+        'the database and the migrations have diverged and nothing here will tell you so later.'
     )
 
     await PostgresDatabase.shutdown()

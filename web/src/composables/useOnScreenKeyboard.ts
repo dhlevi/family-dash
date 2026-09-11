@@ -148,7 +148,7 @@ export function useOnScreenKeyboard() {
   /**
    * Sends Enter to the field, then closes.
    *
-   * Several forms act on Enter so the Done key has to be a real Enter 
+   * Several forms act on Enter so the Done key has to be a real Enter
    * rather than only a way of putting the keyboard away.
    */
   function submit(): void {

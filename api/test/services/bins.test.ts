@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classify, groupByDay, localDay, urgencyFor, type BinCollection } from '../../lib/services/bins'
+import { classify, dayOf, groupByDay, localDay, urgencyFor, type BinCollection } from '../../lib/services/bins'
 
 /**
  * The titles here are the shapes real authorities publish, on both sides of
@@ -63,7 +63,10 @@ describe('classify', () => {
   })
 })
 
-const at = (date: string, title: string) => ({ title, startsAt: new Date(`${date}T07:00:00`) })
+const at = (date: string, title: string) => ({ title, startsAt: new Date(`${date}T07:00:00`), allDay: false })
+
+/** An all-day event as a calendar stores one: UTC midnight on its date. */
+const allDay = (date: string, title: string) => ({ title, startsAt: new Date(`${date}T00:00:00Z`), allDay: true })
 
 describe('groupByDay', () => {
   it("merges a morning's separate events into one trip to the kerb", () => {
@@ -140,6 +143,32 @@ describe('urgencyFor', () => {
     const lateSept = new Date('2026-09-30T19:00:00')
 
     expect(urgencyFor(collection('2026-10-01'), lateSept, 16)).toBe('tonight')
+  })
+})
+
+describe('dayOf', () => {
+  it('reads a timed collection on its local day', () => {
+    expect(dayOf({ title: 'Garbage', startsAt: new Date(2026, 8, 17, 7, 0, 0), allDay: false })).toBe('2026-09-17')
+  })
+
+  it('reads an all-day collection as the date it was written for', () => {
+    // Stored at UTC midnight, it is 17:00 the previous day in Vancouver.
+    // Reading it locally announced every collection a day early — bins out on
+    // Thursday for a Friday pickup, which is worse than saying nothing.
+    expect(dayOf(allDay('2026-09-17', 'Recycling'))).toBe('2026-09-17')
+  })
+
+  it('groups an all-day collection under the right day', () => {
+    const grouped = groupByDay([allDay('2026-09-17', 'Recycling Day')])
+
+    expect(grouped[0]?.date).toBe('2026-09-17')
+  })
+
+  it('merges a timed and an all-day collection that fall on the same day', () => {
+    const grouped = groupByDay([allDay('2026-09-17', 'Recycling Day'), at('2026-09-17', 'Garbage')])
+
+    expect(grouped).toHaveLength(1)
+    expect(grouped[0]?.kinds).toEqual(['garbage', 'recycling'])
   })
 })
 

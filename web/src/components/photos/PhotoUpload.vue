@@ -139,7 +139,7 @@ defineExpose({ reset })
           {{ rejected.length }} {{ rejected.length === 1 ? 'file was' : 'files were' }} not added
         </p>
         <ul class="mt-1 flex flex-col gap-0.5 text-xs text-muted">
-          <li v-for="entry in rejected" :key="entry.filename">{{ entry.filename }} — {{ entry.reason }}</li>
+          <li v-for="entry in rejected" :key="entry.filename">{{ entry.filename }} - {{ entry.reason }}</li>
         </ul>
       </div>
     </div>

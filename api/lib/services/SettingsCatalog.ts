@@ -116,8 +116,8 @@ export const SETTINGS: Record<string, SettingDefinition> = {
     schema: z.enum(['auto', 'always', 'never']),
     default: () => 'auto',
     description:
-      'Show a keyboard on screen when a text field is tapped. Auto decides per device — on for a ' +
-      'touchscreen, off where there is a mouse — which matters because this setting is shared by ' +
+      'Show a keyboard on screen when a text field is tapped. Auto decides per device: on for a ' +
+      'touchscreen, off where there is a mouse, which matters because this setting is shared by ' +
       'every screen looking at the same install.'
   },
 
@@ -168,15 +168,120 @@ export const SETTINGS: Record<string, SettingDefinition> = {
       z
         .object({
           colour: hexColour.optional(),
-          calendarSourceIds: z.array(z.string().uuid()).max(20).optional()
+          calendarSourceIds: z.array(z.string().uuid()).max(20).optional(),
+          ntfyTopic: z
+            .string()
+            .trim()
+            .regex(/^$|^[A-Za-z0-9_-]{16,64}$/, 'Generated; letters, numbers, dashes')
+            .optional()
         })
         .strict()
     ),
     default: () => ({}),
     description:
-      "Per-person display settings, keyed by the names in 'tasks.assignees'. A colour, and which " +
-      'calendars belong to that person — events have no assignee of their own, so linking a ' +
-      'calendar is how the strip knows whose day is whose. Everything here is optional.'
+      "Per-person settings, keyed by the names in 'tasks.assignees'. A colour, which calendars " +
+      'belong to that person. Events have no assignee of their own, so linking a calendar is how ' +
+      'the strip knows whose day is whose, and the ntfy topic their reminders go to. Everything ' +
+      'here is optional.'
+  },
+
+  // --- notifications ------------------------------------------------------
+  'notify.enabled': {
+    schema: z.boolean(),
+    default: () => false,
+    description:
+      'Send push notifications through ntfy. Off until the topics have been set up, because a ' +
+      'topic is the only thing protecting a message on the way to a phone.'
+  },
+  'notify.householdTopic': {
+    schema: z
+      .string()
+      .trim()
+      .regex(/^$|^[A-Za-z0-9_-]{16,64}$/, 'Generated; letters, numbers, dashes'),
+    default: () => '',
+    description:
+      'The topic everyone subscribes to: anything not addressed to one person, and any system ' +
+      'fault. Generated rather than chosen. On ntfy the topic *is* the password.'
+  },
+  'notify.serverUrl': {
+    schema: z
+      .string()
+      .trim()
+      .refine(
+        value => value === '' || /^https?:\/\/[^/\s]+$/.test(value),
+        'Must be an address like http://192.168.1.50:2586'
+      ),
+    default: () => AppProperties.getString('notify.ntfy.publicUrl', ''),
+    description:
+      'How phones reach the ntfy server. Not the same address the API uses: inside Docker that is ' +
+      'a service name no phone can resolve. Needed for the subscribe QR codes.'
+  },
+  'notify.calendarSourceIds': {
+    schema: z.array(z.string().uuid()).max(20),
+    default: () => [],
+    description:
+      'Which calendars send reminders. Empty means the family calendar only, which is usually ' +
+      'right: an event from a subscribed Google or iCloud calendar is already being announced by ' +
+      'the phone it came from. Tick a subscribed feed when nothing else is watching it.'
+  },
+  'notify.taskLeadMinutes': {
+    schema: z.number().int().min(0).max(1440),
+    default: () => 30,
+    description: 'How long before a task is due to say so. 0 announces it at the moment it is due.'
+  },
+  'notify.taskOverdue': {
+    schema: z.boolean(),
+    default: () => true,
+    description: 'Say something once more when a task has gone past its due time without being ticked off.'
+  },
+  'notify.taskOverdueMinutes': {
+    schema: z.number().int().min(5).max(1440),
+    default: () => 120,
+    description: 'How long after a task was due before the second and final reminder.'
+  },
+  'notify.eventLeadMinutes': {
+    schema: z.number().int().min(0).max(1440),
+    default: () => 30,
+    description: 'How long before an event starts to say so.'
+  },
+  'notify.allDayHour': {
+    schema: z.number().int().min(0).max(23),
+    default: () => 8,
+    description:
+      'What time to announce an all-day event. "Thirty minutes before" means nothing for something ' +
+      'that starts at midnight, so these get a time of day instead.'
+  },
+  'notify.allDayDaysBefore': {
+    schema: z.number().int().min(0).max(7),
+    default: () => 0,
+    description:
+      'How many days ahead to announce an all-day event. 1 with an hour of 18 is the evening ' +
+      'before, which is when bins are actually useful.'
+  },
+  'notify.quietFrom': {
+    schema: z.number().int().min(0).max(23),
+    default: () => 21,
+    description: 'Hour the quiet window opens. Reminders inside it wait until it closes.'
+  },
+  'notify.quietTo': {
+    schema: z.number().int().min(0).max(23),
+    default: () => 7,
+    description: 'Hour the quiet window closes. Set both to the same value to allow notifications at any hour.'
+  },
+  'notify.staleAfterMinutes': {
+    schema: z.number().int().min(5).max(720),
+    default: () => 30,
+    description:
+      'How late a reminder may be and still be worth sending. This is what stops a display that ' +
+      'has been switched off overnight from emptying a backlog onto everyone at once.'
+  },
+  'notify.systemFaults': {
+    schema: z.boolean(),
+    default: () => true,
+    description:
+      'Announce faults the dashboard cannot fix itself; a calendar that has stopped syncing, a ' +
+      'media volume that did not come back, a background job that is failing. These go to the ' +
+      'household topic, and each one is reported once rather than on every sweep.'
   },
 
   // --- bin day ------------------------------------------------------------

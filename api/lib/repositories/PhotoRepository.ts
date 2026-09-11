@@ -55,8 +55,7 @@ const COLUMNS =
 /**
  * Newest first, with photos whose date is unknown at the end rather than
  * scattered through by insertion order. `id` breaks ties so paging is
- * stable — without it two photos sharing a timestamp can swap places between
- * pages and one of them never appears.
+ * stable.
  */
 const NEWEST_FIRST = 'ORDER BY taken_at DESC NULLS LAST, created_at DESC, id'
 

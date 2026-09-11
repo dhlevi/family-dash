@@ -40,6 +40,9 @@ export class AppProperties {
     'weather.location.name': 'DEFAULT_LOCATION_NAME',
     'weather.units': 'DEFAULT_UNITS',
     'weather.provider': 'WEATHER_PROVIDER',
+    'notify.ntfy.url': 'NTFY_URL',
+    'notify.ntfy.publicUrl': 'NTFY_PUBLIC_URL',
+    'notify.ntfy.token': 'NTFY_TOKEN',
     'google.clientId': 'GOOGLE_CLIENT_ID',
     'google.clientSecret': 'GOOGLE_CLIENT_SECRET',
     'database.migrate.onStartup': 'DB_MIGRATE_ON_STARTUP'
@@ -51,9 +54,7 @@ export class AppProperties {
 
   /**
    * Load the properties file. Safe to call more than once; the first
-   * successful load wins. A missing file is not fatal — the service falls
-   * back to environment variables and the defaults passed at each call site,
-   * which keeps a container with no mounted config working.
+   * successful load wins. A missing file is not fatal.
    */
   public static initialize(configPath?: string): void {
     if (AppProperties.values) return

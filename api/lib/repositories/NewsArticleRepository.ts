@@ -88,8 +88,7 @@ export class NewsArticleRepository {
    *
    * Upserted on (feed_id, guid), so refetching a feed updates stories in
    * place instead of accumulating copies of the same headline. `fetched_at`
-   * is deliberately not touched on conflict — it records when we first saw
-   * the story, which is the tie-breaker for undated feeds.
+   * is deliberately not touched on conflict.
    */
   public async upsertMany(feedId: string, articles: NewArticle[]): Promise<number> {
     if (articles.length === 0) return 0

@@ -51,7 +51,7 @@ async function complete(task: TaskItem): Promise<void> {
     tasks.value = tasks.value.filter(candidate => candidate.id !== task.id)
 
     // A recurring chore's next occurrence only belongs here if it is also
-    // due today — otherwise it correctly disappears from this widget.
+    // due today, otherwise it correctly disappears from this widget.
     if (result.next?.dueAt && new Date(result.next.dueAt) <= endOfDay(new Date())) {
       tasks.value = [...tasks.value, result.next]
     }

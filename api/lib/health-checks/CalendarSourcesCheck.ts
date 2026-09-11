@@ -8,7 +8,7 @@ const sources = new CalendarSourceRepository()
  * Non-critical probe: is every enabled calendar actually syncing?
  *
  * The calendar page reads a cache, which is what makes it fast and keeps it
- * working through a network outage — and also what makes a broken feed
+ * working through a network outage, and also what makes a broken feed
  * invisible. Events simply stop changing, and a wall display looks the same
  * whether a calendar is up to date or three weeks stale.
  *

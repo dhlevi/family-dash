@@ -86,7 +86,7 @@ export interface CalendarEvent {
   sourceId: string
   /**
    * Set when the event came from a subscribed feed, which also means it
-   * cannot be edited here — the next sync would undo the change.
+   * cannot be edited here as the next sync would undo the change.
    */
   externalUid: string | null
   title: string
@@ -103,7 +103,7 @@ export interface CalendarEvent {
   recurrenceUntil: string | null
   /**
    * The event defining the series, on every occurrence including the first.
-   * Null when the event does not repeat — which is what tells the editor
+   * Null when the event does not repeat, which is what tells the editor
    * whether to offer "this one" or "all of them".
    */
   seriesId: string | null
@@ -153,7 +153,7 @@ export interface TaskItem {
   id: string
   title: string
   notes: string | null
-  /** Free text — the household is shared, so this is a name, not an id. */
+  /** Free text. The household is shared, so this is a name, not an id. */
   assignee: string | null
   category: string | null
   priority: 0 | 1 | 2 | 3
@@ -315,7 +315,7 @@ export const MEAL_SLOT_LABELS: Record<MealSlot, string> = {
 
 export interface MealPlanEntry {
   id: string
-  /** 'YYYY-MM-DD' — a plain date, with no timezone attached. */
+  /** 'YYYY-MM-DD' a plain date, with no timezone attached. */
   planDate: string
   slot: MealSlot
   recipeId: string | null
@@ -371,7 +371,7 @@ export interface CityArt {
   url: string
   /** The small version, for a grid of them. Made on demand. */
   thumbUrl: string
-  /** The vector master — resolution independent, and the one to print. */
+  /** The vector master. Resolution independent, and the one to print. */
   svgUrl: string
   createdAt: string
 }
@@ -434,6 +434,39 @@ export interface BinOutlook {
 export interface PersonProfile {
   colour?: string
   calendarSourceIds?: string[]
+  /** Generated; the topic this person's reminders go to. */
+  ntfyTopic?: string
+}
+
+// --- notifications ---------------------------------------------------------
+
+export interface SentNotification {
+  key: string
+  kind: string
+  title: string
+  body: string
+  fireAt: string
+  sentAt: string | null
+  /** 'stale' when the moment had passed, 'baseline' for a first sighting. */
+  suppressed: string | null
+  detail: string | null
+}
+
+export interface NotificationStatus {
+  enabled: boolean
+  /** Where phones subscribe. Empty until NTFY_PUBLIC_URL is set. */
+  serverUrl: string
+  householdTopic: string
+  people: Record<string, string>
+  recent: SentNotification[]
+}
+
+export interface SweepOutcome {
+  sent: number
+  expired: number
+  held: number
+  failed: number
+  reason: string | null
 }
 
 export interface Photo {
@@ -510,7 +543,7 @@ export interface NewDrawing {
 }
 
 /**
- * The drawing palette — wider than the note ink set, since a picture wants
+ * The drawing palette. Wider than the note ink set, since a picture wants
  * more than five pens. All dark enough to read on the paper colours below.
  */
 export const DRAW_COLOURS = [
@@ -554,7 +587,7 @@ export interface NewsArticle {
   link: string | null
   /**
    * Always plain text. Feed HTML is stripped by the API, so this is safe to
-   * render as a text node — which is the only way it is ever rendered.
+   * render as a text node, which is the only way it is ever rendered.
    */
   summary: string | null
   author: string | null
@@ -654,7 +687,7 @@ export interface WeatherReport {
 
 export interface GeocodeResult {
   name: string
-  /** "British Columbia, Canada" — enough to tell two Vancouvers apart. */
+  /** "British Columbia, Canada". Enough to tell two Vancouvers apart. */
   region: string
   latitude: number
   longitude: number
@@ -696,6 +729,20 @@ export interface AppSettings {
   'people.profiles': Record<string, PersonProfile>
   'bins.sourceIds': string[]
   'bins.eveningHour': number
+  'notify.enabled': boolean
+  'notify.householdTopic': string
+  'notify.serverUrl': string
+  'notify.calendarSourceIds': string[]
+  'notify.taskLeadMinutes': number
+  'notify.taskOverdue': boolean
+  'notify.taskOverdueMinutes': number
+  'notify.eventLeadMinutes': number
+  'notify.allDayHour': number
+  'notify.allDayDaysBefore': number
+  'notify.quietFrom': number
+  'notify.quietTo': number
+  'notify.staleAfterMinutes': number
+  'notify.systemFaults': boolean
   'cityart.regions': string[]
   'cityart.themes': string[]
   'cityart.poolSize': number

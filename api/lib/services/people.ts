@@ -48,12 +48,10 @@ function hash(text: string): number {
  * Assigns each name a colour.
  *
  * Derived from the name so that a person's colour survives a restart and does
- * not shuffle when somebody else is added — "Skye is the green one" should
- * stay true. Where two names want the same colour the later one takes the
- * next free slot instead, because with a household of five a collision is
- * likely enough to matter and two identical columns defeat the point.
- *
- * An explicit choice in Settings always wins.
+ * not shuffle when somebody else is added. Where two names want the same colour,
+ * the later one takes the next free slot instead, because with a household of
+ * five a collision is likely enough to matter and two identical columns defeat 
+ * the point. An explicit choice in Settings always wins.
  */
 export function assignColours(names: readonly string[], overrides: Record<string, string> = {}): Map<string, string> {
   const assigned = new Map<string, string>()

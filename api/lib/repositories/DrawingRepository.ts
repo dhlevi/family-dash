@@ -39,7 +39,7 @@ export interface DrawingUpdate {
 const COLUMNS = 'id, title, strokes, background, width, height, created_at, updated_at'
 
 export class DrawingRepository {
-  /** Most recently worked on first — the gallery's natural order. */
+  /** Most recently worked on first, the gallery's natural order. */
   public async list(limit = 60): Promise<Drawing[]> {
     const rows = await PostgresDatabase.many<DrawingRow>(
       `SELECT ${COLUMNS} FROM drawing ORDER BY updated_at DESC LIMIT $1`,

@@ -18,7 +18,7 @@ export class SystemController extends Controller {
     super()
   }
 
-  /** Liveness probe for the UI — cheaper than /healthCheck, which hits the database. */
+  /** Liveness probe for the UI, cheaper than /healthCheck, which hits the database. */
   @Get('ping')
   @SuccessResponse(200, 'OK')
   @NoCache()

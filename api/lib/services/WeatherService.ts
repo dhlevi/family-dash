@@ -50,7 +50,7 @@ export class WeatherService {
    * The current forecast.
    *
    * Serves the cache when it is fresh. When it is not, tries the provider and
-   * falls back to whatever is cached — marked stale — rather than failing.
+   * falls back to whatever is cached,marked stale,rather than failing.
    */
   public async report(force = false): Promise<WeatherReport> {
     const { location, units, provider: preferred } = await this.configuration()
@@ -73,7 +73,7 @@ export class WeatherService {
       const message = error instanceof Error ? error.message : String(error)
 
       if (cached) {
-        // The forecast on the wall is old, and the UI will say so — which is
+        // The forecast on the wall is old, and the UI will say so, which is
         // considerably more useful than an error where the weather was.
         console.warn(
           `Weather refresh failed (${message}); serving a cached forecast from ${cached.fetchedAt.toISOString()}`
@@ -90,7 +90,7 @@ export class WeatherService {
    *
    * Throws when the provider could not be reached, even though a stale
    * forecast was served to callers. The task's recorded error is the only
-   * place a persistently unreachable provider becomes visible — without
+   * place a persistently unreachable provider becomes visible. Without
    * this, Settings would report "last run ok" while the forecast quietly
    * aged on the wall. TaskManager records the failure and keeps the
    * schedule running, which is the behaviour wanted here.

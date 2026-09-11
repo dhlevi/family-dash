@@ -9,7 +9,7 @@ import type { CalendarEvent, CalendarSource } from '@/api/types'
  * The month view: six whole weeks, always.
  *
  * A fixed six-week grid means the layout never jumps when moving between
- * months — which matters more on a wall display than saving a row, because
+ * months, which matters more on a wall display than saving a row, because
  * the eye learns where things are.
  */
 const props = withDefaults(

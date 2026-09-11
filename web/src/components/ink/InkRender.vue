@@ -8,8 +8,7 @@ import type { InkStroke } from '@/api/types'
  *
  * Strokes are stored in the coordinate space they were captured in, so a
  * viewBox of that size reproduces the writing at whatever size the note is
- * being shown at — full size on the corkboard, or shrunk into a dashboard
- * widget — with no distortion and no rasterising.
+ * being shown at with no distortion and no rasterising.
  */
 const props = withDefaults(
   defineProps<{

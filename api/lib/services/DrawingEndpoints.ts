@@ -11,7 +11,7 @@ const hexColour = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a 6-digit hex c
  * Limits on a drawing.
  *
  * Larger than a sticky note's, because this is a whole page rather than a
- * card — but still bounded, so a stuck pointer loop or a pasted payload
+ * card, but still bounded, so a stuck pointer loop or a pasted payload
  * cannot fill the Pi's SD card. A drawing at the cap is roughly 1.7MB of
  * JSON.
  */

@@ -12,8 +12,7 @@ import Icon from './Icon.vue'
  *
  * The clock is the thing a family dashboard gets glanced at for most often,
  * so it is the largest element in the header. The connection indicator only
- * appears when something is wrong — a permanent green dot teaches people to
- * stop seeing it.
+ * appears when something is wrong.
  */
 const route = useRoute()
 const now = useClock()

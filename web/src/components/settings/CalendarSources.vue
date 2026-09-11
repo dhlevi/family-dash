@@ -270,21 +270,21 @@ function syncLabel(source: CalendarSource): string {
           <summary class="cursor-pointer font-medium text-ink">Where do I find this address?</summary>
           <div class="mt-2 flex flex-col gap-2 text-muted">
             <p>
-              <strong class="font-medium text-ink">Google Calendar</strong> — Settings, pick the calendar, then "Secret
+              <strong class="font-medium text-ink">Google Calendar</strong> - Settings, pick the calendar, then "Secret
               address in iCal format".
             </p>
             <p>
-              <strong class="font-medium text-ink">iCloud</strong> — share the calendar, tick "Public Calendar", and
+              <strong class="font-medium text-ink">iCloud</strong> - share the calendar, tick "Public Calendar", and
               copy the link. A <code class="font-mono text-xs">webcal://</code> link is fine.
             </p>
             <p>
-              <strong class="font-medium text-ink">Outlook</strong> — Settings, Calendar, Shared calendars, publish,
+              <strong class="font-medium text-ink">Outlook</strong> - Settings, Calendar, Shared calendars, publish,
               then copy the ICS link.
             </p>
             <p class="flex items-start gap-2 pt-1 text-xs text-faint">
               <Icon name="warning" :size="14" class="mt-0.5 shrink-0" />
               <span>
-                Subscriptions are read-only and refresh in the background, so they keep working indefinitely — unlike a
+                Subscriptions are read-only and refresh in the background, so they keep working indefinitely, unlike a
                 signed-in connection, whose access can lapse. Treat the address as a password: anyone with it can read
                 the calendar.
               </span>

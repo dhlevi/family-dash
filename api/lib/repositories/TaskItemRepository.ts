@@ -53,7 +53,7 @@ export class TaskItemRepository {
   /**
    * Tasks matching a filter.
    *
-   * Ordering puts open work first, then soonest due — with undated tasks
+   * Ordering puts open work first, then soonest due, with undated tasks
    * after dated ones rather than sorting as "never due", which would bury
    * them. Completed tasks come last, most recent first.
    */
@@ -159,8 +159,7 @@ export class TaskItemRepository {
   }
 
   /**
-   * Complete a task and, if it recurs, create its next occurrence — in one
-   * transaction, so a chore can never be both ticked off and lost.
+   * Complete a task and, if it recurs, create its next occurrence.
    */
   public async completeWithFollowUp(
     id: string,
@@ -233,10 +232,6 @@ export class TaskItemRepository {
    * Matching is case-insensitive and ignores surrounding spaces, because an
    * assignee is free text somebody typed on a touchscreen and "skye " should
    * not quietly become a sixth person.
-   *
-   * Everything open is returned rather than only today's, because the strip
-   * also reports how much each person has waiting behind today — a number
-   * that cannot be derived from a filtered query.
    */
   public async openForAssignees(names: readonly string[]): Promise<TaskItem[]> {
     if (names.length === 0) return []

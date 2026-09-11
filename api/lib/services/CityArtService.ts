@@ -22,8 +22,7 @@ const settings = new SettingRepository()
  * Tiles are fetched, drawn and rasterised once by the API; the screensaver
  * loads a finished picture, which costs it exactly what showing a photograph
  * costs. That also means the artwork keeps working with no network at all,
- * which matters more here than anywhere else in the application — the
- * screensaver is what is on screen for most of the day.
+ * which matters more here than anywhere else in the application.
  */
 export class CityArtService {
   /**
@@ -33,12 +32,7 @@ export class CityArtService {
    * of background with three lines on it. Rather than put that on the wall,
    * the generator counts what it drew and tries somewhere else.
    *
-   * Set low on purpose. A minimal picture is not a failed one — Tofino comes
-   * out at about 160 features and is one of the better things this produces —
-   * and a threshold tuned for cities would quietly reject every small
-   * municipality on Vancouver Island and in Wales, which is most of the reason
-   * they are in the list. This is here to catch the genuinely empty, not the
-   * merely quiet.
+   * This is here to catch the genuinely empty maps, not low-feature ones.
    */
   private static readonly MIN_FEATURES = 120
 
@@ -107,8 +101,7 @@ export class CityArtService {
     const recent = new Set(await repository.recentCityKeys(poolSize * 2))
     const fresh = candidates.filter(city => !recent.has(city.key))
 
-    // Everything has been drawn recently — a small region selection will do
-    // this — so fall back to the full list rather than drawing nothing.
+    // Everything has been drawn recently so fall back to the full list rather than drawing nothing.
     const pool = [...(fresh.length > 0 ? fresh : candidates)]
 
     // Partial Fisher-Yates. `sort(() => Math.random() - 0.5)` looks like a
@@ -136,8 +129,7 @@ export class CityArtService {
    *
    * Tries a few cities before giving up: a place with too little in
    * OpenStreetMap to make a picture is not an error, it is a reason to go
-   * somewhere else. Anything that *is* an error — the tile server being
-   * unreachable, the media volume being read-only — is thrown, recorded
+   * somewhere else. Anything that *is* an error is thrown, recorded
    * against the task, and surfaced in Settings.
    */
   public async generate(options: { force?: boolean } = {}): Promise<CityArtOutcome> {

@@ -12,7 +12,7 @@ import type { TileId } from './mercator'
  * at your own tile server and nothing else changes.
  *
  * The indirection through a TileJSON document is not optional. The planet
- * tiles live under a dated path — `planet/20260906_080001_pt/{z}/{x}/{y}.pbf` —
+ * tiles live under a dated path `planet/20260906_080001_pt/{z}/{x}/{y}.pbf`
  * that rolls forward when the data is rebuilt, so a hardcoded tile URL works
  * until it silently stops working some week later. The document is asked for
  * the current path and the answer is held for a few hours.
@@ -83,11 +83,6 @@ export class TileSource {
 
   /**
    * A request with a user-agent and a deadline.
-   *
-   * Both matter: OpenFreeMap refuses some default client user-agents outright
-   * — Node's `fetch` is fine, but a bare scripting one is a 403 — and a tile
-   * server that accepts a connection and then stalls would otherwise hang a
-   * background task until the process restarts.
    */
   private static async request(url: string): Promise<Response> {
     const controller = new AbortController()

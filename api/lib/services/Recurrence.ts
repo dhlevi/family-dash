@@ -4,12 +4,12 @@
  * Deliberately a short list of named intervals rather than full RRULE
  * support: household chores are "every day", "school days", "every week",
  * and the vocabulary of an RRULE would be a worse fit for a touchscreen than
- * five buttons. Subscribed calendar feeds still get proper RRULE expansion —
- * that is a different problem, handled in IcsProvider.
+ * five buttons. Subscribed calendar feeds still get proper RRULE expansion.
+ * That is a different problem, handled in IcsProvider.
  *
  * Arithmetic uses local-time methods on purpose. The container's TZ is the
  * household's timezone, and "bins out at 7pm every Monday" must stay at 7pm
- * across a daylight-saving change — which adding fixed 24-hour spans in UTC
+ * across a daylight-saving change, which adding fixed 24-hour spans in UTC
  * would not do.
  */
 export const RECURRENCES = ['daily', 'weekdays', 'weekly', 'fortnightly', 'monthly'] as const
@@ -41,9 +41,8 @@ export function describeRecurrence(recurrence: RecurrenceKind): string {
  *
  * `after` is normally the completed task's due date, so a weekly chore stays
  * on its day whenever it actually gets ticked off. If that would still be in
- * the past — a chore left undone for a fortnight — it advances until it is
- * in the future, otherwise completing an overdue task would immediately
- * produce another overdue one.
+ * the past, it advances until it is in the future, otherwise completing an
+ * overdue task would immediately produce another overdue one.
  *
  * Returns null when the task does not recur.
  */
@@ -53,7 +52,8 @@ export function nextOccurrence(recurrence: string | null, after: Date, now = new
   let next = advance(recurrence, after)
 
   // Bounded so a corrupt date cannot spin here. 500 steps is over a year of
-  // daily chores and 40 years of monthly ones.
+  // daily chores and 40 years of monthly ones; if it still hasn't advanced,
+  // something is wrong.
   let guard = 0
   while (next <= now && guard++ < 500) {
     next = advance(recurrence, next)
@@ -65,8 +65,8 @@ export function nextOccurrence(recurrence: string | null, after: Date, now = new
 /**
  * One step of a recurrence, in local time.
  *
- * Exported because calendar events expand through the same arithmetic — see
- * EventSeries — and having two implementations of "add a month, but not past
+ * Exported because calendar events expand through the same arithmetic (see
+ * EventSeries) and having two implementations of "add a month, but not past
  * the end of it" is how they drift apart.
  */
 export function advance(recurrence: RecurrenceKind, from: Date): Date {

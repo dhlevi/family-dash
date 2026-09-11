@@ -14,9 +14,9 @@ import { useSettingsStore } from '@/stores/settings'
  * Getting the shopping list onto a phone.
  *
  * The app already serves over the home network, so any phone on the same
- * wifi can open the list directly — the only thing missing is a way to hand
- * over the address without reciting an IP. Scanning a QR does that, and
- * because the phone then loads the live list rather than a copy, ticking
+ * wifi can open the list directly. The only thing missing is a way to hand
+ * over the address without reciting an IP. Scanning a QR does that. Because
+ * the phone then loads the live list rather than a copy, ticking
  * items off there shows up on the wall display too.
  *
  * Copy and Share are the fallbacks for anyone not on the network, at the
@@ -44,7 +44,7 @@ const origin = computed(() => (typeof window === 'undefined' ? '' : window.locat
  * This is the normal case on the Pi: the kiosk browser is pointed at
  * localhost, so the address bar holds something no other device can reach.
  * Encoding that into a QR gives a code that scans perfectly and then fails
- * to load — the worst kind of broken, because it looks like it worked.
+ * to load.
  */
 const isLocalOrigin = computed(() => /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(origin.value))
 
@@ -158,7 +158,7 @@ async function share(): Promise<void> {
         </Field>
 
         <p class="text-xs text-muted">
-          Find it with <code class="font-mono">hostname -I</code> on the Pi, or use its hostname —
+          Find it with <code class="font-mono">hostname -I</code> on the Pi, or use its hostname -
           <code class="font-mono">http://raspberrypi.local:8080</code>. Saved in Settings, so this is a one-off.
         </p>
       </div>
@@ -219,7 +219,7 @@ async function share(): Promise<void> {
         >{{ text }}</pre>
 
       <p class="text-xs text-faint">
-        A copy is a snapshot — it will not update as things are ticked off. The QR link will.
+        A copy is a snapshot - it will not update as things are ticked off. The QR link will.
       </p>
     </div>
 

@@ -6,7 +6,7 @@ import { ApiError } from '../core/model/ApiError'
 /**
  * Terminal error handler.
  *
- * Everything a handler throws arrives here — Express 5 forwards rejected
+ * Everything a handler throws arrives here. Express 5 forwards rejected
  * promises automatically, so async handlers need no try/catch of their own.
  * Known error shapes become useful status codes; anything else is logged in
  * full and reported as a bare 500, so internals never reach the client.
@@ -74,8 +74,7 @@ export function notFoundHandler(req: Request, res: Response): void {
  * Postgres errors that are really the client's doing.
  *
  * Without this, asking for `/api/drawings/not-a-uuid` reaches the query, and
- * Postgres refusing to cast the text to a uuid surfaces as a bare 500 — an
- * internal fault for what is plainly a bad request. The same goes for the
+ * Postgres refusing to cast the text to a uuid surfaces as a bare 500. The same goes for the
  * constraint violations: the schema rejecting a value says something about
  * the request, not about the server.
  *
@@ -92,7 +91,7 @@ function asDatabaseError(error: unknown): ApiError | null {
   if (candidate.severity === undefined && candidate.routine === undefined) return null
 
   switch (candidate.code) {
-    case '22P02': // invalid_text_representation — usually a malformed uuid
+    case '22P02': // invalid_text_representation usually a malformed uuid
     case '22003': // numeric_value_out_of_range
     case '22007': // invalid_datetime_format
       return ApiError.badRequest('One of the values in the request is not in a form the database accepts')

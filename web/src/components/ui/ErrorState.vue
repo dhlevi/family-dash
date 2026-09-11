@@ -2,8 +2,8 @@
 import Icon from './Icon.vue'
 
 /**
- * Shown when a panel's data could not be loaded. Always offers a retry —
- * most failures on a Pi are a momentary network blip.
+ * Shown when a panel's data could not be loaded. Always offers a retry as
+ * most failures on a Pi are momentary network blips.
  */
 defineProps<{ message: string; retrying?: boolean }>()
 defineEmits<{ retry: [] }>()

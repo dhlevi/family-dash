@@ -10,8 +10,7 @@ import { MEAL_SLOT_LABELS, type MealPlanEntry, type MealSlot } from '@/api/types
  *
  * Days run across the screen in landscape and down it in portrait. That is
  * two layouts rather than one clever responsive grid, but a 7×3 matrix
- * rotated into a tall narrow panel is unreadable, and the alternative —
- * horizontal scrolling on a wall display — is worse.
+ * rotated into a tall narrow panel is unreadable.
  */
 const props = defineProps<{
   weekStart: Date
@@ -117,7 +116,7 @@ const dayNameLong = new Intl.DateTimeFormat(undefined, { weekday: 'long' })
           <span v-if="describe(entryFor(day, slot))" class="line-clamp-3 text-sm font-medium break-words text-ink">
             {{ describe(entryFor(day, slot)) }}
           </span>
-          <span v-else class="text-sm text-faint">—</span>
+          <span v-else class="text-sm text-faint">-</span>
         </button>
       </div>
     </section>

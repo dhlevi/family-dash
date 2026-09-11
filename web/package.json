@@ -1,7 +1,7 @@
 {
   "name": "family-dash-web",
-  "version": "0.1.0",
-  "description": "Family dashboard UI — Vue 3, touch-first, portrait or landscape",
+  "version": "1.0.0",
+  "description": "Family dashboard UI - Vue 3, touch-first, portrait or landscape",
   "license": "MIT",
   "private": true,
   "type": "module",

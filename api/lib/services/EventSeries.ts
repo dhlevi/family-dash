@@ -5,11 +5,11 @@ import type { CalendarEvent, DateRange } from '../types/domain'
  * Turning one stored row into the occurrences that fall inside a range.
  *
  * A local repeating event is stored once, as the first occurrence plus a rule,
- * and expanded whenever it is read. The alternative — writing a row per
- * occurrence, as the feed sync does — needs a horizon, a job to keep the
+ * and expanded whenever it is read. The alternative, writing a row per
+ * occurrence, as the feed sync does, needs a horizon, a job to keep the
  * horizon topped up, and leaves stale copies behind whenever the series is
- * edited. A feed is a cache of somebody else's authority and is right to work
- * that way; a local series *is* the authority.
+ * a feed is a cache of somebody else's authority and is right to work
+ *  that way; a local series *is* the authority.
  *
  * All-day events advance by whole UTC days and timed events by local time, and
  * the difference is not pedantry. An all-day event is stored at UTC midnight
@@ -98,7 +98,7 @@ function step(recurrence: SteppedRecurrence, from: Date, allDay: boolean): Date 
  * the 31st and only borrows February.
  *
  * The other intervals are exact under chaining and are deliberately left that
- * way — a weekly event must stay at the same *local* time across a clock
+ * way. A weekly event must stay at the same *local* time across a clock
  * change, which advancing by a fixed span from the start would not do.
  */
 function addMonths(from: Date, count: number, allDay: boolean): Date {

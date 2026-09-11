@@ -59,14 +59,14 @@ export class EventRepository {
    * Events overlapping a range, across every enabled source.
    *
    * This is the query behind the calendar grid and the dashboard's "up next"
-   * widget, and it reads only the local cache — the background sync is what
+   * widget, and it reads only the local cache; the background sync is what
    * talks to feeds. The overlap test is deliberately inclusive at the start
    * so a zero-length event exactly on the boundary is not dropped.
    *
    * A repeating local event cannot be found by overlap: a weekly series that
    * began in January does not itself overlap a query for October. Those rows
    * are selected on the series being open over the range instead, and turned
-   * into occurrences afterwards — which is why expansion lives behind this
+   * into occurrences afterwards, which is why expansion lives behind this
    * method rather than in its callers. Every read path already goes through
    * here, so none of them had to learn about recurrence.
    */
@@ -195,8 +195,8 @@ export class EventRepository {
    * Drops a single occurrence out of a series.
    *
    * Recorded against the series rather than as a row of its own, so deleting
-   * the whole series cannot strand the exceptions — and so a cancelled week
-   * costs one array element rather than a tombstone row. `array_append` is
+   * the whole series cannot strand the exceptions, and so a cancelled week
+   * costs one array element rather than a tombstone row, and `array_append` is
    * guarded against duplicates so that deleting the same occurrence twice,
    * which two people tapping at once will manage, stays idempotent.
    */

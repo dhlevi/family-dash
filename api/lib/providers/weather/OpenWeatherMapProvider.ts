@@ -30,13 +30,13 @@ interface ForecastResponse {
  * OpenWeatherMap, for anyone who already has a key and prefers it.
  *
  * Uses the free 2.5 endpoints, which give current conditions plus a
- * three-hourly forecast — so the "hourly" strip is three-hourly here, and
+ * three-hourly forecast, so the "hourly" strip is three-hourly here, and
  * the daily outlook is aggregated from those steps rather than supplied
  * ready-made. Condition ids are translated to WMO codes at the boundary so
  * the UI has a single vocabulary.
  *
  * The live path cannot be exercised without a key, so the parts that can
- * fail quietly — code translation and daily aggregation — are pure functions
+ * fail quietly, code translation and daily aggregation, are pure functions
  * with tests, and everything else is a thin request wrapper.
  */
 export class OpenWeatherMapProvider implements WeatherProvider {
@@ -126,7 +126,7 @@ export class OpenWeatherMapProvider implements WeatherProvider {
    * Days are bucketed by the *location's* calendar date, not the server's,
    * which is why the offset is applied before reading the date. The
    * representative condition for a day is the one from around the middle of
-   * it — a code taken at 3am would describe every day as clear.
+   * it.
    */
   public static aggregateDaily(
     forecast: ForecastResponse,
@@ -182,7 +182,7 @@ export class OpenWeatherMapProvider implements WeatherProvider {
       : secondsOfDay >= riseOfDay || secondsOfDay < setOfDay
   }
 
-  /** "UTC+02:00" — the 2.5 endpoints give no IANA zone name. */
+  /** "UTC+02:00" - the 2.5 endpoints give no IANA zone name. */
   private static offsetLabel(offsetSeconds: number): string {
     const sign = offsetSeconds < 0 ? '-' : '+'
     const total = Math.abs(offsetSeconds)

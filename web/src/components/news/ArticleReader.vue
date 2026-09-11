@@ -13,11 +13,7 @@ import type { NewsArticle } from '@/api/types'
  * Deliberately not a link out. The kiosk browser runs in `--kiosk` mode with
  * no address bar and no back button, so following a link would strand the
  * dashboard on a news site with no way home. And a wall in a kitchen is not
- * where anyone reads an article anyway.
- *
- * So: the summary here, and a QR code to carry the story to a phone — the
- * same move as the shopping list, and the right one for a shared display.
- * "Open here" is still offered for anyone using this from a normal browser.
+ * where anyone reads an article anyway!
  */
 const props = defineProps<{
   open: boolean

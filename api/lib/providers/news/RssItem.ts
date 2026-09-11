@@ -10,8 +10,7 @@
  *
  * Everything returned is plain text. Feed content is untrusted input from
  * the open internet, so HTML never reaches the database, let alone the
- * browser — that is what keeps a hostile feed from injecting markup into the
- * dashboard.
+ * browser.
  */
 
 export interface RawRssItem {
@@ -100,7 +99,7 @@ export function truncate(text: string, limit = MAX_SUMMARY): string {
  * The article summary.
  *
  * `contentSnippet` is rss-parser's own de-tagged text and is preferred when
- * it has anything in it — but CBC's is empty, so the HTML content and
+ * it has anything in it but CBC's is empty, so the HTML content and
  * description are stripped as fallbacks.
  */
 export function extractSummary(item: RawRssItem): string | null {
@@ -127,10 +126,8 @@ function looksLikeImage(url: string | undefined, mimeType?: string): boolean {
  * The best available image.
  *
  * `media:content` comes first because feeds that offer it usually offer
- * several sizes — the Guardian's first entry is 140px wide — so the widest
- * is chosen rather than the first. Then thumbnails, then an enclosure, and
- * finally the first `<img>` in the content, which is the only thing CBC
- * gives us.
+ * several sizes. The widest is chosen rather than the first. Then thumbnails, 
+ * then an enclosure, and finally the first `<img>` in the content.
  */
 export function extractImage(item: RawRssItem): string | null {
   const fromMedia = widestMedia(item.mediaContent)
@@ -216,7 +213,7 @@ export function extractPublishedAt(item: RawRssItem): Date | null {
 
 /**
  * One RSS item as an article, or null when it cannot be identified or has no
- * headline — a card with no title is no use on a wall.
+ * headline.
  */
 export function toArticle(item: RawRssItem): ParsedArticle | null {
   const guid = extractGuid(item)

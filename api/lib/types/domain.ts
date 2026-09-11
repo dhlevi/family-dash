@@ -27,7 +27,7 @@ export interface CalendarSource {
    *
    * An ICS feed URL is itself a bearer secret, but the UI has to show it to
    * be able to edit it, and this API is a LAN appliance with no accounts.
-   * OAuth tokens are a different matter and are withheld — see
+   * OAuth tokens are a different matter and are withheld - see
    * `publicConfig` in CalendarEndpoints.
    */
   config: Record<string, unknown>
@@ -241,7 +241,7 @@ export interface WeatherReport {
 
 export interface GeocodeResult {
   name: string
-  /** "British Columbia, Canada" — enough to tell two Vancouvers apart. */
+  /** "British Columbia, Canada", enough to tell two Vancouvers apart. */
   region: string
   latitude: number
   longitude: number
@@ -283,7 +283,7 @@ export type MealSlot = (typeof MEAL_SLOTS)[number]
 
 export interface MealPlanEntry {
   id: string
-  /** 'YYYY-MM-DD' — a plain date, with no timezone attached. */
+  /** 'YYYY-MM-DD' a plain date, with no timezone attached. */
   planDate: string
   slot: MealSlot
   recipeId: string | null

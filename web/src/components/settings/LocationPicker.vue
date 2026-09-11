@@ -17,9 +17,6 @@ import type { GeocodeResult } from '@/api/types'
  * wrong place. Search is free and keyless through the same provider that
  * gives the forecast, so there is no reason to make somebody look their
  * coordinates up.
- *
- * The coordinates stay visible and editable underneath — for anywhere the
- * gazetteer does not know, and so it is clear what was actually saved.
  */
 const props = defineProps<{
   name: string

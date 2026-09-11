@@ -55,7 +55,7 @@ export class NoteRepository {
     return rows.map(NoteRepository.toDomain)
   }
 
-  /** Pinned notes, newest first — what the dashboard widget shows. */
+  /** Pinned notes, newest first.. */
   public async pinned(limit: number): Promise<StickyNote[]> {
     const rows = await PostgresDatabase.many<NoteRow>(
       `SELECT ${COLUMNS} FROM note WHERE pinned ORDER BY updated_at DESC LIMIT $1`,

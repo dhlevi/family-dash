@@ -96,7 +96,7 @@ export function Req(): ParameterDecorator {
 
 /**
  * Escape hatch for the raw Express response. A handler that writes to it owns
- * the reply — used for streaming file downloads.
+ * the reply. It is used for streaming file downloads.
  */
 export function Res(): ParameterDecorator {
   return function resDecorator(target: any, property: any, index: number) {
@@ -182,7 +182,7 @@ export function Middleware(...handlers: any[]): MethodDecorator {
  * imported, and the controllers are imported through the route table before
  * `AppProperties.initialize()` has read application.properties. A limit
  * taken from configuration at decoration time would therefore always be the
- * hard-coded default, quietly ignoring whatever the file said — so pass a
+ * hard-coded default, quietly ignoring whatever the file said, so pass a
  * function and it is resolved on the first request instead.
  */
 type UploadOptions = multer.Options | (() => multer.Options)

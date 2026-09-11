@@ -25,9 +25,9 @@ const endpoints = new PhotoEndpoints()
  * The photo library index.
  *
  * The pictures themselves are served by MediaController; this is the
- * catalogue. Google Photos is not an option — the Library API's read scopes
- * were withdrawn in 2025 and an app can now only see media it uploaded
- * itself — so the library is a folder on the mounted volume, filled either
+ * catalogue. Google Photos is not an option (the Library API's read scopes
+ * were withdrawn in 2025) and an app can now only see media it uploaded
+ * itself, so the library is a folder on the mounted volume, filled either
  * by uploading here or by copying files onto it directly.
  */
 

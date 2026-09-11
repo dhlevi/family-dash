@@ -100,7 +100,7 @@ const badge = computed(() => (report.value?.stale ? 'cached' : null))
 
       <p v-if="report.stale" class="flex items-center gap-1.5 text-xs text-warn">
         <Icon name="offline" :size="14" />
-        Cached — could not reach {{ report.provider }}
+        Cached - could not reach {{ report.provider }}
       </p>
     </div>
   </WidgetShell>

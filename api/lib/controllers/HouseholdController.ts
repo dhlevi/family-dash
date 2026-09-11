@@ -11,9 +11,7 @@ const bins = new BinEndpoints()
  * The two views that are about the household rather than about one kind of
  * thing: who has what on today, and when the bins go out.
  *
- * Both read only the local cache — tasks written here, and calendar events the
- * background sync has already fetched — so the dashboard never waits on a
- * council's web server to draw itself.
+ * Both read only the local cache.
  */
 @Route('api/household')
 export class HouseholdController extends Controller {

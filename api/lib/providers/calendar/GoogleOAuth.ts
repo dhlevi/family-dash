@@ -12,7 +12,7 @@ import { OUTBOUND_USER_AGENT } from '../userAgent'
  * which all talk to their upstream directly.
  *
  * Only calendar scope is requested. The refresh token is stored on the
- * calendar source and never leaves the API — see `SECRET_CONFIG_KEYS` in
+ * calendar source and never leaves the API. See `SECRET_CONFIG_KEYS` in
  * CalendarEndpoints.
  */
 
@@ -80,7 +80,7 @@ export class GoogleOAuth {
    * rejected rather than quietly attaching somebody else's tokens.
    *
    * `access_type=offline` with `prompt=consent` is what makes Google issue a
-   * refresh token — without the prompt it only sends one the very first time
+   * refresh token. Without the prompt it only sends one the very first time
    * an account authorises the client, so re-connecting later would appear to
    * work and then fail on the first sync.
    */
@@ -169,7 +169,7 @@ export class GoogleOAuth {
       if ((error as Error).message.includes('invalid_grant')) {
         throw new Error(
           'Google has revoked this connection. If the OAuth consent screen is still in "Testing", ' +
-            'refresh tokens expire after seven days — publish the app, then connect again in Settings.',
+            'refresh tokens expire after seven days. Publish the app, then connect again in Settings.',
           { cause: error }
         )
       }

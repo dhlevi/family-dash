@@ -5,8 +5,8 @@ import { HealthReport, HealthResult, HealthValidator } from './model/HealthValid
  *
  * Status is `ok` when everything passes, `unhealthy` when a probe marked
  * critical fails (the endpoint then answers 503, which is what the container
- * healthcheck watches), and `degraded` when only non-critical probes fail —
- * a broken calendar feed should show up in the report without making
+ * healthcheck watches), and `degraded` when only non-critical probes fail.
+ * A broken calendar feed should show up in the report without making
  * docker restart the container.
  */
 export class HealthService {

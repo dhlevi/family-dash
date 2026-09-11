@@ -38,7 +38,7 @@ const outcome = ref<{ ok: boolean; message: string } | null>(null)
  * The address to register in the Google Cloud console.
  *
  * Shown rather than described because it has to match exactly, and it
- * depends on how this dashboard is reached — which the browser knows and a
+ * depends on how this dashboard is reached, which the browser knows and a
  * README cannot.
  */
 const redirectUri = computed(() => `${window.location.origin}/api/calendar/google/callback`)
@@ -150,7 +150,7 @@ async function chooseCalendar(sourceId: string, calendarId: string): Promise<voi
     <div v-else-if="status && !status.configured" class="flex flex-col gap-2 rounded-card bg-surface-2 px-3 py-3">
       <p class="text-sm font-medium text-ink">Google Calendar is not set up</p>
       <p class="text-xs text-muted">
-        It needs an OAuth client of your own — Google does not offer a shared one. Create a
+        It needs an OAuth client of your own. Create a
         <strong>Web application</strong> client in the Google Cloud console, put its id and secret in
         <code class="rounded bg-surface px-1">.env</code> as
         <code class="rounded bg-surface px-1">GOOGLE_CLIENT_ID</code> and
@@ -180,7 +180,7 @@ async function chooseCalendar(sourceId: string, calendarId: string): Promise<voi
                 (source.connected
                   ? source.calendarId
                     ? `Connected · ${source.calendarId}`
-                    : 'Connected — choose a calendar'
+                    : 'Connected - choose a calendar'
                   : 'Not connected')
               }}
             </p>

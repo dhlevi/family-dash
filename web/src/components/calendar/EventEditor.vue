@@ -62,7 +62,7 @@ const isEdit = computed(() => props.event !== null)
  *
  * A writable remote calendar is pushed to one event at a time; inventing a
  * repeat rule for it would create a series upstream that could not be kept in
- * step from here. The API refuses it too — this just avoids offering it.
+ * step from here. The API refuses it too, this just avoids offering it.
  */
 const canRepeat = computed(() => props.sources.find(source => source.id === sourceId.value)?.type === 'local')
 
@@ -207,7 +207,7 @@ function submit(): void {
     description: description.value.trim() || null,
     // All-day events are sent as UTC midnight so they mean the same calendar
     // date everywhere, with an exclusive end matching iCalendar and the feed
-    // events — both then render through one code path.
+    // events. Both then render through one code path.
     startsAt: allDay.value ? toAllDayInstant(start) : start.toISOString(),
     endsAt: allDay.value ? toAllDayInstant(addDays(end, 1)) : end.toISOString(),
     allDay: allDay.value,
@@ -251,7 +251,7 @@ function submit(): void {
         <Icon name="offline" :size="18" class="mt-0.5 shrink-0 text-faint" />
         <span>
           This event comes from <strong class="font-medium text-ink">{{ sourceName }}</strong
-          >. Edit it where it is published — a change here would be undone by the next sync.
+          >. Edit it where it is published. A change here would be undone by the next sync.
         </span>
       </p>
     </div>

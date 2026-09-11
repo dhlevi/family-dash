@@ -118,7 +118,7 @@ export class CalendarController extends Controller {
    * The consent URL for connecting a source.
    *
    * The redirect URI is built from this request's own origin, so it is
-   * whatever address the browser used to reach the dashboard — that is the
+   * whatever address the browser used to reach the dashboard. That is the
    * address to register in the Google Cloud console.
    */
   @Get('google/auth-url')

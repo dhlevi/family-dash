@@ -192,8 +192,8 @@ export class OpenMeteoProvider implements WeatherProvider {
    * Converts Open-Meteo's naive local time into a real instant.
    *
    * With `timezone=auto` the API returns wall-clock strings with no offset.
-   * Handing that to a client unqualified means anything not in the same 
-   * timezone reads it wrong, so the provider's own `utc_offset_seconds` is 
+   * Handing that to a client unqualified means anything not in the same
+   * timezone reads it wrong, so the provider's own `utc_offset_seconds` is
    * applied here and everything downstream deals in unambiguous UTC.
    */
   private static toInstant(localTime: string, offsetSeconds: number): string {

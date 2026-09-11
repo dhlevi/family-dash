@@ -50,7 +50,7 @@ function hash(text: string): number {
  * Derived from the name so that a person's colour survives a restart and does
  * not shuffle when somebody else is added. Where two names want the same colour,
  * the later one takes the next free slot instead, because with a household of
- * five a collision is likely enough to matter and two identical columns defeat 
+ * five a collision is likely enough to matter and two identical columns defeat
  * the point. An explicit choice in Settings always wins.
  */
 export function assignColours(names: readonly string[], overrides: Record<string, string> = {}): Map<string, string> {

@@ -8,7 +8,7 @@ import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import Spinner from '@/components/ui/Spinner.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { useSettingsStore } from '@/stores/settings'
-import type { CityArt, CityArtOrientation, CityRegionInfo, MapThemeInfo } from '@/api/types'
+import type { CityArt, CityArtOrientation, CityRegionInfo, HillshadeMode, MapThemeInfo } from '@/api/types'
 
 /**
  * Settings for the screensaver's generated map artwork.
@@ -32,6 +32,7 @@ const chosenRegions = computed(() => settings.get('cityart.regions', []))
 const chosenThemes = computed(() => settings.get('cityart.themes', []))
 const poolSize = ref(12)
 const orientation = ref<CityArtOrientation>('landscape')
+const hillshade = ref<HillshadeMode>('auto')
 
 const totalCities = computed(() =>
   regions.value
@@ -55,6 +56,7 @@ async function load(): Promise<void> {
     artwork.value = pool
     poolSize.value = settings.get('cityart.poolSize', 12)
     orientation.value = settings.get('cityart.orientation', 'landscape')
+    hillshade.value = settings.get('cityart.hillshade', 'auto')
   } catch (caught) {
     error.value = caught instanceof ApiRequestError ? caught.message : 'Could not load the map artwork settings'
   } finally {
@@ -175,6 +177,22 @@ async function remove(art: CityArt): Promise<void> {
         />
       </Field>
 
+      <Field
+        label="Shaded relief"
+        hint="Auto adds it only where it shows: a sparse map over ground that actually moves. A dense city has no background left to shade."
+      >
+        <SegmentedControl
+          v-model="hillshade"
+          :options="[
+            { value: 'auto', label: 'Auto' },
+            { value: 'always', label: 'Always' },
+            { value: 'never', label: 'Never' }
+          ]"
+          block
+          @update:model-value="settings.set('cityart.hillshade', hillshade)"
+        />
+      </Field>
+
       <Field label="Keep" hint="Older pictures are deleted as new ones are drawn.">
         <NumberStepper
           v-model="poolSize"
@@ -196,6 +214,10 @@ async function remove(art: CityArt): Promise<void> {
         />
         <p v-if="notice" class="text-sm text-muted">{{ notice }}</p>
       </div>
+
+      <p class="text-xs text-faint">
+        Map data &copy; OpenStreetMap contributors, via OpenMapTiles and OpenFreeMap. Terrain by Mapterhorn.
+      </p>
 
       <div v-if="artwork.length > 0" class="flex flex-col gap-2">
         <p class="text-sm font-medium text-muted">In rotation</p>

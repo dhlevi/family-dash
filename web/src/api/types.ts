@@ -352,6 +352,9 @@ export type ScreensaverSource = 'gallery' | 'map' | 'both'
 
 export type CityArtOrientation = 'landscape' | 'portrait'
 
+/** Shaded relief under the linework. Auto adds it only where it shows. */
+export type HillshadeMode = 'auto' | 'always' | 'never'
+
 // --- generated map artwork -------------------------------------------------
 
 export interface CityArt {
@@ -747,6 +750,7 @@ export interface AppSettings {
   'cityart.themes': string[]
   'cityart.poolSize': number
   'cityart.orientation': CityArtOrientation
+  'cityart.hillshade': HillshadeMode
   'input.onScreenKeyboard': KeyboardMode
   'dashboard.widgets': DashboardWidget[]
   'calendar.defaultView': 'month' | 'week' | 'agenda'

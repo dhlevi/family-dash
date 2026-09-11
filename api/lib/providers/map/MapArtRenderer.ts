@@ -34,6 +34,21 @@ export interface RenderedMap {
   featureCount: number
 }
 
+/** Where {@link withUnderlay} puts a hillshade. Replaced, or stripped. */
+const UNDERLAY_MARKER = '<!--underlay-->'
+
+/**
+ * Puts something beneath the linework, currently used for hillshade.
+ *
+ * Splicing into a marker rather than re-rendering, because whether a picture
+ * gets one depends on how sparse it turned out to be, which is only known once
+ * it has been drawn. Passing no fragment removes the marker, so an SVG never
+ * carries a stray comment.
+ */
+export function withUnderlay(svg: string, fragment: string | null): string {
+  return svg.replace(UNDERLAY_MARKER, fragment ?? '')
+}
+
 /** The properties any style decision here depends on. Nothing else is decoded. */
 const WANTED_KEYS: ReadonlySet<string> = new Set(['class', 'subclass'])
 
@@ -79,6 +94,22 @@ const PAINT_ORDER = [
   'boundary',
   ...ROAD_TIERS.map(tier => `road-${tier}`)
 ]
+
+/**
+ * Where the hillshade goes: above the ground cover, below the water.
+ *
+ * Not at the very bottom, which is the obvious place and the wrong one. Wood,
+ * grass and sand are opaque fills. They have to be, because tiles are drawn
+ * unclipped and anything translucent turns the overdraw along every tile
+ * boundary into a visible grid, so a hillshade underneath them comes out as
+ * shaded ground interrupted by flat slabs of colour wherever a forest or a
+ * meadow happens to be.
+ *
+ * Putting it above them is also what every printed map does: relief shades the
+ * land, and water, buildings and roads sit on top of it. A lake stays flat
+ * because a lake *is* flat.
+ */
+const UNDERLAY_AFTER = PAINT_ORDER.indexOf('water')
 
 /** Where a bucket sits in {@link PAINT_ORDER}, ignoring any per-tile suffix. */
 function rankOf(key: string): number {
@@ -313,11 +344,19 @@ export function renderMapArt(tiles: FetchedTile[], bounds: TileBounds, options: 
     }
   }
 
-  const body = [...buckets.values()]
-    .filter(bucket => bucket.parts.length > 0)
-    .sort((a, b) => a.rank - b.rank)
-    .map(bucket => `<path ${bucket.attributes} d="${bucket.parts.join('')}"/>`)
-    .join('\n')
+  const ordered = [...buckets.values()].filter(bucket => bucket.parts.length > 0).sort((a, b) => a.rank - b.rank)
+
+  const paint = (bucket: Bucket): string => `<path ${bucket.attributes} d="${bucket.parts.join('')}"/>`
+
+  // The marker is emitted rather than the hillshade itself: whether a picture
+  // gets one depends on how much was drawn, which is only known once it has
+  // been. A placeholder means that decision can be made afterwards without
+  // rendering the whole thing a second time.
+  const body = [
+    ...ordered.filter(bucket => bucket.rank < UNDERLAY_AFTER).map(paint),
+    UNDERLAY_MARKER,
+    ...ordered.filter(bucket => bucket.rank >= UNDERLAY_AFTER).map(paint)
+  ].join('\n')
 
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n` +

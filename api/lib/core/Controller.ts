@@ -8,7 +8,7 @@ import { RouteManager } from './RouteManager'
  * controller needs.
  *
  * Controllers are instantiated once and shared across requests, so they hold
- * no per-request state.  To vary the status code, use `@SuccessResponse` for 
+ * no per-request state.  To vary the status code, use `@SuccessResponse` for
  * the happy path and throw an `ApiError` otherwise; to write a response directly, take `@Res()`.
  */
 export abstract class Controller {

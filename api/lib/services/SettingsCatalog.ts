@@ -103,6 +103,14 @@ export const SETTINGS: Record<string, SettingDefinition> = {
       'How many generated maps to keep. Older ones are deleted as new ones are drawn; a dozen is ' +
       'a few megabytes and more variety than anyone notices in an evening.'
   },
+  'cityart.hillshade': {
+    schema: z.enum(['auto', 'always', 'never']),
+    default: () => 'auto',
+    description:
+      'Shaded relief beneath the linework. Auto adds it to a sparse map only. ' +
+      'A dense city has no background left to shade, and shading ' +
+      'somewhere flat adds nothing but noise.'
+  },
   'cityart.orientation': {
     schema: z.enum(['landscape', 'portrait']),
     default: () => 'landscape',

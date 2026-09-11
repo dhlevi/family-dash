@@ -40,7 +40,7 @@ export interface SweepOutcome {
  * out; it just had no way of saying so to anyone not standing in front of it.
  * This closes that loop.
  *
- * Everything it sends is already in the database, 
+ * Everything it sends is already in the database,
  * so a sweep is cheap and cannot be held up by somebody else's server. What it
  * does that is not obvious is *not* send: a reminder goes out once, never
  * during quiet hours, and never at all if its moment passed while the Pi was

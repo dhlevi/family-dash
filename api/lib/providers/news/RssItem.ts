@@ -126,7 +126,7 @@ function looksLikeImage(url: string | undefined, mimeType?: string): boolean {
  * The best available image.
  *
  * `media:content` comes first because feeds that offer it usually offer
- * several sizes. The widest is chosen rather than the first. Then thumbnails, 
+ * several sizes. The widest is chosen rather than the first. Then thumbnails,
  * then an enclosure, and finally the first `<img>` in the content.
  */
 export function extractImage(item: RawRssItem): string | null {

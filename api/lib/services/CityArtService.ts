@@ -3,8 +3,9 @@ import sharp from 'sharp'
 import { AppProperties } from '../core/AppProperties'
 import { citiesIn, type City } from '../providers/map/cities'
 import { boundsFor, tilesCovering } from '../providers/map/mercator'
-import { renderMapArt } from '../providers/map/MapArtRenderer'
+import { renderMapArt, withUnderlay } from '../providers/map/MapArtRenderer'
 import { THEMES, themeById, type MapTheme } from '../providers/map/themes'
+import { TerrainOverlay } from '../providers/map/terrainOverlay'
 import { TileSource } from '../providers/map/TileSource'
 import { CityArtRepository } from '../repositories/CityArtRepository'
 import { SettingRepository } from '../repositories/SettingRepository'
@@ -53,6 +54,7 @@ export class CityArtService {
     themes: string[]
     poolSize: number
     portrait: boolean
+    hillshade: 'auto' | 'always' | 'never'
   }> {
     const stored = await settings.all()
     const source = stored[CityArtService.SOURCE_KEY]
@@ -65,7 +67,11 @@ export class CityArtService {
       regions: Array.isArray(stored['cityart.regions']) ? (stored['cityart.regions'] as string[]) : [],
       themes: Array.isArray(stored['cityart.themes']) ? (stored['cityart.themes'] as string[]) : [],
       poolSize: typeof stored['cityart.poolSize'] === 'number' ? (stored['cityart.poolSize'] as number) : 12,
-      portrait: stored['cityart.orientation'] === 'portrait'
+      portrait: stored['cityart.orientation'] === 'portrait',
+      hillshade:
+        stored['cityart.hillshade'] === 'always' || stored['cityart.hillshade'] === 'never'
+          ? stored['cityart.hillshade']
+          : 'auto'
     }
   }
 
@@ -156,12 +162,35 @@ export class CityArtService {
       const bounds = boundsFor(city.latitude, city.longitude, city.spanMetres, width, height)
       const tiles = await TileSource.fetchTiles(tilesCovering(bounds))
 
-      const { svg, featureCount } = renderMapArt(tiles, bounds, { theme, width, height })
+      const drawn = renderMapArt(tiles, bounds, { theme, width, height })
+      const featureCount = drawn.featureCount
 
       if (featureCount < CityArtService.MIN_FEATURES) {
         outcome.skipped.push(`${city.name} (${featureCount} features)`)
         continue
       }
+
+      // Shaded relief, where it would actually show. Over a dense city there
+      // is no background left to put it on; over a coastal village or a
+      // valley town most of the picture is background, and those are exactly
+      // the places whose shape is the interesting thing about them.
+      const wantsHillshade =
+        configuration.hillshade === 'always' ||
+        (configuration.hillshade === 'auto' && TerrainOverlay.suits(featureCount))
+
+      let hillshade: string | null = null
+      if (wantsHillshade) {
+        try {
+          const built = await TerrainOverlay.build(bounds, city.latitude, width, height, theme.mood)
+          hillshade = built?.fragment ?? null
+        } catch (error) {
+          // Decoration. A terrain server having a bad afternoon must not stop
+          // the screensaver getting a picture.
+          console.warn(`No hillshade for ${city.name}: ${(error as Error).message}`)
+        }
+      }
+
+      const svg = withUnderlay(drawn.svg, hillshade)
 
       const id = crypto.randomUUID()
       const svgPath = `${id}.svg`

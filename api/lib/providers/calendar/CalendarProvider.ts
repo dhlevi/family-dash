@@ -43,7 +43,7 @@ export interface CalendarProvider {
    * A Google calendar exists before it is connected to an account: Settings
    * creates it, then sends the browser off to Google. Syncing one in that
    * state would record a failure every quarter of an hour and report the
-   * dashboard as degraded, when nothing is wrong. Providers with nothing to 
+   * dashboard as degraded, when nothing is wrong. Providers with nothing to
    * wait for can leave this out.
    */
   isReadyToSync?(source: CalendarSource): boolean

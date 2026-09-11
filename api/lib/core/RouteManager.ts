@@ -189,7 +189,9 @@ export class RouteManager {
 
       for (const endpoint of meta.endpoints.values()) {
         if (endpoint.route === null || endpoint.method === null) {
-          problems.push(`${meta.name}.${endpoint.property} is missing an HTTP verb decorator (@Get, @Post, ...): no routes registered`)
+          problems.push(
+            `${meta.name}.${endpoint.property} is missing an HTTP verb decorator (@Get, @Post, ...): no routes registered`
+          )
           continue
         }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderMapArt, type FetchedTile } from '../../../lib/providers/map/MapArtRenderer'
+import { renderMapArt, withUnderlay, type FetchedTile } from '../../../lib/providers/map/MapArtRenderer'
 import { themeById, type MapTheme } from '../../../lib/providers/map/themes'
 import type { TileBounds } from '../../../lib/providers/map/mercator'
 
@@ -207,6 +207,51 @@ describe('renderMapArt', () => {
     const { featureCount } = renderMapArt(tiles, bounds, { theme, ...SIZE })
 
     expect(featureCount).toBe(1)
+  })
+
+  it('leaves no stray marker when nothing goes underneath', () => {
+    const { svg } = renderMapArt([], bounds, { theme, ...SIZE })
+
+    expect(withUnderlay(svg, null)).not.toContain('<!--')
+  })
+
+  it('puts an underlay below the water and the roads', () => {
+    const tiles: FetchedTile[] = [
+      {
+        id: { zoom: 12, x: 100, y: 200 },
+        data: tile([
+          { name: 'water', type: 3, geometry: square(0, 0, 2048) },
+          { name: 'transportation', type: 2, geometry: horizontal(0, 2048, 4096), roadClass: 'motorway' }
+        ])
+      }
+    ]
+
+    const { svg } = renderMapArt(tiles, bounds, { theme, ...SIZE })
+    const composed = withUnderlay(svg, '<image id="shade"/>')
+    const shade = composed.indexOf('<image id="shade"/>')
+
+    expect(composed.indexOf('<rect')).toBeLessThan(shade)
+    expect(shade).toBeLessThan(composed.indexOf('fill-rule="evenodd"'))
+    expect(shade).toBeLessThan(composed.indexOf('stroke='))
+  })
+
+  it('puts an underlay above the ground cover, not beneath it', () => {
+    // Ground cover is opaque — it has to be, or the unclipped tile buffers
+    // show as a grid — so a hillshade underneath comes out as shaded ground
+    // interrupted by flat slabs wherever there is a wood or a meadow.
+    const greenTheme = { ...theme, wood: { colour: '#2b3a2b' } }
+    const tiles: FetchedTile[] = [
+      {
+        id: { zoom: 12, x: 100, y: 200 },
+        data: tile([{ name: 'landcover', type: 3, geometry: square(0, 0, 2048), roadClass: 'wood' }])
+      }
+    ]
+
+    const { svg } = renderMapArt(tiles, bounds, { theme: greenTheme, ...SIZE })
+    const composed = withUnderlay(svg, '<image id="shade"/>')
+
+    expect(composed).toContain('#2b3a2b')
+    expect(composed.indexOf('#2b3a2b')).toBeLessThan(composed.indexOf('<image id="shade"/>'))
   })
 
   it('escapes the theme name rather than letting it close the title tag', () => {

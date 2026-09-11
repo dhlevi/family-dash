@@ -146,7 +146,9 @@ Map artwork uses vector tiles from [OpenFreeMap](https://openfreemap.org), which
 account and has no quota, and is open source so you can host it yourself if you want to. Just set `cityart.tiles.url` if you do. Tiles are only fetched while the screensaver is actually set to show maps. The artwork
 is map data from [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL) via
 [OpenMapTiles](https://openmaptiles.org), with place names and coordinates from
-[GeoNames](https://www.geonames.org) (CC BY 4.0).
+[GeoNames](https://www.geonames.org) (CC BY 4.0). Elevation for the hillshade comes from
+[Mapterhorn](https://mapterhorn.com/attribution) on the same no-key terms, itself assembled from
+national open-data surveys; clear `cityart.terrain.url` to switch it off.
 
 Two Google APIs deserve a warning, because both shape the design:
 
@@ -501,6 +503,20 @@ data into `api/scripts/.geonames/` on first use and reusing it afterwards. It is
 rather than a geocoding service on purpose: the same input gives the same output, offline, and
 there is no rate limit to respect.
 
+**Shaded relief.** Sparse pictures get a hillshade underneath, drawn from
+[Mapterhorn](https://mapterhorn.com) elevation tiles. Open data, no key, global 30m coverage, and looks great.
+
+`Auto` adds one only where it shows. A dense city has no background left to shade, and shading
+somewhere flat adds nothing but noise, so a picture needs both few enough features (2,500) and
+ground that actually moves (120m of relief, measured between the 2nd and 98th percentiles so one
+bad pixel at a coastline cannot fake a mountain). In practice Llanberis, Valparaíso, Cusco,
+Invermere and Cumberland get one; Paris, Detroit and flat-bottomed Bridgend do not.
+
+The shading is a black-and-white overlay with a varying alpha rather than a grey image, so it
+darkens and lightens the theme's own background instead of flattening every style to the same
+colour. It's eased off on dark themes, where lifting near-black towards white is a far
+bigger jump than the same strength makes on paper. It is embedded in the SVG rather than linked, because the artwork has to keep working with no network at all.
+
 **Styles.** A dozen, from `Blueprint` and `Ink on Paper` to `Neon`; each says whether it suits a
 lit or a dim room. Pick a subset in Settings or leave it empty for all of them. `Draw one now`
 renders immediately rather than waiting for the schedule, which is the only sane way to decide
@@ -518,6 +534,9 @@ A few settings worth knowing:
 | `tasks.cityart.refresh.cron` | `17 */3 * * *` | One new picture every three hours |
 | `cityart.size` | 2000 | Long edge in pixels. More than a 16-inch panel resolves |
 | `cityart.tiles.url` | OpenFreeMap | Point at your own tile server if you prefer |
+| `cityart.terrain.url` | Mapterhorn | Elevation tiles for the hillshade. Empty disables it |
+| `cityart.hillshade.maxFeatures` | 2500 | Above this a picture is too busy to shade |
+| `cityart.hillshade.minReliefMetres` | 120 | Below this the ground is too flat to bother |
 
 Places with very little in OpenStreetMap produce an almost empty picture, so the generator counts
 what it drew and moves on to somewhere else rather than putting a blank rectangle on your wall.

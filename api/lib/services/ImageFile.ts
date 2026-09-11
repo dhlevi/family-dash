@@ -206,8 +206,8 @@ export class ImageFile {
    * The capture date from an EXIF block.
    *
    * EXIF timestamps carry no timezone, and exif-reader reads them as if they
-   * were UTC. For sorting a family library that is close enough  and it beats 
-   * the file's own date, which is when the file was copied rather than when the 
+   * were UTC. For sorting a family library that is close enough  and it beats
+   * the file's own date, which is when the file was copied rather than when the
    * photo was taken.
    */
   private static takenAtFrom(exif: Buffer | undefined): Date | null {

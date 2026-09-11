@@ -134,6 +134,16 @@ export const THEMES: MapTheme[] = [
     roads: ramp('#f0a33c')
   },
   {
+    id: 'midnight-blue',
+    name: 'Midnight Blue',
+    description: 'Midnight, but with a sharper blue theme',
+    mood: 'dark',
+    background: '#0a1628',
+    water: { colour: '#061020' },
+    waterway: { colour: '#061020', width: 0.9 },
+    roads: ramp('#c99c37')
+  },
+  {
     id: 'nautical',
     name: 'Nautical',
     description: 'Admiralty chart: pale land, deep water, navy roads.',
@@ -237,7 +247,7 @@ export const THEMES: MapTheme[] = [
     // suggests it should be. A theme whose quiet roads fade into the
     // background looks magnificent over Turin and turns a Welsh market town
     // into a black rectangle, because in a small place almost every road is a
-    // minor one — and small places are half the point of the city list.
+    // minor one
     roads: {
       ...ramp('#b0663a'),
       tertiary: { colour: '#c26a2c', width: 1.5 },
@@ -245,6 +255,27 @@ export const THEMES: MapTheme[] = [
       primary: { colour: '#e8802f', width: 2.7 },
       trunk: { colour: '#f59b39', width: 3.3 },
       motorway: { colour: '#ffb648', width: 4.1 }
+    }
+  },
+  {
+    id: 'japanese-ink',
+    name: 'Japanese Ink',
+    description: 'Ink black and paper white, like a traditional Japanese sumi-e painting.',
+    mood: 'light',
+    background: '#faf8f5',
+    water: { colour: '#e8e4e0' },
+    wood: { colour: '#f5f3ee' },
+    grass: { colour: '#f0ede8' },
+    waterway: { colour: '#e8e4e0', width: 0.9 },
+    roads: {
+      ...ramp('#2c2c2c'),
+      tertiary: { colour: '#a8a8a8', width: 0.5 },
+      secondary: { colour: '#505050', width: 0.6 },
+      primary: { colour: '#8b2500', width: 0.9 },
+      trunk: { colour: '#505050', width: 0.8 },
+      motorway: { colour: '#8b2500', width: 1.0 },
+      rail: { colour: '#2c2c2c', width: 0.8 },
+      path: { colour: '#d0ceca', width: 0.3 }
     }
   }
 ]

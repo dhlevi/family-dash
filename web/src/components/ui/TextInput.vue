@@ -5,11 +5,8 @@
  * Deliberately tall (min 48px) and 16px+ text: anything smaller is both hard
  * to hit and, on a mobile browser, triggers a zoom on focus.
  *
- * The input is keyed on `type` so that switching type — `datetime-local` to
- * `date`, when an event is marked all-day — replaces the element. Without
- * that, the browser silently clears the DOM value the moment it receives one
- * the *old* type cannot parse, and Vue has no value change left to re-apply,
- * so the field renders empty while the model still holds a date.
+ * The input is keyed on `type` so that switching type `datetime-local` to
+ * `date`, when an event is marked all-day replaces the element.
  */
 withDefaults(
   defineProps<{

@@ -4,8 +4,8 @@ import type { InkPoint, InkStroke } from '@/api/types'
  * Turning pointer input into handwriting that looks like handwriting.
  *
  * Two things do most of the work here. Raw pointer samples are far denser
- * than a stroke needs — a slow, deliberate line can produce hundreds of
- * points a second — so they are thinned before storage. And a polyline
+ * than a stroke needs. A slow, deliberate line can produce hundreds of
+ * points a second, so they are thinned before storage. And a polyline
  * through those samples reads as visibly angular at the scale a sticky note
  * is drawn at, so strokes are rendered as a smooth spline instead.
  */
@@ -70,7 +70,7 @@ export function simplify(points: InkPoint[], epsilon = SIMPLIFY_EPSILON): InkPoi
 }
 
 /**
- * Shortest distance from a point to a line *segment* — clamped to the
+ * Shortest distance from a point to a line segment, clamped to the
  * segment's ends rather than measured against the infinite line, which is
  * what both the simplifier and the eraser actually need.
  */
@@ -101,11 +101,7 @@ const CORNER_COSINE = 0.5
 
 /**
  * Whether the turn at `points[index]` is sharp enough to preserve.
- *
- * Without this, a deliberate corner gets smoothed away: a hand-drawn
- * rectangle comes out as a rounded blob and the peak of a roof becomes an
- * arc, because a Catmull-Rom spline has no notion of intent. Handwriting
- * benefits too — the corner of a capital L should be a corner.
+ * Without this, a deliberate corner gets smoothed away.
  */
 function isCorner(points: InkPoint[], index: number): boolean {
   const previous = points[index - 1]
@@ -134,7 +130,7 @@ function isCorner(points: InkPoint[], index: number): boolean {
  * An SVG path for a stroke, smoothed with a Catmull-Rom spline expressed as
  * cubic Béziers.
  *
- * The spline passes through every recorded point — unlike a plain quadratic
+ * The spline passes through every recorded point, unlike a plain quadratic
  * smoothing, which pulls the line away from the samples and makes small
  * letters look mushy. Points where the pen changed direction sharply are
  * treated as corners and keep their crease, so smoothing improves a curve
@@ -146,7 +142,7 @@ export function toSmoothPath(points: InkPoint[]): string {
   const first = points[0]!
 
   // A single sample is a dot. Rendered as a zero-length line, which a round
-  // linecap turns into a circle — so tapping the pen leaves a mark.
+  // linecap turns into a circle so tapping the pen leaves a mark.
   if (points.length === 1) return `M ${round(first.x)} ${round(first.y)} l 0 0`
 
   if (points.length === 2) {
@@ -198,11 +194,7 @@ export const ERASER_RADIUS = 14
 /**
  * Whether an eraser path passes close enough to a stroke to remove it.
  *
- * Strokes are erased whole rather than cut into pieces. Splitting a vector
- * stroke where an eraser crosses it is possible but the result is rarely
- * what somebody wanted — on a shared family drawing, "get rid of that line"
- * is the actual intent, and a stroke that survives as two stubs reads as a
- * bug.
+ * Strokes are erased whole rather than cut into pieces.
  *
  * The eraser's own points are tested against the stroke's *segments*, not
  * its points: a simplified stroke can have metres of straight line between

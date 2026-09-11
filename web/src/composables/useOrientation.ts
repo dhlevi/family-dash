@@ -4,11 +4,9 @@ import { onScopeDispose, ref, computed } from 'vue'
  * Tracks whether the screen is portrait or landscape.
  *
  * Layout is handled in CSS wherever possible (Tailwind's `portrait:` and
- * `landscape:` variants). This exists for the cases CSS cannot express —
- * choosing how many days of forecast to request, or how many dashboard
- * columns to lay out — since the 16" panel can be mounted either way and the
- * answer differs.
+ * `landscape:` variants). This exists for the cases CSS cannot express.
  */
+
 /**
  * Guarded on `matchMedia` itself, not just on `window`: jsdom does not
  * implement it, and neither do some embedded browsers. Without a media query

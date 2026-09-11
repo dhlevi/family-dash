@@ -14,13 +14,13 @@ import ToolButton from '@/components/ui/ToolButton.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { addDays, addMonths, endOfMonth, formatMonthYear, startOfMonth, startOfWeek } from '@/utils/datetime'
 import { isReadOnly } from '@/utils/calendar'
-import type { CalendarEvent, CalendarSource, NewCalendarEvent } from '@/api/types'
+import type { CalendarEvent, CalendarSource, DeleteScope, NewCalendarEvent } from '@/api/types'
 
 /**
  * The calendar page.
  *
  * Events come from the API's local cache, which the background sync keeps
- * filled — so switching months is instant and the page keeps working when a
+ * filled so switching months is instant and the page keeps working when a
  * feed or the network is down. Only the local family calendar is writable;
  * subscribed events open read-only.
  */
@@ -161,11 +161,16 @@ async function save(changes: NewCalendarEvent): Promise<void> {
   }
 }
 
-async function remove(event: CalendarEvent): Promise<void> {
+async function remove(event: CalendarEvent, scope: DeleteScope): Promise<void> {
   saving.value = true
   try {
-    await calendarApi.deleteEvent(event.id)
-    events.value = events.value.filter(candidate => candidate.id !== event.id)
+    await calendarApi.deleteEvent(event.id, scope)
+
+    // Reloading rather than filtering: deleting a series takes every one of
+    // its occurrences with it, and they do not share an id to filter on.
+    if (event.seriesId !== null) await load()
+    else events.value = events.value.filter(candidate => candidate.id !== event.id)
+
     editorOpen.value = false
   } catch (caught) {
     editorError.value = caught instanceof ApiRequestError ? caught.message : 'Could not delete the event'

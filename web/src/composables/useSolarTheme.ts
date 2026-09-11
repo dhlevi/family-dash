@@ -7,8 +7,7 @@ import { sunTimesFrom } from '@/utils/theme'
  * Keeps the automatic theme supplied with today's sunrise and sunset.
  *
  * Called once from the app shell. The times come from the weather report,
- * which is a cached database read on the API side — so this costs nothing
- * upstream, and it is only fetched at all while the theme is set to auto.
+ * which is a cached database read on the API side.
  *
  * Refetched every few hours rather than daily, because "today" changes at
  * midnight and this display is left running for weeks: a Pi that has been on

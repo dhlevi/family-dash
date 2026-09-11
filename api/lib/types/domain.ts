@@ -34,6 +34,10 @@ export interface CalendarSource {
 }
 
 export interface CalendarEvent {
+  /**
+   * The stored row's id, except for the second and later occurrences of a
+   * local series, which have none of their own and carry `<seriesId>::<start>`.
+   */
   id: string
   sourceId: string
   externalUid: string | null
@@ -43,7 +47,26 @@ export interface CalendarEvent {
   startsAt: string
   endsAt: string
   allDay: boolean
+  /** The RRULE text of a feed event, for reference. Never interpreted here. */
   rrule: string | null
+  /** How a *local* event repeats: the same vocabulary chores use. */
+  recurrence: string | null
+  /** When the series stops. Null repeats indefinitely. */
+  recurrenceUntil: string | null
+  /**
+   * The row defining the series this came from, on every occurrence including
+   * the first. Null for an event that does not repeat, which is what tells the
+   * UI whether to offer "this one" or "all of them".
+   */
+  seriesId: string | null
+  /**
+   * When the series itself begins, on every occurrence of it.
+   *
+   * The editor needs this because an edit applies to the whole series: opening
+   * the third Tuesday and saving without touching anything must not quietly
+   * move the series onto that Tuesday and drop the two before it.
+   */
+  seriesStartsAt: string | null
   colour: string | null
 }
 
@@ -393,4 +416,45 @@ export interface CityArtOutcome {
   pruned: number
   /** Why nothing was drawn, when `created` is null. */
   reason: string | null
+}
+
+// --- the household strip ---------------------------------------------------
+
+export interface PersonDay {
+  name: string
+  /** Chosen in Settings, or derived from the name so it is stable. */
+  colour: string
+  /** Open tasks that are overdue or due today, soonest first. */
+  tasks: TaskItem[]
+  /** Today's events, from whichever calendars are linked to this person. */
+  events: CalendarEvent[]
+  /** Open tasks waiting behind today: undated, or due later. */
+  laterCount: number
+  /** Finished since midnight. The only cheerful number on the strip. */
+  doneToday: number
+}
+
+// --- bin day ---------------------------------------------------------------
+
+export type BinKindName = 'garbage' | 'recycling' | 'organics' | 'yard' | 'glass'
+
+export type BinUrgencyName = 'tonight' | 'today' | 'tomorrow' | 'upcoming'
+
+export interface BinCollectionView {
+  /** The local calendar day, as 'YYYY-MM-DD'. */
+  date: string
+  kinds: BinKindName[]
+  /** The calendar's own wording, always shown in case the guess is wrong. */
+  titles: string[]
+  urgency: BinUrgencyName
+  /** Whole days from today: 0 is today, 1 tomorrow. */
+  inDays: number
+}
+
+export interface BinOutlook {
+  next: BinCollectionView | null
+  /** The one after, shown faintly so the rhythm is visible. */
+  following: BinCollectionView | null
+  /** Whether any calendar has been nominated as a collection schedule. */
+  sourcesChosen: boolean
 }

@@ -1,8 +1,8 @@
 -- Generated map artwork for the screensaver.
 --
 -- The alternative to the photo slideshow: a stylised street map of a randomly
--- chosen city, rendered here and cached, so an install with no pictures — or
--- one whose owner would rather not put family photographs on a kitchen wall —
+-- chosen city, rendered here and cached, so an install with no pictures, or
+-- one whose owner would rather not put family photographs on a kitchen wall, 
 -- still has something worth looking at when it goes idle.
 --
 -- This is a cache table in the same sense as `news_article` and
@@ -12,7 +12,7 @@
 -- of CPU, and the screensaver is the part of the display that has to keep
 -- working when the network does not.
 --
--- Two files are kept per artwork. The SVG is the master — resolution
+-- Two files are kept per artwork. The SVG is the master, resolution
 -- independent, and the thing to hand someone who wants to print one. The raster
 -- is what the screensaver actually loads, because decoding a WebP is the
 -- cheapest possible thing to ask of a Raspberry Pi driving a wall panel, and it

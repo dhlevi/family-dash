@@ -28,8 +28,7 @@ import type { WeatherReport } from '@/api/types'
  *
  * Reads the API's cache, which the background task keeps filled, so opening
  * the page is instant and a network outage shows the last forecast marked
- * stale rather than an error. It polls slowly — the underlying data only
- * changes every twenty minutes, and this runs on a wall for weeks.
+ * stale rather than an error.
  */
 const settings = useSettingsStore()
 
@@ -109,8 +108,7 @@ const observedLabel = computed(() => {
     </template>
 
     <!--
-      A stale forecast is shown, not hidden — but it is labelled, because
-      old numbers presented as current are worse than no numbers.
+      A stale forecast is shown
     -->
     <p v-if="report?.stale" class="mb-4 flex items-center gap-2 rounded-card bg-warn/15 px-3 py-2.5 text-sm text-warn">
       <Icon name="offline" :size="18" class="shrink-0" />

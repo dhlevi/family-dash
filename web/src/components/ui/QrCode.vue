@@ -6,7 +6,7 @@ import qrcode from 'qrcode-generator'
  * A QR code, drawn as SVG.
  *
  * The point of this on a wall display is that the app is *already* reachable
- * from every phone on the home wifi — there is just no obvious way to get
+ * from every phone on the home wifi, there is just no obvious way to get
  * the address onto one. A QR turns "what's the Pi's IP again?" into pointing
  * a camera at the screen.
  *

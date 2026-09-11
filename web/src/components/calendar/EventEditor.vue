@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import Field from '@/components/ui/Field.vue'
+import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import Icon from '@/components/ui/Icon.vue'
 import Modal from '@/components/ui/Modal.vue'
 import TextInput from '@/components/ui/TextInput.vue'
@@ -8,7 +9,15 @@ import Toggle from '@/components/ui/Toggle.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { fromAllDayInstant, toAllDayInstant } from '@/utils/calendar'
 import { addDays, formatEventSpan, fromDateInput, toDateInput, toDateTimeLocal } from '@/utils/datetime'
-import type { CalendarEvent, CalendarSource, NewCalendarEvent } from '@/api/types'
+import {
+  RECURRENCES,
+  RECURRENCE_LABELS,
+  type CalendarEvent,
+  type CalendarSource,
+  type DeleteScope,
+  type NewCalendarEvent,
+  type RecurrenceKind
+} from '@/api/types'
 
 /**
  * Create or edit an event.
@@ -33,7 +42,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   save: [changes: NewCalendarEvent]
-  remove: [event: CalendarEvent]
+  remove: [event: CalendarEvent, scope: DeleteScope]
 }>()
 
 const title = ref('')
@@ -43,8 +52,22 @@ const allDay = ref(false)
 const startsAt = ref('')
 const endsAt = ref('')
 const sourceId = ref('')
+const recurrence = ref<RecurrenceKind | ''>('')
+const recurrenceUntil = ref('')
 
 const isEdit = computed(() => props.event !== null)
+
+/**
+ * Repeating is offered only for calendars this app owns.
+ *
+ * A writable remote calendar is pushed to one event at a time; inventing a
+ * repeat rule for it would create a series upstream that could not be kept in
+ * step from here. The API refuses it too — this just avoids offering it.
+ */
+const canRepeat = computed(() => props.sources.find(source => source.id === sourceId.value)?.type === 'local')
+
+/** Editing any occurrence edits the series, so say so rather than surprising anyone. */
+const editsWholeSeries = computed(() => isEdit.value && props.event?.seriesId !== null)
 
 const writableSources = computed(() => props.sources.filter(source => !source.readOnly))
 
@@ -64,15 +87,26 @@ watch(
       allDay.value = event.allDay
       sourceId.value = event.sourceId
 
+      recurrence.value = event.recurrence ?? ''
+      recurrenceUntil.value = event.recurrenceUntil ? toDateInput(new Date(event.recurrenceUntil)) : ''
+
+      // A repeating event is edited as a series, so the dates shown are the
+      // series' own. Showing the occurrence that was tapped would mean that
+      // saving without touching anything moved the series onto that date and
+      // silently dropped every occurrence before it.
+      const durationMs = new Date(event.endsAt).getTime() - new Date(event.startsAt).getTime()
+      const shownStart = event.seriesStartsAt ?? event.startsAt
+      const shownEnd = new Date(new Date(shownStart).getTime() + durationMs).toISOString()
+
       if (event.allDay) {
         // Stored at UTC midnight, so read as a calendar date rather than an
         // instant, or the picker opens on the previous day.
-        startsAt.value = toDateInput(fromAllDayInstant(event.startsAt))
+        startsAt.value = toDateInput(fromAllDayInstant(shownStart))
         // The stored end is exclusive; show the last day it actually covers.
-        endsAt.value = toDateInput(addDays(fromAllDayInstant(event.endsAt), -1))
+        endsAt.value = toDateInput(addDays(fromAllDayInstant(shownEnd), -1))
       } else {
-        startsAt.value = toDateTimeLocal(new Date(event.startsAt))
-        endsAt.value = toDateTimeLocal(new Date(event.endsAt))
+        startsAt.value = toDateTimeLocal(new Date(shownStart))
+        endsAt.value = toDateTimeLocal(new Date(shownEnd))
       }
       return
     }
@@ -86,6 +120,8 @@ watch(
     location.value = ''
     description.value = ''
     allDay.value = false
+    recurrence.value = ''
+    recurrenceUntil.value = ''
     startsAt.value = toDateTimeLocal(base)
     endsAt.value = toDateTimeLocal(new Date(base.getTime() + 60 * 60 * 1000))
     sourceId.value = writableSources.value[0]?.id ?? ''
@@ -113,6 +149,11 @@ watch(allDay, isAllDay => {
   }
 })
 
+const recurrenceOptions = [
+  { value: '' as const, label: 'Never' },
+  ...RECURRENCES.map(kind => ({ value: kind, label: RECURRENCE_LABELS[kind].replace(/^Every /, '') }))
+]
+
 const validationError = computed(() => {
   if (title.value.trim().length === 0) return 'A title is required'
 
@@ -127,11 +168,37 @@ const validationError = computed(() => {
 
 const canSave = computed(() => validationError.value === null && !props.saving && !props.readOnly)
 
+/**
+ * Whether the delete button has been tapped on a repeating event.
+ *
+ * Deleting one occurrence and deleting the series look identical up to the
+ * moment they happen and are very different afterwards, so a repeat asks
+ * which. A one-off deletes on the first tap, as it always has.
+ */
+const confirmingDelete = ref(false)
+
+watch(
+  () => props.open,
+  open => {
+    if (!open) confirmingDelete.value = false
+  }
+)
+
+function requestDelete(): void {
+  if (!props.event) return
+
+  if (props.event.seriesId === null) emit('remove', props.event, 'series')
+  else confirmingDelete.value = true
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
 function submit(): void {
   if (!canSave.value) return
 
   const start = fromDateInput(startsAt.value)!
   const end = fromDateInput(endsAt.value)!
+  const until = recurrenceUntil.value === '' ? null : fromDateInput(recurrenceUntil.value)
 
   emit('save', {
     sourceId: sourceId.value || undefined,
@@ -143,7 +210,12 @@ function submit(): void {
     // events — both then render through one code path.
     startsAt: allDay.value ? toAllDayInstant(start) : start.toISOString(),
     endsAt: allDay.value ? toAllDayInstant(addDays(end, 1)) : end.toISOString(),
-    allDay: allDay.value
+    allDay: allDay.value,
+    recurrence: recurrence.value === '' ? null : recurrence.value,
+    // An end date means "the last day it runs", so the series is open until
+    // the end of it rather than until its midnight.
+    recurrenceUntil:
+      recurrence.value === '' || until === null ? null : new Date(until.getTime() + DAY_MS - 1).toISOString()
   })
 }
 </script>
@@ -220,6 +292,18 @@ function submit(): void {
         </Field>
       </div>
 
+      <Field
+        v-if="canRepeat"
+        label="Repeats"
+        :hint="editsWholeSeries ? 'Changes here apply to every occurrence' : undefined"
+      >
+        <SegmentedControl v-model="recurrence" :options="recurrenceOptions" :disabled="saving" block />
+      </Field>
+
+      <Field v-if="canRepeat && recurrence !== ''" label="Until" for="event-until" hint="Leave empty to repeat forever">
+        <TextInput id="event-until" v-model="recurrenceUntil" type="date" :disabled="saving" />
+      </Field>
+
       <Field label="Where" for="event-location">
         <TextInput id="event-location" v-model="location" placeholder="Optional" :disabled="saving" />
       </Field>
@@ -246,24 +330,47 @@ function submit(): void {
     </div>
 
     <template #actions>
-      <ToolButton
-        v-if="event && !readOnly"
-        icon="trash"
-        label="Delete"
-        variant="danger"
-        :disabled="saving"
-        @click="emit('remove', event)"
-      />
-      <span class="flex-1" />
-      <ToolButton :label="readOnly ? 'Close' : 'Cancel'" :disabled="saving" @click="emit('close')" />
-      <ToolButton
-        v-if="!readOnly"
-        icon="check"
-        :label="saving ? 'Saving…' : isEdit ? 'Save' : 'Add event'"
-        variant="primary"
-        :disabled="!canSave"
-        @click="submit"
-      />
+      <!-- A repeating event asks which, because the two are indistinguishable
+           beforehand and very different afterwards. -->
+      <template v-if="confirmingDelete && event">
+        <ToolButton label="Keep" :disabled="saving" @click="confirmingDelete = false" />
+        <span class="flex-1" />
+        <ToolButton
+          icon="trash"
+          label="This one"
+          variant="danger"
+          :disabled="saving"
+          @click="emit('remove', event, 'occurrence')"
+        />
+        <ToolButton
+          icon="trash"
+          label="All of them"
+          variant="danger"
+          :disabled="saving"
+          @click="emit('remove', event, 'series')"
+        />
+      </template>
+
+      <template v-else>
+        <ToolButton
+          v-if="event && !readOnly"
+          icon="trash"
+          label="Delete"
+          variant="danger"
+          :disabled="saving"
+          @click="requestDelete"
+        />
+        <span class="flex-1" />
+        <ToolButton :label="readOnly ? 'Close' : 'Cancel'" :disabled="saving" @click="emit('close')" />
+        <ToolButton
+          v-if="!readOnly"
+          icon="check"
+          :label="saving ? 'Saving…' : isEdit ? 'Save' : 'Add event'"
+          variant="primary"
+          :disabled="!canSave"
+          @click="submit"
+        />
+      </template>
     </template>
   </Modal>
 </template>

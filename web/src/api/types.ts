@@ -95,7 +95,23 @@ export interface CalendarEvent {
   startsAt: string
   endsAt: string
   allDay: boolean
+  /** The RRULE text of a feed event, for reference. Never interpreted here. */
   rrule: string | null
+  /** How a local event repeats. Null for a one-off. */
+  recurrence: RecurrenceKind | null
+  /** When the series stops. Null repeats indefinitely. */
+  recurrenceUntil: string | null
+  /**
+   * The event defining the series, on every occurrence including the first.
+   * Null when the event does not repeat — which is what tells the editor
+   * whether to offer "this one" or "all of them".
+   */
+  seriesId: string | null
+  /**
+   * When the series itself begins. The editor shows this rather than the
+   * occurrence that was tapped, because an edit applies to the whole series.
+   */
+  seriesStartsAt: string | null
   colour: string | null
 }
 
@@ -107,7 +123,12 @@ export interface NewCalendarEvent {
   startsAt: string
   endsAt: string
   allDay?: boolean
+  recurrence?: RecurrenceKind | null
+  recurrenceUntil?: string | null
 }
+
+/** Whether a delete takes one occurrence out of a series, or the lot. */
+export type DeleteScope = 'occurrence' | 'series'
 
 // --- tasks -----------------------------------------------------------------
 
@@ -376,6 +397,45 @@ export interface CityRegionInfo {
   count: number
 }
 
+// --- the household strip ---------------------------------------------------
+
+export interface PersonDay {
+  name: string
+  colour: string
+  tasks: TaskItem[]
+  events: CalendarEvent[]
+  laterCount: number
+  doneToday: number
+}
+
+// --- bin day ---------------------------------------------------------------
+
+export type BinKind = 'garbage' | 'recycling' | 'organics' | 'yard' | 'glass'
+
+export type BinUrgency = 'tonight' | 'today' | 'tomorrow' | 'upcoming'
+
+export interface BinCollectionView {
+  /** The local calendar day, as 'YYYY-MM-DD'. */
+  date: string
+  kinds: BinKind[]
+  /** The calendar's own wording, always shown in case the guess is wrong. */
+  titles: string[]
+  urgency: BinUrgency
+  /** Whole days from today: 0 is today, 1 tomorrow. */
+  inDays: number
+}
+
+export interface BinOutlook {
+  next: BinCollectionView | null
+  following: BinCollectionView | null
+  sourcesChosen: boolean
+}
+
+export interface PersonProfile {
+  colour?: string
+  calendarSourceIds?: string[]
+}
+
 export interface Photo {
   id: string
   /** Subfolder in the library, or '' for the loose files at the top of it. */
@@ -610,7 +670,8 @@ export interface WeatherProviderInfo {
 
 // --- settings --------------------------------------------------------------
 
-export type DashboardWidget = 'calendar' | 'tasks' | 'weather' | 'meal' | 'notes' | 'news' | 'photos'
+export type DashboardWidget =
+  'calendar' | 'tasks' | 'people' | 'bins' | 'weather' | 'meal' | 'notes' | 'news' | 'photos'
 
 /**
  * The settings the API's catalogue declares. Typed by key so the store can
@@ -632,6 +693,9 @@ export interface AppSettings {
   'appearance.clock24Hour': boolean
   'appearance.screensaverMinutes': number
   'appearance.screensaverSource': ScreensaverSource
+  'people.profiles': Record<string, PersonProfile>
+  'bins.sourceIds': string[]
+  'bins.eveningHour': number
   'cityart.regions': string[]
   'cityart.themes': string[]
   'cityart.poolSize': number

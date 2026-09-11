@@ -53,6 +53,15 @@ const time = computed(() => (props.event.allDay ? null : formatTime(eventStart(p
     <span class="min-w-0 flex-1 truncate text-xs font-medium" :class="event.allDay ? 'text-white' : 'text-ink'">
       {{ event.title }}
     </span>
+    <!-- A repeating event says so, because "is this every week or just this
+         week?" is otherwise unanswerable without opening it. -->
+    <Icon
+      v-if="event.seriesId"
+      name="repeat"
+      :size="10"
+      class="shrink-0 opacity-60"
+      :class="event.allDay ? 'text-white' : 'text-faint'"
+    />
     <Icon
       v-if="readOnly"
       name="offline"

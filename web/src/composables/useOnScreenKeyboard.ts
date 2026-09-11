@@ -8,9 +8,7 @@ import { useSettingsStore } from '@/stores/settings'
  *
  * Attached once, at the app shell, and driven by `focusin` on the document
  * rather than by threading props through every input. That means it covers
- * fields it was never told about — the raw inputs in the recipe editor, the
- * number steppers in Settings — and there is nothing to remember when adding
- * a form later.
+ * fields it was never told about
  *
  * Chromium on Linux has no dependable touch keyboard of its own, and the
  * OS-level ones on Pi OS need configuring and are unreliable about appearing
@@ -90,12 +88,8 @@ export function useOnScreenKeyboard() {
      * A number field starts with its value selected, so the first digit
      * replaces it.
      *
-     * Without this, tapping 4 then 5 on a field showing "30" gives "450":
-     * the steppers re-render their value from the model on every keystroke
-     * and clamp it, which leaves the caret somewhere unhelpful. Selecting
-     * everything makes the first press a replacement — which is how entering
-     * a number on a touchscreen ought to feel anyway — and the selection
-     * handling this relies on is the same one used for editing text.
+     * Without this, tapping 4 then 5 on a field showing "30" gives "450"
+     * for example.
      */
     if (layout.value === 'numeric') {
       try {
@@ -123,7 +117,7 @@ export function useOnScreenKeyboard() {
 
   function scrollIntoView(element: HTMLElement): void {
     // Guarded because this runs inside a requestAnimationFrame, where a
-    // throw is unhandled — and not every environment implements it.
+    // throw is unhandled and not every environment implements it.
     if (typeof element.scrollIntoView !== 'function') return
 
     element.scrollIntoView({ block: 'center', behavior: 'smooth' })
@@ -154,9 +148,8 @@ export function useOnScreenKeyboard() {
   /**
    * Sends Enter to the field, then closes.
    *
-   * Several forms act on Enter — the task quick-add, the tag field — so the
-   * Done key has to be a real Enter rather than only a way of putting the
-   * keyboard away.
+   * Several forms act on Enter so the Done key has to be a real Enter 
+   * rather than only a way of putting the keyboard away.
    */
   function submit(): void {
     const field = target.value

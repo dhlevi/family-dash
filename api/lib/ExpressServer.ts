@@ -72,7 +72,7 @@ export class ExpressServer {
     //
     // `strict: false` allows a top-level JSON scalar in the body. The default
     // accepts only objects and arrays, which would reject
-    // `PUT /api/settings/appearance.theme` with a body of `"dark"` — the
+    // `PUT /api/settings/appearance.theme` with a body of `"dark"`, the
     // natural way to write a single-value setting.
     server.use(express.json({ limit: bodyLimit, strict: false }))
     server.use(express.urlencoded({ extended: true, limit: bodyLimit }))

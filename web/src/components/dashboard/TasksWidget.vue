@@ -6,6 +6,7 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import Icon from '@/components/ui/Icon.vue'
 import WidgetShell from './WidgetShell.vue'
 import { endOfDay, formatTime, isOverdue } from '@/utils/datetime'
+import { useTaskSignal } from '@/composables/useTaskSignal'
 import { useSettingsStore } from '@/stores/settings'
 import type { TaskItem } from '@/api/types'
 
@@ -39,6 +40,9 @@ async function load(): Promise<void> {
 
 onMounted(load)
 
+const tasksElsewhere = useTaskSignal()
+tasksElsewhere.onChanged(load)
+
 async function complete(task: TaskItem): Promise<void> {
   pending.value = new Set(pending.value).add(task.id)
 
@@ -51,6 +55,9 @@ async function complete(task: TaskItem): Promise<void> {
     if (result.next?.dueAt && new Date(result.next.dueAt) <= endOfDay(new Date())) {
       tasks.value = [...tasks.value, result.next]
     }
+
+    // The per-person strip may be showing the same chore.
+    tasksElsewhere.announce()
   } catch (caught) {
     error.value = caught instanceof ApiRequestError ? caught.message : 'Could not complete the task'
   } finally {

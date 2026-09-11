@@ -23,11 +23,7 @@ import type { MealPlanEntry, MealSlot, NewRecipe, Recipe } from '@/api/types'
 
 /**
  * Meals: the week's plan, the recipe library, and the shopping list the two
- * of them produce.
- *
- * One page with three tabs rather than three nav entries — they are the same
- * job seen from different angles, and a household moves between them
- * constantly while planning.
+ * of them produce. One page with three tabs rather than three nav entries
  */
 type Tab = 'plan' | 'recipes' | 'shopping'
 
@@ -199,7 +195,7 @@ async function buildShoppingList(): Promise<void> {
     const list = await shoppingApi.fromPlan(rangeFrom.value, rangeTo.value)
     shoppingRemaining.value = list.remaining
     tab.value = 'shopping'
-    announce(`Shopping list rebuilt from this week — ${list.remaining} to get`)
+    announce(`Shopping list rebuilt from this week. ${list.remaining} items to get`)
   } catch (caught) {
     error.value = caught instanceof ApiRequestError ? caught.message : 'Could not build the shopping list'
   } finally {

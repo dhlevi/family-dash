@@ -1,11 +1,7 @@
 <script setup lang="ts">
 /**
  * Standard page frame: a fixed toolbar row and one scrolling body.
- *
- * Every page uses this so scrolling behaves identically everywhere — the
- * body is the only scroll region, which on a touchscreen matters more than
- * it sounds. Nested scroll areas are the single most common way a kiosk UI
- * becomes unusable with a finger.
+ * Every page uses this so scrolling behaves identically everywhere
  */
 withDefaults(defineProps<{ padded?: boolean }>(), { padded: true })
 </script>

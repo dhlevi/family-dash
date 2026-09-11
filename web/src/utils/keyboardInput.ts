@@ -1,8 +1,8 @@
 /**
  * The text editing behind the on-screen keyboard.
  *
- * Kept apart from the DOM so the fiddly parts — where the caret ends up, what
- * a selection replaces, what backspace does to an emoji — can be tested
+ * Kept apart from the DOM so the fiddly parts like where the caret ends up, what
+ * a selection replaces, what backspace does to an emoji, can be tested
  * without a browser.
  */
 
@@ -26,11 +26,11 @@ export interface FieldEdit {
 /**
  * How many code units to remove for one backspace.
  *
- * A character outside the basic plane — an emoji, most obviously — is stored
- * as a surrogate pair, and deleting a single code unit would leave half of
- * one behind and render as a replacement glyph. Combining marks are left
- * alone: removing the accent from a letter one press at a time is what a
- * hardware keyboard does too.
+ * A character outside the basic set is stored as a surrogate pair,
+ * and deleting a single code unit would leave half of one behind
+ * and render as a replacement glyph. Combining marks are left
+ * alone: removing the accent from a letter one press at a time is
+ * what a hardware keyboard does too.
  */
 function charactersBefore(value: string, caret: number): number {
   if (caret <= 0) return 0

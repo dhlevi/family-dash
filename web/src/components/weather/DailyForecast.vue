@@ -9,8 +9,7 @@ import type { WeatherDay, WeatherUnitSystem } from '@/api/types'
  * The week ahead.
  *
  * Each day gets a temperature range drawn as a bar positioned within the
- * week's overall span, so the shape of the week — warming up, cold snap
- * midweek — is readable without comparing numbers.
+ * week's overall span, so the shape of the week is readable without comparing numbers.
  */
 const props = withDefaults(
   defineProps<{

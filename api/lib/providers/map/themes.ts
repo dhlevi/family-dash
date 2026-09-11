@@ -267,15 +267,21 @@ export const THEMES: MapTheme[] = [
     wood: { colour: '#f5f3ee' },
     grass: { colour: '#f0ede8' },
     waterway: { colour: '#e8e4e0', width: 0.9 },
+    // Every width is overridden, deliberately: this style is built on
+    // hairlines, and the shared ramp's defaults are three times too heavy for
+    // it. Leaving `minor` and `service` on the ramp drew residential streets
+    // wider than the motorway, which is what the width-ordering test caught.
     roads: {
       ...ramp('#2c2c2c'),
+      path: { colour: '#d0ceca', width: 0.3 },
+      service: { colour: '#c4c2be', width: 0.35 },
+      minor: { colour: '#a8a8a8', width: 0.4 },
+      rail: { colour: '#2c2c2c', width: 0.45 },
       tertiary: { colour: '#a8a8a8', width: 0.5 },
       secondary: { colour: '#505050', width: 0.6 },
       primary: { colour: '#8b2500', width: 0.9 },
-      trunk: { colour: '#505050', width: 0.8 },
-      motorway: { colour: '#8b2500', width: 1.0 },
-      rail: { colour: '#2c2c2c', width: 0.8 },
-      path: { colour: '#d0ceca', width: 0.3 }
+      trunk: { colour: '#505050', width: 0.95 },
+      motorway: { colour: '#8b2500', width: 1.0 }
     }
   }
 ]

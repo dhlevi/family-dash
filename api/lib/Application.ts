@@ -12,7 +12,7 @@ import { registerTasks } from './scheduled-tasks/TaskLoader'
  *
  * The startup order matters: configuration, then the database (including
  * migrations) before anything that reads it, then the HTTP listener, and only
- * then the background tasks — so a scheduled sync can never fire against an
+ * then the background tasks, so a scheduled sync can never fire against an
  * un-migrated schema.
  */
 export class Application {

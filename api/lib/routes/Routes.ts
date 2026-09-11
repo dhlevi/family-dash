@@ -13,6 +13,7 @@ import { healthValidators } from '../health-checks/HealthCheckLoader'
 import { CalendarController } from '../controllers/CalendarController'
 import { CityArtController } from '../controllers/CityArtController'
 import { DrawingController } from '../controllers/DrawingController'
+import { HouseholdController } from '../controllers/HouseholdController'
 import { MealPlanController } from '../controllers/MealPlanController'
 import { MediaController } from '../controllers/MediaController'
 import { NewsController } from '../controllers/NewsController'
@@ -47,6 +48,7 @@ export default function buildRouter(): Router {
   new SettingsController()
   new CalendarController()
   new TaskController()
+  new HouseholdController()
   new NoteController()
   new RecipeController()
   new MealPlanController()

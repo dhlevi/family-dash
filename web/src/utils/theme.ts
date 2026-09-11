@@ -2,9 +2,6 @@ import type { Theme } from '@/api/types'
 
 /**
  * Which theme the automatic setting should be showing.
- *
- * Separated from the store so the decision is testable on its own — it is
- * the sort of thing that is quietly wrong for half the year otherwise.
  */
 export interface SunTimes {
   sunrise: Date
@@ -12,9 +9,9 @@ export interface SunTimes {
 }
 
 /**
- * Fixed hours used when there are no solar times to work from — the weather
- * provider is unreachable on a first run, or the location is far enough
- * north that the sun does not set at all.
+ * Fixed hours used when there are no solar times to work from. The weather provider
+ * is unreachable on a first run, or the location is far enough north that the sun
+ * does not set at all.
  */
 export const FALLBACK_LIGHT_FROM_HOUR = 7
 export const FALLBACK_LIGHT_UNTIL_HOUR = 19

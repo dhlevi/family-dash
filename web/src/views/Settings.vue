@@ -5,7 +5,9 @@ import { calendarApi } from '@/api/calendar'
 import { newsApi } from '@/api/news'
 import { systemApi } from '@/api/system'
 import CalendarSources from '@/components/settings/CalendarSources.vue'
+import BinDay from '@/components/settings/BinDay.vue'
 import GoogleCalendar from '@/components/settings/GoogleCalendar.vue'
+import HouseholdPeople from '@/components/settings/HouseholdPeople.vue'
 import LocationPicker from '@/components/settings/LocationPicker.vue'
 import MapArtwork from '@/components/settings/MapArtwork.vue'
 import NewsFeeds from '@/components/settings/NewsFeeds.vue'
@@ -37,8 +39,8 @@ import type {
  * Settings.
  *
  * Preferences save as you change them rather than behind a Save button: on a
- * shared wall display, an unsaved form is a trap — somebody walks away
- * mid-edit and the change is silently lost. Each control writes immediately
+ * shared wall display, an unsaved form is a trap, somebody walks away
+ * mid-edit, and the change is silently lost. Each control writes immediately
  * and the API is the source of truth for what stuck.
  */
 const settings = useSettingsStore()
@@ -118,8 +120,10 @@ const longitude = ref(0)
 const widgets = ref<DashboardWidget[]>([])
 
 const ALL_WIDGETS: Array<{ value: DashboardWidget; label: string }> = [
+  { value: 'people', label: 'Today, per person' },
   { value: 'calendar', label: 'Up next' },
   { value: 'tasks', label: "Today's tasks" },
+  { value: 'bins', label: 'Bin day' },
   { value: 'weather', label: 'Weather' },
   { value: 'meal', label: "Tonight's meal" },
   { value: 'notes', label: 'Notes' },
@@ -440,7 +444,7 @@ async function runTask(name: string): Promise<void> {
       <Card>
         <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">Google Calendar</h2>
         <p class="mb-3 text-xs text-faint">
-          Two-way, so events added here appear in Google too — at the cost of an OAuth client you have to create
+          Two-way, so events added here appear in Google too, at the cost of an OAuth client you have to create
           yourself, and tokens that need care. A feed subscription above is simpler if you only need to read a calendar.
         </p>
 
@@ -470,7 +474,10 @@ async function runTask(name: string): Promise<void> {
             @update:model-value="persist({ 'tasks.showCompleted': showCompleted })"
           />
 
-          <Field label="Who's in the household" hint="Shortcuts when assigning a task. Names stay free text.">
+          <Field
+            label="Who's in the household"
+            hint="Shortcuts when assigning a task, and the columns of the per-person strip. Names stay free text."
+          >
             <div class="flex gap-2">
               <TextInput v-model="assigneeInput" placeholder="Add a name" @enter="addAssignee" />
               <ToolButton
@@ -501,6 +508,27 @@ async function runTask(name: string): Promise<void> {
             </div>
           </Field>
         </div>
+      </Card>
+
+      <!-- Per-person strip -->
+      <Card v-if="assignees.length > 0">
+        <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">Each person's day</h2>
+        <p class="mb-3 text-xs text-faint">
+          Colours and calendars for the per-person strip. Turn the strip on under Dashboard below.
+        </p>
+
+        <HouseholdPeople :sources="sources" />
+      </Card>
+
+      <!-- Bin day -->
+      <Card>
+        <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">Bin day</h2>
+        <p class="mb-3 text-xs text-faint">
+          Most councils publish their collection schedule as a calendar feed. Subscribe to it under Calendars above and
+          it shows up here, and on the dashboard the evening before.
+        </p>
+
+        <BinDay :sources="sources" />
       </Card>
 
       <!-- Dashboard -->

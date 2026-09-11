@@ -7,7 +7,7 @@ import { HealthResult, HealthValidator } from '../core/model/HealthValidator'
  *
  * Photos and drawing thumbnails live on a mounted volume that could be a USB
  * stick or a network share. If it vanishes, the rest of the dashboard should
- * carry on working — hence non-critical — but the reason the Pictures page is
+ * carry on working (hence non-critical) but the reason the Pictures page is
  * empty should be visible somewhere.
  */
 export class MediaCheck implements HealthValidator {

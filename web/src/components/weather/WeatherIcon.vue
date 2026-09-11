@@ -5,11 +5,6 @@ import { conditionFor } from '@/utils/weather'
 /**
  * The picture of the sky.
  *
- * Composed from a few parts — a disc for sun or moon, a cloud, and
- * precipitation marks — rather than a separate drawing per condition. That
- * keeps twelve conditions to three shapes, and means a night-time variant is
- * a swap of one element rather than a second icon set.
- *
  * Colour comes from the condition, not the theme: a yellow sun and a grey
  * cloud read correctly on both, and the whole point of the icon is to be
  * identifiable from across a room.
@@ -25,8 +20,7 @@ const props = withDefaults(
 
 /**
  * A unique id per instance, because the night moon is cut with an SVG mask
- * and several icons share a page — a reused id would make every moon take
- * the first one's shape.
+ * and several icons share a page.
  */
 const maskId = useId()
 
@@ -79,8 +73,7 @@ const BOLT = '#f5c518'
       <!--
         A crescent, cut by masking an offset disc out of a full one. Drawn
         with a mask rather than a hand-written path so it sits centred and at
-        the same visual weight as the sun — an off-centre sliver reads as a
-        smudge rather than a moon.
+        the same visual weight as the sun.
       -->
       <template v-else>
         <mask :id="maskId">

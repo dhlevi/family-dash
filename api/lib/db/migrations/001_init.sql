@@ -302,9 +302,9 @@ VALUES ('local', 'Family', '#4f8ef7', false, '{}'::jsonb);
 
 -- Keyless news to start with; editable in Settings.
 INSERT INTO news_feed (name, url, category) VALUES
-  ('CBC — Top Stories',  'https://www.cbc.ca/webfeed/rss/rss-topstories',        'general'),
-  ('CBC — British Columbia', 'https://www.cbc.ca/webfeed/rss/rss-canada-britishcolumbia', 'local'),
-  ('BBC — World',        'https://feeds.bbci.co.uk/news/world/rss.xml',          'world');
+  ('CBC - Top Stories',  'https://www.cbc.ca/webfeed/rss/rss-topstories',        'general'),
+  ('CBC - British Columbia', 'https://www.cbc.ca/webfeed/rss/rss-canada-britishcolumbia', 'local'),
+  ('BBC - World',        'https://feeds.bbci.co.uk/news/world/rss.xml',          'world');
 
 INSERT INTO setting (key, value) VALUES
   ('appearance.theme',            '"dark"'::jsonb),

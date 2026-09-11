@@ -223,12 +223,19 @@ export class CalendarController extends Controller {
     return endpoints.updateEvent(id, body)
   }
 
+  /**
+   * Deletes an event.
+   *
+   * For one occurrence of a repeating event, `scope=occurrence` (the default)
+   * skips just that date and leaves the series running; `scope=series` removes
+   * the whole thing. A one-off ignores the distinction.
+   */
   @Delete('events/{id}')
   @SuccessResponse(204, 'Deleted')
   @Response(404, 'No such event')
   @Response(409, 'Event comes from a subscribed calendar')
   @NoCache()
-  public async deleteEvent(@Path('id') id: string): Promise<void> {
-    return endpoints.deleteEvent(id)
+  public async deleteEvent(@Path('id') id: string, @Query('scope') scope?: string): Promise<void> {
+    return endpoints.deleteEvent(id, scope === 'series' ? 'series' : 'occurrence')
   }
 }

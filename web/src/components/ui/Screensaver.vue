@@ -12,20 +12,11 @@ import type { CityArt, Photo, WeatherReport } from '@/api/types'
 
 /**
  * What the display shows when nobody is using it.
- *
- * A kitchen wall spends most of its day being walked past rather than read,
- * so the idle state is a clock and the weather over a slowly changing
- * picture — more useful from across the room than the dashboard it replaces,
- * and it stops one layout being burnt into the panel for weeks.
+ * This will prevent burn in on the screen, as well as provide
+ * some entertainment.
  *
  * The picture is either a photograph from the library or a generated map of a
- * city, depending on `appearance.screensaverSource`. Both arrive here as the
- * same thing — a URL and an optional caption — because the map artwork is
- * rendered and rasterised by the API, so showing one costs this component
- * exactly what showing a photograph costs.
- *
- * It works with nothing at all: a full-screen clock is still a better idle
- * state than a static dashboard.
+ * city, depending on `appearance.screensaverSource`.
  */
 const emit = defineEmits<{ wake: [] }>()
 
@@ -59,9 +50,7 @@ const weather = ref<WeatherReport | null>(null)
  * The fade is a transition on a bound `opacity`, deliberately, rather than
  * Vue's `<Transition>`: that advances its classes on a requestAnimationFrame
  * which does not run while a page is hidden, and a screensaver caught
- * mid-fade would be stuck at opacity 0 — a black screen with a clock on it,
- * for as long as nobody touched the display. A bound style may or may not
- * animate, but it always ends up at the right value.
+ * mid-fade would be stuck at opacity 0.
  */
 const layers = ref<[Slide | null, Slide | null]>([null, null])
 const active = ref(0)
@@ -146,7 +135,7 @@ onMounted(async () => {
 
   slides.value = interleave(photos, maps)
 
-  // Nothing of the chosen kind yet — an empty library, or the first hours of
+  // Nothing of the chosen kind yet. An empty library, or the first hours of
   // a Pi that has only just been told to draw maps. Rather than show a blank
   // screen, fall back to whatever the other source has.
   if (slides.value.length === 0) {
@@ -190,7 +179,7 @@ function onPress(event: Event): void {
     class="fixed inset-0 z-[60] cursor-none select-none bg-black transition-colors duration-1000"
     :style="{ backgroundColor: current?.background ?? '#000000' }"
     role="presentation"
-    aria-label="Screensaver — tap to wake"
+    aria-label="Screensaver - tap to wake"
     @pointerdown="onPress"
   >
     <!-- Crossfade rather than a cut: at this size a hard change catches the

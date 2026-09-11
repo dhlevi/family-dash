@@ -17,11 +17,12 @@ import { albumLabel, type Photo, type PhotoAlbum } from '@/api/types'
  * The photo library.
  *
  * Backed by a folder on the mounted media volume rather than Google Photos,
- * whose Library API can no longer list a user's own library — an app only
- * sees media it uploaded itself, which is useless for showing the family's
- * pictures. So: albums are folders, pictures arrive either through the Add
- * button or by copying them onto the volume, and a background scan keeps the
- * two in step.
+ * whose Library API can no longer list a user's own library.
+ * 
+ * An app only sees media it uploaded itself, which is useless for showing the 
+ * family's pictures. So: albums are folders, pictures arrive either through
+ * the Add button or by copying them onto the volume, and a background scan keeps 
+ * the two in sync.
  */
 
 /** How many tiles to fetch at a time. A shelf of holiday photos, roughly. */
@@ -69,8 +70,7 @@ function isSelected(candidate: Selection): boolean {
 /** The list filter for the current selection. */
 function filterFor(current: Selection): { album?: string; favouritesOnly?: boolean } {
   if (current.kind === 'favourites') return { favouritesOnly: true }
-  // An empty string is meaningful here — it means the loose files — so it is
-  // passed deliberately rather than treated as "no filter".
+  // An empty string for ungrouped files, is passed deliberately rather than treated as "no filter".
   if (current.kind === 'album') return { album: current.name }
   return {}
 }
@@ -314,7 +314,7 @@ function describe(caught: unknown, fallback: string): string {
         v-else-if="photos.length === 0 && total === 0"
         icon="photos"
         title="No pictures yet"
-        description="Add some with the button above, or copy them into the photos folder on the media volume — a scan runs every hour and picks up whatever is there."
+        description="Add some with the button above, or copy them into the photos folder on the media volume. A scan runs every hour and picks up whatever is there."
       />
 
       <EmptyState

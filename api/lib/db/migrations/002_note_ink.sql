@@ -9,7 +9,7 @@
 --
 -- Storing capture-space pixels plus `ink_width`/`ink_height` rather than
 -- normalised 0..1 coordinates means an SVG viewBox reproduces the writing at
--- any size without distorting it — normalising each axis independently would
+-- any size without distorting it normalising each axis independently would
 -- stretch handwriting whenever a note is rendered at a different aspect
 -- ratio (a corkboard note versus a dashboard widget, say).
 --

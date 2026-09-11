@@ -19,7 +19,17 @@ import { themeIds } from '../providers/map/themes'
 
 const hexColour = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a 6-digit hex colour such as #4f8ef7')
 
-export const DASHBOARD_WIDGETS = ['calendar', 'tasks', 'weather', 'meal', 'notes', 'news', 'photos'] as const
+export const DASHBOARD_WIDGETS = [
+  'calendar',
+  'tasks',
+  'people',
+  'bins',
+  'weather',
+  'meal',
+  'notes',
+  'news',
+  'photos'
+] as const
 export type DashboardWidget = (typeof DASHBOARD_WIDGETS)[number]
 
 interface SettingDefinition {
@@ -145,7 +155,45 @@ export const SETTINGS: Record<string, SettingDefinition> = {
   'tasks.assignees': {
     schema: z.array(z.string().trim().min(1).max(40)).max(20),
     default: () => [],
-    description: 'Suggested names for task assignment. Free text, so this is only a shortcut.'
+    description:
+      'The people in the household. Used as suggestions when assigning a task, and as the columns ' +
+      'of the per-person strip on the dashboard. Assignment is still free text, so this is a ' +
+      'shortcut rather than a list of accounts.'
+  },
+
+  // --- people -------------------------------------------------------------
+  'people.profiles': {
+    schema: z.record(
+      z.string().trim().min(1).max(40),
+      z
+        .object({
+          colour: hexColour.optional(),
+          calendarSourceIds: z.array(z.string().uuid()).max(20).optional()
+        })
+        .strict()
+    ),
+    default: () => ({}),
+    description:
+      "Per-person display settings, keyed by the names in 'tasks.assignees'. A colour, and which " +
+      'calendars belong to that person — events have no assignee of their own, so linking a ' +
+      'calendar is how the strip knows whose day is whose. Everything here is optional.'
+  },
+
+  // --- bin day ------------------------------------------------------------
+  'bins.sourceIds': {
+    schema: z.array(z.string().uuid()).max(10),
+    default: () => [],
+    description:
+      'Which calendars carry the waste collection schedule. Most councils publish one as an ICS ' +
+      'feed you can subscribe to like any other. Leave this empty to look across every calendar ' +
+      'for events that read like collections.'
+  },
+  'bins.eveningHour': {
+    schema: z.number().int().min(0).max(23),
+    default: () => 16,
+    description:
+      "The hour after which tomorrow's collection starts asking for the bins to go out tonight. " +
+      'A reminder on the morning itself is too late to be any use.'
   },
 
   // --- network ------------------------------------------------------------

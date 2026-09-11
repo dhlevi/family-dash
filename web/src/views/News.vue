@@ -188,10 +188,6 @@ const lastFetched = computed(() => {
       <button type="button" class="shrink-0 font-medium underline" @click="error = null">Dismiss</button>
     </p>
 
-    <!--
-      A failing feed is called out here rather than left to silently stop
-      producing headlines — a publisher moving a URL is the usual cause.
-    -->
     <p
       v-else-if="failingFeeds.length > 0"
       class="flex items-start gap-2 border-b border-line bg-warn/10 px-4 py-2.5 text-sm text-warn"

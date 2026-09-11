@@ -2,6 +2,7 @@ import { api } from './client'
 import type {
   CalendarEvent,
   CalendarSource,
+  DeleteScope,
   GoogleCalendarStatus,
   GoogleCalendarSummary,
   NewCalendarEvent,
@@ -60,5 +61,12 @@ export const calendarApi = {
   updateEvent: (id: string, changes: Partial<NewCalendarEvent>) =>
     api.patch<CalendarEvent>(`/calendar/events/${id}`, changes),
 
-  deleteEvent: (id: string) => api.delete<void>(`/calendar/events/${id}`)
+  /**
+   * Deletes an event.
+   *
+   * `scope` matters only for a repeating one: 'occurrence' skips that date and
+   * leaves the series running, 'series' removes the whole thing.
+   */
+  deleteEvent: (id: string, scope: DeleteScope = 'occurrence') =>
+    api.delete<void>(`/calendar/events/${id}`, { query: { scope } })
 }

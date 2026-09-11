@@ -62,7 +62,14 @@ export function nextOccurrence(recurrence: string | null, after: Date, now = new
   return next
 }
 
-function advance(recurrence: RecurrenceKind, from: Date): Date {
+/**
+ * One step of a recurrence, in local time.
+ *
+ * Exported because calendar events expand through the same arithmetic — see
+ * EventSeries — and having two implementations of "add a month, but not past
+ * the end of it" is how they drift apart.
+ */
+export function advance(recurrence: RecurrenceKind, from: Date): Date {
   const next = new Date(from.getTime())
 
   switch (recurrence) {

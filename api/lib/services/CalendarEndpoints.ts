@@ -6,6 +6,8 @@ import { CalendarSourceRepository } from '../repositories/CalendarSourceReposito
 import { EventRepository } from '../repositories/EventRepository'
 import { SettingRepository } from '../repositories/SettingRepository'
 import { CalendarSyncService, type SyncOutcome } from './CalendarSyncService'
+import { parseOccurrenceId } from './EventSeries'
+import { RECURRENCES } from './Recurrence'
 import type { CalendarEvent, CalendarSource } from '../types/domain'
 
 const sources = new CalendarSourceRepository()
@@ -44,6 +46,8 @@ const newEventSchema = z
     startsAt: z.string().datetime({ offset: true }),
     endsAt: z.string().datetime({ offset: true }),
     allDay: z.boolean().optional(),
+    recurrence: z.enum(RECURRENCES).nullish(),
+    recurrenceUntil: z.string().datetime({ offset: true }).nullish(),
     colour: hexColour.nullish()
   })
   .refine(event => new Date(event.endsAt) >= new Date(event.startsAt), {
@@ -59,6 +63,8 @@ const eventUpdateSchema = z
     startsAt: z.string().datetime({ offset: true }).optional(),
     endsAt: z.string().datetime({ offset: true }).optional(),
     allDay: z.boolean().optional(),
+    recurrence: z.enum(RECURRENCES).nullish(),
+    recurrenceUntil: z.string().datetime({ offset: true }).nullish(),
     colour: hexColour.nullish()
   })
   .refine(
@@ -350,6 +356,17 @@ export class CalendarEndpoints {
 
     const provider = CalendarProviderRegistry.require(source.type)
 
+    // Recurrence is a local-calendar feature. A writable remote calendar is
+    // pushed to as individual events, and inventing an RRULE for it would
+    // create a series upstream that this app could not then keep in step —
+    // far worse than saying so.
+    if (parsed.recurrence && source.type !== 'local') {
+      throw ApiError.badRequest(
+        `Repeating events can only be added to the local family calendar, not to '${source.name}'. ` +
+          'Create the repeat in that calendar and subscribe to it here.'
+      )
+    }
+
     /**
      * A writable remote calendar is written to first, and only then cached.
      *
@@ -371,6 +388,8 @@ export class CalendarEndpoints {
     return events.create({
       sourceId: source.id,
       externalUid: event.externalUid,
+      recurrence: parsed.recurrence ?? null,
+      recurrenceUntil: parsed.recurrenceUntil ? new Date(parsed.recurrenceUntil) : null,
       title: event.title,
       description: event.description,
       location: event.location,
@@ -381,27 +400,73 @@ export class CalendarEndpoints {
     })
   }
 
+  /**
+   * Edits an event, or the series it belongs to.
+   *
+   * An occurrence has no row of its own, so editing one edits the series and
+   * every occurrence moves together. Changing a single occurrence's time or
+   * title would need an override row per exception, which is a great deal of
+   * machinery for something a household can do by deleting that occurrence
+   * and adding a one-off in its place.
+   */
   public async updateEvent(id: string, body: unknown): Promise<CalendarEvent> {
     const parsed = eventUpdateSchema.parse(body)
-    await CalendarEndpoints.assertEditable(id)
+    const seriesId = parseOccurrenceId(id)?.seriesId ?? id
+    await CalendarEndpoints.assertEditable(seriesId)
 
-    const updated = await events.update(id, {
+    const updated = await events.update(seriesId, {
       title: parsed.title,
       description: parsed.description,
       location: parsed.location,
       startsAt: parsed.startsAt ? new Date(parsed.startsAt) : undefined,
       endsAt: parsed.endsAt ? new Date(parsed.endsAt) : undefined,
       allDay: parsed.allDay,
+      recurrence: parsed.recurrence,
+      recurrenceUntil:
+        parsed.recurrenceUntil === undefined
+          ? undefined
+          : parsed.recurrenceUntil === null
+            ? null
+            : new Date(parsed.recurrenceUntil),
       colour: parsed.colour
     })
 
     if (!updated) throw ApiError.notFound(`No event with id '${id}'`)
+
+    // Exceptions are recorded as instants. Moving the series moves every
+    // occurrence off those instants, so the skips would silently stop
+    // applying — and, worse, could start matching an unrelated occurrence.
+    if (parsed.startsAt !== undefined || parsed.recurrence !== undefined) {
+      await events.clearExclusions(seriesId)
+    }
+
     return updated
   }
 
-  public async deleteEvent(id: string): Promise<void> {
-    await CalendarEndpoints.assertEditable(id)
-    await events.remove(id)
+  /**
+   * Deletes an event, one occurrence of a series, or a whole series.
+   *
+   * `scope` is explicit rather than inferred from the shape of the id: the
+   * calendar hands back an occurrence id for every tap, and guessing that the
+   * user meant "just this one" when they meant "all of them" is the kind of
+   * mistake that is only noticed a week later.
+   */
+  public async deleteEvent(id: string, scope: 'occurrence' | 'series' = 'occurrence'): Promise<void> {
+    const occurrence = parseOccurrenceId(id)
+    const seriesId = occurrence?.seriesId ?? id
+
+    const event = await CalendarEndpoints.assertEditable(seriesId)
+
+    if (scope === 'series' || event.recurrence === null) {
+      await events.remove(seriesId)
+      return
+    }
+
+    // Deleting the first occurrence of a series still leaves the series: the
+    // stored row is both the definition and the first occurrence, so it is
+    // excluded rather than removed.
+    const startsAt = occurrence?.startsAt ?? new Date(event.startsAt)
+    await events.excludeOccurrence(seriesId, startsAt)
   }
 
   // --- helpers -------------------------------------------------------------

@@ -1,4 +1,5 @@
 import { PostgresDatabase } from '../db/PostgresDatabase'
+import { expandAll } from '../services/EventSeries'
 import type { CalendarEvent, DateRange, ProviderEvent } from '../types/domain'
 import { buildUpdate, toIsoRequired } from './rows'
 
@@ -13,6 +14,9 @@ interface EventRow {
   ends_at: Date
   all_day: boolean
   rrule: string | null
+  recurrence: string | null
+  recurrence_until: Date | null
+  excluded_at: Date[] | null
   colour: string | null
 }
 
@@ -29,6 +33,8 @@ export interface NewEvent {
   startsAt: Date
   endsAt: Date
   allDay?: boolean
+  recurrence?: string | null
+  recurrenceUntil?: Date | null
   colour?: string | null
 }
 
@@ -39,10 +45,14 @@ export interface EventUpdate {
   startsAt?: Date
   endsAt?: Date
   allDay?: boolean
+  recurrence?: string | null
+  recurrenceUntil?: Date | null
   colour?: string | null
 }
 
-const COLUMNS = 'id, source_id, external_uid, title, description, location, starts_at, ends_at, all_day, rrule, colour'
+const COLUMNS =
+  'id, source_id, external_uid, title, description, location, starts_at, ends_at, all_day, rrule, ' +
+  'recurrence, recurrence_until, excluded_at, colour'
 
 export class EventRepository {
   /**
@@ -52,6 +62,13 @@ export class EventRepository {
    * widget, and it reads only the local cache — the background sync is what
    * talks to feeds. The overlap test is deliberately inclusive at the start
    * so a zero-length event exactly on the boundary is not dropped.
+   *
+   * A repeating local event cannot be found by overlap: a weekly series that
+   * began in January does not itself overlap a query for October. Those rows
+   * are selected on the series being open over the range instead, and turned
+   * into occurrences afterwards — which is why expansion lives behind this
+   * method rather than in its callers. Every read path already goes through
+   * here, so none of them had to learn about recurrence.
    */
   public async inRange(range: DateRange, sourceIds?: string[]): Promise<CalendarEvent[]> {
     const params: unknown[] = [range.from, range.to]
@@ -69,17 +86,27 @@ export class EventRepository {
        FROM event e
        JOIN calendar_source s ON s.id = e.source_id
        WHERE s.enabled
-         AND e.starts_at < $2
-         AND e.ends_at >= $1
+         AND (
+           (e.recurrence IS NULL AND e.starts_at < $2 AND e.ends_at >= $1)
+           OR (e.recurrence IS NOT NULL
+               AND e.starts_at < $2
+               AND (e.recurrence_until IS NULL OR e.recurrence_until >= $1))
+         )
          ${sourceFilter}
        ORDER BY e.all_day DESC, e.starts_at, e.title`,
       params
     )
 
-    return rows.map(EventRepository.toDomain)
+    return expandAll(rows.map(EventRepository.toDomain), range, EventRepository.exclusionsOf(rows))
   }
 
-  /** The next events starting from now, for the dashboard widget. */
+  /**
+   * The next events starting from now, for the dashboard widget.
+   *
+   * The limit is applied after expansion rather than in SQL: one weekly series
+   * can supply several of the next eight events, and `LIMIT 8` on the stored
+   * rows would have fetched only one of them.
+   */
   public async upcoming(limit: number, withinDays: number): Promise<CalendarEvent[]> {
     const rows = await PostgresDatabase.many<EventRow>(
       `SELECT ${COLUMNS.split(', ')
@@ -88,13 +115,23 @@ export class EventRepository {
        FROM event e
        JOIN calendar_source s ON s.id = e.source_id
        WHERE s.enabled
-         AND e.ends_at >= now()
-         AND e.starts_at < now() + ($2 || ' days')::interval
-       ORDER BY e.starts_at, e.all_day DESC, e.title
-       LIMIT $1`,
-      [limit, withinDays]
+         AND e.starts_at < now() + ($1 || ' days')::interval
+         AND (
+           (e.recurrence IS NULL AND e.ends_at >= now())
+           OR (e.recurrence IS NOT NULL AND (e.recurrence_until IS NULL OR e.recurrence_until >= now()))
+         )
+       ORDER BY e.starts_at, e.all_day DESC, e.title`,
+      [withinDays]
     )
-    return rows.map(EventRepository.toDomain)
+
+    const now = new Date()
+    const range = { from: now, to: new Date(now.getTime() + withinDays * 86_400_000) }
+
+    return expandAll(rows.map(EventRepository.toDomain), range, EventRepository.exclusionsOf(rows))
+      .sort((a, b) =>
+        a.startsAt < b.startsAt ? -1 : a.startsAt > b.startsAt ? 1 : a.allDay === b.allDay ? 0 : a.allDay ? -1 : 1
+      )
+      .slice(0, limit)
   }
 
   public async byId(id: string): Promise<CalendarEvent | null> {
@@ -104,8 +141,9 @@ export class EventRepository {
 
   public async create(event: NewEvent): Promise<CalendarEvent> {
     const row = await PostgresDatabase.one<EventRow>(
-      `INSERT INTO event (source_id, external_uid, title, description, location, starts_at, ends_at, all_day, colour)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO event (source_id, external_uid, title, description, location, starts_at, ends_at,
+                          all_day, recurrence, recurrence_until, colour)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING ${COLUMNS}`,
       [
         event.sourceId,
@@ -116,6 +154,8 @@ export class EventRepository {
         event.startsAt,
         event.endsAt,
         event.allDay ?? false,
+        event.recurrence ?? null,
+        event.recurrenceUntil ?? null,
         event.colour ?? null
       ]
     )
@@ -131,6 +171,8 @@ export class EventRepository {
         starts_at: changes.startsAt,
         ends_at: changes.endsAt,
         all_day: changes.allDay,
+        recurrence: changes.recurrence,
+        recurrence_until: changes.recurrenceUntil,
         colour: changes.colour
       },
       1
@@ -147,6 +189,33 @@ export class EventRepository {
 
   public async remove(id: string): Promise<boolean> {
     return (await PostgresDatabase.execute('DELETE FROM event WHERE id = $1', [id])) > 0
+  }
+
+  /**
+   * Drops a single occurrence out of a series.
+   *
+   * Recorded against the series rather than as a row of its own, so deleting
+   * the whole series cannot strand the exceptions — and so a cancelled week
+   * costs one array element rather than a tombstone row. `array_append` is
+   * guarded against duplicates so that deleting the same occurrence twice,
+   * which two people tapping at once will manage, stays idempotent.
+   */
+  public async excludeOccurrence(seriesId: string, startsAt: Date): Promise<boolean> {
+    return (
+      (await PostgresDatabase.execute(
+        `UPDATE event
+            SET excluded_at = array_append(excluded_at, $2::timestamptz)
+          WHERE id = $1
+            AND recurrence IS NOT NULL
+            AND NOT (excluded_at @> ARRAY[$2::timestamptz])`,
+        [seriesId, startsAt]
+      )) > 0
+    )
+  }
+
+  /** Clears the exception list, for when a series' timing is edited. */
+  public async clearExclusions(seriesId: string): Promise<void> {
+    await PostgresDatabase.execute("UPDATE event SET excluded_at = '{}' WHERE id = $1", [seriesId])
   }
 
   /**
@@ -230,7 +299,18 @@ export class EventRepository {
       endsAt: toIsoRequired(row.ends_at),
       allDay: row.all_day,
       rrule: row.rrule,
+      recurrence: row.recurrence,
+      recurrenceUntil: row.recurrence_until ? toIsoRequired(row.recurrence_until) : null,
+      // Set for every occurrence of a series, including the stored first one,
+      // so the UI can tell "this repeats" without a second lookup.
+      seriesId: row.recurrence ? row.id : null,
+      seriesStartsAt: row.recurrence ? toIsoRequired(row.starts_at) : null,
       colour: row.colour
     }
+  }
+
+  /** The exception dates of each row, keyed by id, for the expander. */
+  private static exclusionsOf(rows: readonly EventRow[]): Map<string, Date[]> {
+    return new Map(rows.filter(row => row.excluded_at?.length).map(row => [row.id, row.excluded_at!]))
   }
 }

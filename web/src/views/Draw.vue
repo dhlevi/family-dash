@@ -21,10 +21,8 @@ import { DRAW_COLOURS, DRAW_WIDTHS, PAPER_COLOURS, type Drawing, type InkStroke 
 /**
  * The drawing page.
  *
- * Reuses the ink control built for handwritten sticky notes — same pointer
- * handling, same stylus pressure and palm rejection, same vector storage —
+ * Reuses the ink control built for handwritten sticky notes but
  * with an eraser, a wider palette and the whole panel instead of a card.
- * Sharing it means a fix to stylus handling improves both places at once.
  */
 type Mode = 'draw' | 'saved'
 
@@ -41,7 +39,7 @@ const currentId = ref<string | null>(null)
  * Identifies the sheet being drawn on, and keys the canvas.
  *
  * The canvas owns its strokes and its undo history once mounted, so handing
- * it a new `modelValue` is not enough — starting a new drawing has to give
+ * it a new `modelValue` is not enough. Starting a new drawing has to give
  * it a new identity, which remounts it empty with nothing to undo. Counting
  * rather than using the drawing id, because "new" happens repeatedly and
  * each one is a different sheet of paper.

@@ -111,7 +111,7 @@ export const useSettingsStore = defineStore('settings', () => {
    * Save a group of changes.
    *
    * The response is the full settings map, so local state cannot drift from
-   * what the API actually stored — including any value it coerced.
+   * what the API actually stored including any value it coerced.
    */
   async function save(changes: Partial<AppSettings>): Promise<boolean> {
     saving.value = true

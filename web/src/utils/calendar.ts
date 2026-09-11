@@ -7,7 +7,7 @@ import type { CalendarEvent, CalendarSource } from '@/api/types'
  * Two things make this fiddly, and both fail silently by drawing an event on
  * the wrong day:
  *
- * 1. All-day events carry an *exclusive* end, following iCalendar — a
+ * 1. All-day events carry an *exclusive* end, following iCalendar so a
  *    one-day event runs from midnight to the next midnight. Taken literally
  *    that stretches every all-day event across one day too many.
  *

@@ -223,6 +223,58 @@ export class TaskItemRepository {
     }
   }
 
+  /**
+   * Open tasks for a set of people, for the per-person strip.
+   *
+   * One query for the whole household rather than one per person: the strip
+   * is on the dashboard, which loads on every wake, and five round trips to
+   * Postgres for five columns is five times the work for no benefit.
+   *
+   * Matching is case-insensitive and ignores surrounding spaces, because an
+   * assignee is free text somebody typed on a touchscreen and "skye " should
+   * not quietly become a sixth person.
+   *
+   * Everything open is returned rather than only today's, because the strip
+   * also reports how much each person has waiting behind today — a number
+   * that cannot be derived from a filtered query.
+   */
+  public async openForAssignees(names: readonly string[]): Promise<TaskItem[]> {
+    if (names.length === 0) return []
+
+    const rows = await PostgresDatabase.many<TaskRow>(
+      `SELECT ${COLUMNS} FROM task
+        WHERE completed_at IS NULL
+          AND lower(btrim(assignee)) = ANY($1::text[])
+        ORDER BY due_at ASC NULLS LAST, priority DESC, created_at`,
+      [names.map(name => name.trim().toLowerCase())]
+    )
+
+    return rows.map(TaskItemRepository.toDomain)
+  }
+
+  /**
+   * How many tasks each person has finished since an instant.
+   *
+   * Counted in SQL rather than by fetching completed rows, because a
+   * household that has been running for a year has a great many of them and
+   * the strip only ever shows the number.
+   */
+  public async completedCountsSince(names: readonly string[], since: Date): Promise<Map<string, number>> {
+    if (names.length === 0) return new Map()
+
+    const rows = await PostgresDatabase.many<{ assignee: string; total: string }>(
+      `SELECT lower(btrim(assignee)) AS assignee, count(*)::text AS total
+         FROM task
+        WHERE completed_at IS NOT NULL
+          AND completed_at >= $2
+          AND lower(btrim(assignee)) = ANY($1::text[])
+        GROUP BY 1`,
+      [names.map(name => name.trim().toLowerCase()), since]
+    )
+
+    return new Map(rows.map(row => [row.assignee, Number(row.total)]))
+  }
+
   /** Existing assignees and categories, to offer as suggestions in the UI. */
   public async distinctValues(): Promise<{ assignees: string[]; categories: string[] }> {
     const [assignees, categories] = await Promise.all([

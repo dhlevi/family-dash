@@ -70,7 +70,7 @@ function label(hour: WeatherHour): string {
           class="text-[0.625rem] tabular-nums"
           :class="hour.precipitationProbability >= 30 ? 'font-medium text-info' : 'text-faint'"
         >
-          {{ hour.precipitationProbability > 0 ? `${hour.precipitationProbability}%` : '—' }}
+          {{ hour.precipitationProbability > 0 ? `${hour.precipitationProbability}%` : '-' }}
         </span>
       </span>
     </div>

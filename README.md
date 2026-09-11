@@ -11,9 +11,11 @@ Built to run on a Raspberry Pi with a touchscreen monitor, in either portrait or
 **Working now:**
 
 - **Settings**: theme (including one that follows sunrise and sunset), accent, clock, screensaver, on-screen keyboard, calendar defaults, dashboard widgets, household names, location and units, plus service diagnostics. Changes save as you make them.
-- **Calendar**:month, week and agenda views merged across the local family calendar, any number
+- **Calendar**: month, week and agenda views merged across the local family calendar, any number
   of ICS subscriptions and a connected Google account, with background sync, tap-a-day to add,
-  and read-only handling for events a feed owns.
+  and read-only handling for events a feed owns. Events on the family calendar repeat daily,
+  weekdays, weekly, fortnightly or monthly, with an optional end date and a single occurrence
+  can be cancelled without disturbing the rest.
 - **Tasks and chores**: grouped by when they are due, quick-add, priorities, free-text
   assignment, and repeating chores that reappear once ticked off.
 - **News**: headlines aggregated from RSS, which needs no account. Images, bylines and summaries
@@ -39,6 +41,16 @@ Built to run on a Raspberry Pi with a touchscreen monitor, in either portrait or
   eraser, a wider palette, five pen widths and a choice of paper colour. Drawings are saved as
   vectors and listed in a gallery that renders its own thumbnails, so there are no image files
   to manage and a sketch stays sharp at any size. Undo reverses whichever thing happened last.
+- **Today, per person**: a full-width strip across the top of the dashboard with a column for each
+  member of the household; their tasks, their appointments, and a tick box to mark a chore done
+  without going anywhere. Tasks are matched on the assignee they already carry; appointments are
+  attributed by linking a calendar to a person, since an event has no assignee of its own.
+  Everyone gets a colour, derived from their name so it survives a restart and does not shuffle
+  when somebody new is added.
+- **Bin day**: which bins go out, and when, in type large enough to read from the doorway. Reads a
+  collection schedule subscribed to like any other calendar, works out from the event titles
+  whether it is garbage, recycling, food or garden waste, merges a morning's separate events into
+  one trip to the curb, and switches to "put them out tonight" on the evening before.
 - **Dashboard**: every widget reads live data: next events, today's tasks, pinned notes,
   tonight's meal with the outstanding shopping count, current weather, the latest headlines, and
   a slowly cycling photo.
@@ -471,7 +483,7 @@ no network at all, and there is no WebGL in the picture.
 
 `/media/city-art/<id>/svg` serves the vector original if you want to send one to a printer.
 
-**Places.** 401 entries in `api/lib/providers/map/cityList.ts` — 211 around the world, 74 in
+**Places.** 401 entries in `api/lib/providers/map/cityList.ts`: 211 around the world, 74 in
 British Columbia, 38 on Vancouver Island and 78 in Wales. Tick the groups you want in Settings, or
 leave them all off to mean all of them. Coordinates were resolved once and committed; nothing
 calls a geocoder at runtime. To add your own, edit `api/scripts/cities.source.json` and run:
@@ -505,6 +517,66 @@ A few settings worth knowing:
 
 Places with very little in OpenStreetMap produce an almost empty picture, so the generator counts
 what it drew and moves on to somewhere else rather than putting a blank rectangle on your wall.
+
+### Bin day
+
+Most councils and municipalities publish their collection schedule as a calendar feed. Subscribe
+to it under **Settings → Calendars** exactly as you would a school calendar, then open
+**Settings → Bin day**:
+
+- **Collection calendars**: tick the one you just added. Leave them all unticked and the widget
+  searches every calendar instead, which is usually enough on its own: an event called `Garbage` or
+  `Blue Box` is recognised wherever it lives, and an event called `Dentist` is not.
+- **Start asking at**: the hour in the evening when tomorrow's collection stops being a fact and
+  starts being a job. Defaults to 16:00, because a reminder on the morning itself is too late.
+- **Next collection**: what the app currently believes, including the wording it read it from.
+  This is the part to look at: collection calendars phrase things very differently, and this tells
+  you immediately whether yours is understood.
+
+Titles are matched against `Garbage`, `Refuse`,
+`Rubbish`, `General Waste`, `Blue Box`, `Curb/Kerb side Recycling`, `Food Scraps`, `Caddy`, `Yard Waste`, `Garden Waste`, `Brown Bin`, `Glass`.
+The widget always prints the calendar's own wording next to its guess, so a misreading costs an icon rather than the information.
+
+Two events on the same morning `Garbage` and `Food Scraps & Yard Waste`, are shown as one collection with three bins
+
+### Repeating events
+
+Anything on the **family calendar** can repeat: open an event and pick an interval under
+**Repeats**, with an optional **Until** date. The same five intervals chores use: every day,
+weekday, week, two weeks, month, rather than raw iCalendar rules, because a touchscreen is a bad place to compose an `RRULE` and this covers what a household actually schedules.
+
+Two behaviours are worth knowing before you rely on them:
+
+- **Editing any occurrence edits the series.** Open the third Tuesday and the form shows the
+  *series'* own dates, not that Tuesday, so saving without touching anything changes nothing. To
+  move a single occurrence, delete it and add a one-off in its place.
+- **Deleting asks which.** A repeating event offers `This one` and `All of them`; a one-off still
+  deletes on the first tap. Cancelling one week records an exception on the series and leaves the
+  rest running.
+
+Repeats belong to the local calendar only. A subscribed feed brings its own repeats with it,
+already expanded, and a writable Google calendar is pushed to one event at a time. The option is hidden for those calendars and refused by the API.
+
+Occurrences are worked out when the calendar is read rather than written out in advance, so a
+weekly event is one row no matter how far ahead you scroll, there is no horizon to keep topped
+up, and an edit takes effect everywhere at once.
+
+Because everything reads the calendar through one path, a repeating event also reaches the
+dashboard's **Up next**, the **per-person strip**, and **Bin day**.
+
+### Each person's day
+
+The strip needs nothing set up: add the household under **Settings → Tasks → Who's in the
+household** and everyone gets a column showing the tasks assigned to them. Turn it on under
+**Settings → Dashboard**.
+
+Appointments need one more step, because an event has no assignee of its own. The only honest way
+to say whose day it belongs to is which calendar it came from. Under **Settings → Each person's
+day**, link a calendar to a person and their events appear in that column. Somebody with no
+calendar linked still gets a column with their tasks in it.
+
+Colours are derived from the name, so they survive a restart and do not shuffle when somebody is
+added; pick a different one there if you would rather.
 
 ### Storage
 

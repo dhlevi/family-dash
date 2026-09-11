@@ -4,9 +4,8 @@ import { onScopeDispose, ref, watch, type Ref } from 'vue'
  * Reports when nobody has touched the display for a while.
  *
  * Only deliberate actions count as activity: a tap, a key, a scroll. Pointer
- * *movement* is left out on purpose — a wall display with a mouse plugged in
- * would otherwise be kept awake for weeks by a cursor sitting still under a
- * draught, and what the screensaver is for is the screen nobody is using.
+ * *movement* is left out on purpose in case of connected mouse movement preventing
+ * display idling.
  *
  * Listens in the capture phase on the window, so activity is seen even when
  * something below stops the event from bubbling.

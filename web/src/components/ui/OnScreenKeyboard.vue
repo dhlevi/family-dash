@@ -62,7 +62,7 @@ const rows = computed(() => (page.value === 'letters' ? LETTER_ROWS : SYMBOL_ROW
 /**
  * Publishes how much of the screen the keyboard is covering.
  *
- * Anything anchored to the bottom needs to move out of the way — a modal
+ * Anything anchored to the bottom needs to move out of the way, a modal
  * most of all, since in portrait it slides up from the bottom edge and would
  * otherwise be completely hidden behind this. Measured rather than assumed,
  * because the panel is a different height on the symbol page and in the

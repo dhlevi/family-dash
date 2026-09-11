@@ -3,8 +3,7 @@
  * task and event lists.
  *
  * All of this works in the browser's local timezone, which on the Pi is the
- * household's — "today" has to mean the day the people looking at the screen
- * are having.
+ * household's.
  */
 
 export const MS_PER_DAY = 86_400_000
@@ -200,7 +199,7 @@ export function toDateInput(date: Date): string {
  * Parses a `datetime-local` or `date` value as local time.
  *
  * `new Date('2026-09-15')` is parsed as UTC midnight by the spec, which
- * lands on the 14th for anyone in the Americas — so date-only values are
+ * lands on the 14th for anyone in the Americas, so date-only values are
  * split and rebuilt with local components instead.
  */
 export function fromDateInput(value: string): Date | null {

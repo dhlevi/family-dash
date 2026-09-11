@@ -1,0 +1,3210 @@
+[
+ {
+  "name": "Victoria",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Victoria"
+ },
+ {
+  "name": "Saanich",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Saanich"
+ },
+ {
+  "name": "Oak Bay",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Oak Bay"
+ },
+ {
+  "name": "Esquimalt",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Esquimalt"
+ },
+ {
+  "name": "Langford",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Langford"
+ },
+ {
+  "name": "Colwood",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Colwood"
+ },
+ {
+  "name": "Sooke",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Sooke"
+ },
+ {
+  "name": "Sidney",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Sidney"
+ },
+ {
+  "name": "Duncan",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Duncan"
+ },
+ {
+  "name": "Ladysmith",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Ladysmith"
+ },
+ {
+  "name": "Chemainus",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Chemainus"
+ },
+ {
+  "name": "Nanaimo",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Nanaimo"
+ },
+ {
+  "name": "Lantzville",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Lantzville"
+ },
+ {
+  "name": "Parksville",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Parksville"
+ },
+ {
+  "name": "Qualicum Beach",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Qualicum Beach"
+ },
+ {
+  "name": "Port Alberni",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Port Alberni"
+ },
+ {
+  "name": "Tofino",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Tofino"
+ },
+ {
+  "name": "Ucluelet",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Ucluelet"
+ },
+ {
+  "name": "Courtenay",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Courtenay"
+ },
+ {
+  "name": "Comox",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Comox"
+ },
+ {
+  "name": "Cumberland",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Cumberland"
+ },
+ {
+  "name": "Campbell River",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Campbell River"
+ },
+ {
+  "name": "Gold River",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Gold River"
+ },
+ {
+  "name": "Port McNeill",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Port McNeill"
+ },
+ {
+  "name": "Port Hardy",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Port Hardy"
+ },
+ {
+  "name": "Alert Bay",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Alert Bay"
+ },
+ {
+  "name": "Port Alice",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Port Alice"
+ },
+ {
+  "name": "Tahsis",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Tahsis"
+ },
+ {
+  "name": "Bamfield",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Bamfield"
+ },
+ {
+  "name": "Cowichan Bay",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Cowichan Bay"
+ },
+ {
+  "name": "Shawnigan Lake",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Shawnigan Lake"
+ },
+ {
+  "name": "Mill Bay",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Mill Bay"
+ },
+ {
+  "name": "Ganges",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Ganges, Salt Spring Island, British Columbia"
+ },
+ {
+  "name": "Gabriola",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Gabriola Island, British Columbia"
+ },
+ {
+  "name": "Denman Island",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Denman Island"
+ },
+ {
+  "name": "Hornby Island",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Hornby Island"
+ },
+ {
+  "name": "Quathiaski Cove",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Quathiaski Cove, Quadra Island, British Columbia"
+ },
+ {
+  "name": "Sointula",
+  "region": "vancouver-island",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Sointula, Malcolm Island, British Columbia"
+ },
+ {
+  "name": "Vancouver",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "metro",
+  "query": "Vancouver"
+ },
+ {
+  "name": "Burnaby",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Burnaby"
+ },
+ {
+  "name": "Richmond",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Richmond"
+ },
+ {
+  "name": "Surrey",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Surrey"
+ },
+ {
+  "name": "Delta",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Delta"
+ },
+ {
+  "name": "New Westminster",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "New Westminster"
+ },
+ {
+  "name": "Coquitlam",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Coquitlam"
+ },
+ {
+  "name": "Port Coquitlam",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Port Coquitlam"
+ },
+ {
+  "name": "Port Moody",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Port Moody"
+ },
+ {
+  "name": "North Vancouver",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "North Vancouver"
+ },
+ {
+  "name": "West Vancouver",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "West Vancouver"
+ },
+ {
+  "name": "Langley",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Langley"
+ },
+ {
+  "name": "Maple Ridge",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Maple Ridge"
+ },
+ {
+  "name": "White Rock",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "White Rock"
+ },
+ {
+  "name": "Abbotsford",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Abbotsford"
+ },
+ {
+  "name": "Chilliwack",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Chilliwack"
+ },
+ {
+  "name": "Mission",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Mission"
+ },
+ {
+  "name": "Hope",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Hope"
+ },
+ {
+  "name": "Harrison Hot Springs",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Harrison Hot Springs"
+ },
+ {
+  "name": "Squamish",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Squamish"
+ },
+ {
+  "name": "Whistler",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Whistler"
+ },
+ {
+  "name": "Pemberton",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Pemberton"
+ },
+ {
+  "name": "Lions Bay",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Lions Bay"
+ },
+ {
+  "name": "Gibsons",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Gibsons"
+ },
+ {
+  "name": "Sechelt",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Sechelt"
+ },
+ {
+  "name": "Powell River",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Powell River"
+ },
+ {
+  "name": "Kamloops",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Kamloops"
+ },
+ {
+  "name": "Kelowna",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Kelowna"
+ },
+ {
+  "name": "West Kelowna",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "West Kelowna"
+ },
+ {
+  "name": "Vernon",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Vernon"
+ },
+ {
+  "name": "Penticton",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Penticton"
+ },
+ {
+  "name": "Summerland",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Summerland"
+ },
+ {
+  "name": "Peachland",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Peachland"
+ },
+ {
+  "name": "Osoyoos",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Osoyoos"
+ },
+ {
+  "name": "Oliver",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Oliver"
+ },
+ {
+  "name": "Salmon Arm",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Salmon Arm"
+ },
+ {
+  "name": "Revelstoke",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Revelstoke"
+ },
+ {
+  "name": "Golden",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Golden"
+ },
+ {
+  "name": "Nelson",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Nelson"
+ },
+ {
+  "name": "Castlegar",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Castlegar"
+ },
+ {
+  "name": "Trail",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Trail"
+ },
+ {
+  "name": "Rossland",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Rossland"
+ },
+ {
+  "name": "Cranbrook",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Cranbrook"
+ },
+ {
+  "name": "Kimberley",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Kimberley"
+ },
+ {
+  "name": "Fernie",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Fernie"
+ },
+ {
+  "name": "Invermere",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Invermere"
+ },
+ {
+  "name": "Creston",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Creston"
+ },
+ {
+  "name": "Grand Forks",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Grand Forks"
+ },
+ {
+  "name": "Merritt",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Merritt"
+ },
+ {
+  "name": "Princeton",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Princeton"
+ },
+ {
+  "name": "Lillooet",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Lillooet"
+ },
+ {
+  "name": "Ashcroft",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Ashcroft"
+ },
+ {
+  "name": "Cache Creek",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Cache Creek"
+ },
+ {
+  "name": "100 Mile House",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "100 Mile House"
+ },
+ {
+  "name": "Williams Lake",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Williams Lake"
+ },
+ {
+  "name": "Quesnel",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Quesnel"
+ },
+ {
+  "name": "Prince George",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Prince George"
+ },
+ {
+  "name": "Vanderhoof",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Vanderhoof"
+ },
+ {
+  "name": "Burns Lake",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Burns Lake"
+ },
+ {
+  "name": "Smithers",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Smithers"
+ },
+ {
+  "name": "Terrace",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Terrace"
+ },
+ {
+  "name": "Kitimat",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Kitimat"
+ },
+ {
+  "name": "Prince Rupert",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Prince Rupert"
+ },
+ {
+  "name": "Masset",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Masset"
+ },
+ {
+  "name": "Daajing Giids",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Daajing Giids, British Columbia"
+ },
+ {
+  "name": "Bella Coola",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Bella Coola"
+ },
+ {
+  "name": "Dawson Creek",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Dawson Creek"
+ },
+ {
+  "name": "Fort St. John",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Fort St. John"
+ },
+ {
+  "name": "Chetwynd",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Chetwynd"
+ },
+ {
+  "name": "Tumbler Ridge",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Tumbler Ridge"
+ },
+ {
+  "name": "Mackenzie",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Mackenzie"
+ },
+ {
+  "name": "Valemount",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Valemount"
+ },
+ {
+  "name": "McBride",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "McBride"
+ },
+ {
+  "name": "Fort Nelson",
+  "region": "british-columbia",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Fort Nelson"
+ },
+ {
+  "name": "Cardiff",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "large",
+  "query": "Cardiff, Wales"
+ },
+ {
+  "name": "Swansea",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "city",
+  "query": "Swansea, Wales"
+ },
+ {
+  "name": "Newport",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "city",
+  "query": "Newport, Wales"
+ },
+ {
+  "name": "Wrexham",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "city",
+  "query": "Wrexham, Wales"
+ },
+ {
+  "name": "Bangor",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Bangor, Gwynedd, Wales"
+ },
+ {
+  "name": "St Davids",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "St Davids, Pembrokeshire, Wales"
+ },
+ {
+  "name": "St Asaph",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "St Asaph, Denbighshire, Wales"
+ },
+ {
+  "name": "Aberystwyth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Aberystwyth, Wales"
+ },
+ {
+  "name": "Llandudno",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Llandudno, Wales"
+ },
+ {
+  "name": "Conwy",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Conwy, Wales"
+ },
+ {
+  "name": "Caernarfon",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Caernarfon, Wales"
+ },
+ {
+  "name": "Porthmadog",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Porthmadog, Wales"
+ },
+ {
+  "name": "Harlech",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Harlech, Wales"
+ },
+ {
+  "name": "Barmouth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Barmouth, Wales"
+ },
+ {
+  "name": "Dolgellau",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Dolgellau, Wales"
+ },
+ {
+  "name": "Machynlleth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Machynlleth, Wales"
+ },
+ {
+  "name": "Aberaeron",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Aberaeron, Wales"
+ },
+ {
+  "name": "Cardigan",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Cardigan, Ceredigion, Wales"
+ },
+ {
+  "name": "Fishguard",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Fishguard, Wales"
+ },
+ {
+  "name": "Haverfordwest",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Haverfordwest, Wales"
+ },
+ {
+  "name": "Tenby",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Tenby, Wales"
+ },
+ {
+  "name": "Pembroke",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Pembroke, Wales"
+ },
+ {
+  "name": "Milford Haven",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Milford Haven, Wales"
+ },
+ {
+  "name": "Narberth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Narberth, Pembrokeshire, Wales"
+ },
+ {
+  "name": "Saundersfoot",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Saundersfoot, Wales"
+ },
+ {
+  "name": "Carmarthen",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Carmarthen, Wales"
+ },
+ {
+  "name": "Llanelli",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Llanelli, Wales"
+ },
+ {
+  "name": "Ammanford",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Ammanford, Wales"
+ },
+ {
+  "name": "Llandovery",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llandovery, Wales"
+ },
+ {
+  "name": "Lampeter",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Lampeter, Wales"
+ },
+ {
+  "name": "New Quay",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "New Quay, Ceredigion, Wales"
+ },
+ {
+  "name": "Tregaron",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Tregaron, Wales"
+ },
+ {
+  "name": "Neath",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Neath, Wales"
+ },
+ {
+  "name": "Port Talbot",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Port Talbot, Wales"
+ },
+ {
+  "name": "Bridgend",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Bridgend, Wales"
+ },
+ {
+  "name": "Maesteg",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Maesteg, Wales"
+ },
+ {
+  "name": "Merthyr Tydfil",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Merthyr Tydfil, Wales"
+ },
+ {
+  "name": "Aberdare",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Aberdare, Wales"
+ },
+ {
+  "name": "Pontypridd",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Pontypridd, Wales"
+ },
+ {
+  "name": "Caerphilly",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Caerphilly, Wales"
+ },
+ {
+  "name": "Ebbw Vale",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Ebbw Vale, Wales"
+ },
+ {
+  "name": "Tredegar",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Tredegar, Wales"
+ },
+ {
+  "name": "Abergavenny",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Abergavenny, Wales"
+ },
+ {
+  "name": "Monmouth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Monmouth, Wales"
+ },
+ {
+  "name": "Chepstow",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Chepstow, Wales"
+ },
+ {
+  "name": "Usk",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Usk, Wales"
+ },
+ {
+  "name": "Crickhowell",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Crickhowell, Wales"
+ },
+ {
+  "name": "Brecon",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Brecon, Wales"
+ },
+ {
+  "name": "Hay-on-Wye",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Hay-on-Wye, Wales"
+ },
+ {
+  "name": "Builth Wells",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Builth Wells, Wales"
+ },
+ {
+  "name": "Llandrindod Wells",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llandrindod Wells, Wales"
+ },
+ {
+  "name": "Llanwrtyd Wells",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llanwrtyd Wells, Wales"
+ },
+ {
+  "name": "Newtown",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Newtown, Powys, Wales"
+ },
+ {
+  "name": "Welshpool",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Welshpool, Wales"
+ },
+ {
+  "name": "Llanidloes",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llanidloes, Wales"
+ },
+ {
+  "name": "Llangollen",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llangollen, Wales"
+ },
+ {
+  "name": "Ruthin",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Ruthin, Wales"
+ },
+ {
+  "name": "Denbigh",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Denbigh, Wales"
+ },
+ {
+  "name": "Rhyl",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Rhyl, Wales"
+ },
+ {
+  "name": "Prestatyn",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Prestatyn, Wales"
+ },
+ {
+  "name": "Mold",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Mold, Flintshire, Wales"
+ },
+ {
+  "name": "Holyhead",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Holyhead, Wales"
+ },
+ {
+  "name": "Beaumaris",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Beaumaris, Wales"
+ },
+ {
+  "name": "Llanfairpwllgwyngyll",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llanfairpwllgwyngyll, Anglesey, Wales"
+ },
+ {
+  "name": "Betws-y-Coed",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Betws-y-Coed, Wales"
+ },
+ {
+  "name": "Blaenau Ffestiniog",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Blaenau Ffestiniog, Wales"
+ },
+ {
+  "name": "Llanberis",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llanberis, Wales"
+ },
+ {
+  "name": "Criccieth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Criccieth, Wales"
+ },
+ {
+  "name": "Pwllheli",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Pwllheli, Wales"
+ },
+ {
+  "name": "Aberdyfi",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Aberdyfi, Wales"
+ },
+ {
+  "name": "Tywyn",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Tywyn, Gwynedd, Wales"
+ },
+ {
+  "name": "Bala",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Bala, Gwynedd, Wales"
+ },
+ {
+  "name": "Corwen",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Corwen, Wales"
+ },
+ {
+  "name": "Barry",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "town",
+  "query": "Barry, Wales"
+ },
+ {
+  "name": "Penarth",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Penarth, Wales"
+ },
+ {
+  "name": "Cowbridge",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Cowbridge, Wales"
+ },
+ {
+  "name": "Llantwit Major",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Llantwit Major, Wales"
+ },
+ {
+  "name": "Mumbles",
+  "region": "wales",
+  "country": "Wales",
+  "cc": "gb",
+  "category": "small",
+  "query": "Mumbles, Swansea, Wales"
+ },
+ {
+  "name": "London",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "metro",
+  "query": "London, United Kingdom"
+ },
+ {
+  "name": "Edinburgh",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Edinburgh, United Kingdom"
+ },
+ {
+  "name": "Glasgow",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Glasgow, United Kingdom"
+ },
+ {
+  "name": "Liverpool",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Liverpool, United Kingdom"
+ },
+ {
+  "name": "Manchester",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Manchester, United Kingdom"
+ },
+ {
+  "name": "Bristol",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Bristol, United Kingdom"
+ },
+ {
+  "name": "Bath",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "town",
+  "query": "Bath, United Kingdom"
+ },
+ {
+  "name": "York",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "town",
+  "query": "York, United Kingdom"
+ },
+ {
+  "name": "Oxford",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "town",
+  "query": "Oxford, United Kingdom"
+ },
+ {
+  "name": "Cambridge",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "town",
+  "query": "Cambridge, United Kingdom"
+ },
+ {
+  "name": "Brighton",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Brighton, United Kingdom"
+ },
+ {
+  "name": "Newcastle upon Tyne",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Newcastle upon Tyne, United Kingdom"
+ },
+ {
+  "name": "Belfast",
+  "region": "world",
+  "country": "United Kingdom",
+  "cc": "gb",
+  "category": "city",
+  "query": "Belfast, United Kingdom"
+ },
+ {
+  "name": "Dublin",
+  "region": "world",
+  "country": "Ireland",
+  "cc": "ie",
+  "category": "city",
+  "query": "Dublin, Ireland"
+ },
+ {
+  "name": "Cork",
+  "region": "world",
+  "country": "Ireland",
+  "cc": "ie",
+  "category": "town",
+  "query": "Cork, Ireland"
+ },
+ {
+  "name": "Galway",
+  "region": "world",
+  "country": "Ireland",
+  "cc": "ie",
+  "category": "town",
+  "query": "Galway, Ireland"
+ },
+ {
+  "name": "Paris",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "metro",
+  "query": "Paris, France"
+ },
+ {
+  "name": "Marseille",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Marseille, France"
+ },
+ {
+  "name": "Lyon",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Lyon, France"
+ },
+ {
+  "name": "Bordeaux",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Bordeaux, France"
+ },
+ {
+  "name": "Toulouse",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Toulouse, France"
+ },
+ {
+  "name": "Nantes",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Nantes, France"
+ },
+ {
+  "name": "Strasbourg",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Strasbourg, France"
+ },
+ {
+  "name": "Nice",
+  "region": "world",
+  "country": "France",
+  "cc": "fr",
+  "category": "city",
+  "query": "Nice, France"
+ },
+ {
+  "name": "Barcelona",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "large",
+  "query": "Barcelona, Spain"
+ },
+ {
+  "name": "Madrid",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "metro",
+  "query": "Madrid, Spain"
+ },
+ {
+  "name": "Seville",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "city",
+  "query": "Seville, Spain"
+ },
+ {
+  "name": "Valencia",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "city",
+  "query": "Valencia, Spain"
+ },
+ {
+  "name": "Bilbao",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "city",
+  "query": "Bilbao, Spain"
+ },
+ {
+  "name": "Granada",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "town",
+  "query": "Granada, Spain"
+ },
+ {
+  "name": "Toledo",
+  "region": "world",
+  "country": "Spain",
+  "cc": "es",
+  "category": "town",
+  "query": "Toledo, Spain"
+ },
+ {
+  "name": "Lisbon",
+  "region": "world",
+  "country": "Portugal",
+  "cc": "pt",
+  "category": "city",
+  "query": "Lisbon, Portugal"
+ },
+ {
+  "name": "Porto",
+  "region": "world",
+  "country": "Portugal",
+  "cc": "pt",
+  "category": "city",
+  "query": "Porto, Portugal"
+ },
+ {
+  "name": "Rome",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "large",
+  "query": "Rome, Italy"
+ },
+ {
+  "name": "Florence",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "city",
+  "query": "Florence, Italy"
+ },
+ {
+  "name": "Venice",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "town",
+  "query": "Venice, Italy"
+ },
+ {
+  "name": "Milan",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "large",
+  "query": "Milan, Italy"
+ },
+ {
+  "name": "Naples",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "city",
+  "query": "Naples, Italy"
+ },
+ {
+  "name": "Turin",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "city",
+  "query": "Turin, Italy"
+ },
+ {
+  "name": "Genoa",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "city",
+  "query": "Genoa, Italy"
+ },
+ {
+  "name": "Bologna",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "city",
+  "query": "Bologna, Italy"
+ },
+ {
+  "name": "Palermo",
+  "region": "world",
+  "country": "Italy",
+  "cc": "it",
+  "category": "city",
+  "query": "Palermo, Italy"
+ },
+ {
+  "name": "Berlin",
+  "region": "world",
+  "country": "Germany",
+  "cc": "de",
+  "category": "metro",
+  "query": "Berlin, Germany"
+ },
+ {
+  "name": "Munich",
+  "region": "world",
+  "country": "Germany",
+  "cc": "de",
+  "category": "large",
+  "query": "Munich, Germany"
+ },
+ {
+  "name": "Hamburg",
+  "region": "world",
+  "country": "Germany",
+  "cc": "de",
+  "category": "large",
+  "query": "Hamburg, Germany"
+ },
+ {
+  "name": "Cologne",
+  "region": "world",
+  "country": "Germany",
+  "cc": "de",
+  "category": "city",
+  "query": "Cologne, Germany"
+ },
+ {
+  "name": "Dresden",
+  "region": "world",
+  "country": "Germany",
+  "cc": "de",
+  "category": "city",
+  "query": "Dresden, Germany"
+ },
+ {
+  "name": "Leipzig",
+  "region": "world",
+  "country": "Germany",
+  "cc": "de",
+  "category": "city",
+  "query": "Leipzig, Germany"
+ },
+ {
+  "name": "Vienna",
+  "region": "world",
+  "country": "Austria",
+  "cc": "at",
+  "category": "large",
+  "query": "Vienna, Austria"
+ },
+ {
+  "name": "Salzburg",
+  "region": "world",
+  "country": "Austria",
+  "cc": "at",
+  "category": "town",
+  "query": "Salzburg, Austria"
+ },
+ {
+  "name": "Zurich",
+  "region": "world",
+  "country": "Switzerland",
+  "cc": "ch",
+  "category": "city",
+  "query": "Zurich, Switzerland"
+ },
+ {
+  "name": "Geneva",
+  "region": "world",
+  "country": "Switzerland",
+  "cc": "ch",
+  "category": "city",
+  "query": "Geneva, Switzerland"
+ },
+ {
+  "name": "Bern",
+  "region": "world",
+  "country": "Switzerland",
+  "cc": "ch",
+  "category": "town",
+  "query": "Bern, Switzerland"
+ },
+ {
+  "name": "Amsterdam",
+  "region": "world",
+  "country": "Netherlands",
+  "cc": "nl",
+  "category": "city",
+  "query": "Amsterdam, Netherlands"
+ },
+ {
+  "name": "Rotterdam",
+  "region": "world",
+  "country": "Netherlands",
+  "cc": "nl",
+  "category": "city",
+  "query": "Rotterdam, Netherlands"
+ },
+ {
+  "name": "Utrecht",
+  "region": "world",
+  "country": "Netherlands",
+  "cc": "nl",
+  "category": "town",
+  "query": "Utrecht, Netherlands"
+ },
+ {
+  "name": "Delft",
+  "region": "world",
+  "country": "Netherlands",
+  "cc": "nl",
+  "category": "town",
+  "query": "Delft, Netherlands"
+ },
+ {
+  "name": "Brussels",
+  "region": "world",
+  "country": "Belgium",
+  "cc": "be",
+  "category": "city",
+  "query": "Brussels, Belgium"
+ },
+ {
+  "name": "Bruges",
+  "region": "world",
+  "country": "Belgium",
+  "cc": "be",
+  "category": "town",
+  "query": "Bruges, Belgium"
+ },
+ {
+  "name": "Antwerp",
+  "region": "world",
+  "country": "Belgium",
+  "cc": "be",
+  "category": "city",
+  "query": "Antwerp, Belgium"
+ },
+ {
+  "name": "Ghent",
+  "region": "world",
+  "country": "Belgium",
+  "cc": "be",
+  "category": "town",
+  "query": "Ghent, Belgium"
+ },
+ {
+  "name": "Prague",
+  "region": "world",
+  "country": "Czechia",
+  "cc": "cz",
+  "category": "city",
+  "query": "Prague, Czechia"
+ },
+ {
+  "name": "Brno",
+  "region": "world",
+  "country": "Czechia",
+  "cc": "cz",
+  "category": "city",
+  "query": "Brno, Czechia"
+ },
+ {
+  "name": "Budapest",
+  "region": "world",
+  "country": "Hungary",
+  "cc": "hu",
+  "category": "large",
+  "query": "Budapest, Hungary"
+ },
+ {
+  "name": "Warsaw",
+  "region": "world",
+  "country": "Poland",
+  "cc": "pl",
+  "category": "large",
+  "query": "Warsaw, Poland"
+ },
+ {
+  "name": "Krakow",
+  "region": "world",
+  "country": "Poland",
+  "cc": "pl",
+  "category": "city",
+  "query": "Krakow, Poland"
+ },
+ {
+  "name": "Gdansk",
+  "region": "world",
+  "country": "Poland",
+  "cc": "pl",
+  "category": "city",
+  "query": "Gdansk, Poland"
+ },
+ {
+  "name": "Copenhagen",
+  "region": "world",
+  "country": "Denmark",
+  "cc": "dk",
+  "category": "city",
+  "query": "Copenhagen, Denmark"
+ },
+ {
+  "name": "Aarhus",
+  "region": "world",
+  "country": "Denmark",
+  "cc": "dk",
+  "category": "town",
+  "query": "Aarhus, Denmark"
+ },
+ {
+  "name": "Stockholm",
+  "region": "world",
+  "country": "Sweden",
+  "cc": "se",
+  "category": "city",
+  "query": "Stockholm, Sweden"
+ },
+ {
+  "name": "Gothenburg",
+  "region": "world",
+  "country": "Sweden",
+  "cc": "se",
+  "category": "city",
+  "query": "Gothenburg, Sweden"
+ },
+ {
+  "name": "Oslo",
+  "region": "world",
+  "country": "Norway",
+  "cc": "no",
+  "category": "city",
+  "query": "Oslo, Norway"
+ },
+ {
+  "name": "Bergen",
+  "region": "world",
+  "country": "Norway",
+  "cc": "no",
+  "category": "town",
+  "query": "Bergen, Norway"
+ },
+ {
+  "name": "Tromso",
+  "region": "world",
+  "country": "Norway",
+  "cc": "no",
+  "category": "small",
+  "query": "Tromso, Norway"
+ },
+ {
+  "name": "Helsinki",
+  "region": "world",
+  "country": "Finland",
+  "cc": "fi",
+  "category": "city",
+  "query": "Helsinki, Finland"
+ },
+ {
+  "name": "Reykjavik",
+  "region": "world",
+  "country": "Iceland",
+  "cc": "is",
+  "category": "town",
+  "query": "Reykjavik, Iceland"
+ },
+ {
+  "name": "Tallinn",
+  "region": "world",
+  "country": "Estonia",
+  "cc": "ee",
+  "category": "town",
+  "query": "Tallinn, Estonia"
+ },
+ {
+  "name": "Riga",
+  "region": "world",
+  "country": "Latvia",
+  "cc": "lv",
+  "category": "city",
+  "query": "Riga, Latvia"
+ },
+ {
+  "name": "Vilnius",
+  "region": "world",
+  "country": "Lithuania",
+  "cc": "lt",
+  "category": "city",
+  "query": "Vilnius, Lithuania"
+ },
+ {
+  "name": "Athens",
+  "region": "world",
+  "country": "Greece",
+  "cc": "gr",
+  "category": "large",
+  "query": "Athens, Greece"
+ },
+ {
+  "name": "Thessaloniki",
+  "region": "world",
+  "country": "Greece",
+  "cc": "gr",
+  "category": "city",
+  "query": "Thessaloniki, Greece"
+ },
+ {
+  "name": "Istanbul",
+  "region": "world",
+  "country": "Turkey",
+  "cc": "tr",
+  "category": "metro",
+  "query": "Istanbul, Turkey"
+ },
+ {
+  "name": "Zagreb",
+  "region": "world",
+  "country": "Croatia",
+  "cc": "hr",
+  "category": "city",
+  "query": "Zagreb, Croatia"
+ },
+ {
+  "name": "Dubrovnik",
+  "region": "world",
+  "country": "Croatia",
+  "cc": "hr",
+  "category": "small",
+  "query": "Dubrovnik, Croatia"
+ },
+ {
+  "name": "Split",
+  "region": "world",
+  "country": "Croatia",
+  "cc": "hr",
+  "category": "town",
+  "query": "Split, Croatia"
+ },
+ {
+  "name": "Ljubljana",
+  "region": "world",
+  "country": "Slovenia",
+  "cc": "si",
+  "category": "town",
+  "query": "Ljubljana, Slovenia"
+ },
+ {
+  "name": "Belgrade",
+  "region": "world",
+  "country": "Serbia",
+  "cc": "rs",
+  "category": "city",
+  "query": "Belgrade, Serbia"
+ },
+ {
+  "name": "Bucharest",
+  "region": "world",
+  "country": "Romania",
+  "cc": "ro",
+  "category": "large",
+  "query": "Bucharest, Romania"
+ },
+ {
+  "name": "Sofia",
+  "region": "world",
+  "country": "Bulgaria",
+  "cc": "bg",
+  "category": "city",
+  "query": "Sofia, Bulgaria"
+ },
+ {
+  "name": "Valletta",
+  "region": "world",
+  "country": "Malta",
+  "cc": "mt",
+  "category": "small",
+  "query": "Valletta, Malta"
+ },
+ {
+  "name": "New York",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "metro",
+  "query": "New York, United States"
+ },
+ {
+  "name": "Boston",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Boston, United States"
+ },
+ {
+  "name": "Philadelphia",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "large",
+  "query": "Philadelphia, United States"
+ },
+ {
+  "name": "Washington",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "large",
+  "query": "Washington, United States"
+ },
+ {
+  "name": "Chicago",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "metro",
+  "query": "Chicago, United States"
+ },
+ {
+  "name": "San Francisco",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "San Francisco, United States"
+ },
+ {
+  "name": "Los Angeles",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "metro",
+  "query": "Los Angeles, United States"
+ },
+ {
+  "name": "Seattle",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Seattle, United States"
+ },
+ {
+  "name": "Portland",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Portland, United States"
+ },
+ {
+  "name": "Denver",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Denver, United States"
+ },
+ {
+  "name": "Austin",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Austin, United States"
+ },
+ {
+  "name": "New Orleans",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "New Orleans, United States"
+ },
+ {
+  "name": "Savannah",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "town",
+  "query": "Savannah, United States"
+ },
+ {
+  "name": "Charleston",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "town",
+  "query": "Charleston, United States"
+ },
+ {
+  "name": "Miami",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Miami, United States"
+ },
+ {
+  "name": "Pittsburgh",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Pittsburgh, United States"
+ },
+ {
+  "name": "Detroit",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "large",
+  "query": "Detroit, United States"
+ },
+ {
+  "name": "Minneapolis",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Minneapolis, United States"
+ },
+ {
+  "name": "Santa Fe",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "town",
+  "query": "Santa Fe, United States"
+ },
+ {
+  "name": "Salt Lake City",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Salt Lake City, United States"
+ },
+ {
+  "name": "Honolulu",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Honolulu, United States"
+ },
+ {
+  "name": "San Diego",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "large",
+  "query": "San Diego, United States"
+ },
+ {
+  "name": "Nashville",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "city",
+  "query": "Nashville, United States"
+ },
+ {
+  "name": "Providence",
+  "region": "world",
+  "country": "United States",
+  "cc": "us",
+  "category": "town",
+  "query": "Providence, United States"
+ },
+ {
+  "name": "Toronto",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "metro",
+  "query": "Toronto, Canada"
+ },
+ {
+  "name": "Montreal",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Montreal, Canada"
+ },
+ {
+  "name": "Quebec City",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Quebec City, Canada"
+ },
+ {
+  "name": "Ottawa",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Ottawa, Canada"
+ },
+ {
+  "name": "Halifax",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "Halifax, Canada"
+ },
+ {
+  "name": "St. John's",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "town",
+  "query": "St. John's, Canada"
+ },
+ {
+  "name": "Winnipeg",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Winnipeg, Canada"
+ },
+ {
+  "name": "Calgary",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Calgary, Canada"
+ },
+ {
+  "name": "Edmonton",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "large",
+  "query": "Edmonton, Canada"
+ },
+ {
+  "name": "Saskatoon",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "city",
+  "query": "Saskatoon, Canada"
+ },
+ {
+  "name": "Whitehorse",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Whitehorse, Canada"
+ },
+ {
+  "name": "Yellowknife",
+  "region": "world",
+  "country": "Canada",
+  "cc": "ca",
+  "category": "small",
+  "query": "Yellowknife, Canada"
+ },
+ {
+  "name": "Mexico City",
+  "region": "world",
+  "country": "Mexico",
+  "cc": "mx",
+  "category": "metro",
+  "query": "Mexico City, Mexico"
+ },
+ {
+  "name": "Guadalajara",
+  "region": "world",
+  "country": "Mexico",
+  "cc": "mx",
+  "category": "large",
+  "query": "Guadalajara, Mexico"
+ },
+ {
+  "name": "Oaxaca",
+  "region": "world",
+  "country": "Mexico",
+  "cc": "mx",
+  "category": "town",
+  "query": "Oaxaca, Mexico"
+ },
+ {
+  "name": "Merida",
+  "region": "world",
+  "country": "Mexico",
+  "cc": "mx",
+  "category": "city",
+  "query": "Merida, Mexico"
+ },
+ {
+  "name": "Havana",
+  "region": "world",
+  "country": "Cuba",
+  "cc": "cu",
+  "category": "city",
+  "query": "Havana, Cuba"
+ },
+ {
+  "name": "Bogota",
+  "region": "world",
+  "country": "Colombia",
+  "cc": "co",
+  "category": "large",
+  "query": "Bogota, Colombia"
+ },
+ {
+  "name": "Cartagena",
+  "region": "world",
+  "country": "Colombia",
+  "cc": "co",
+  "category": "town",
+  "query": "Cartagena, Colombia"
+ },
+ {
+  "name": "Lima",
+  "region": "world",
+  "country": "Peru",
+  "cc": "pe",
+  "category": "large",
+  "query": "Lima, Peru"
+ },
+ {
+  "name": "Cusco",
+  "region": "world",
+  "country": "Peru",
+  "cc": "pe",
+  "category": "town",
+  "query": "Cusco, Peru"
+ },
+ {
+  "name": "Quito",
+  "region": "world",
+  "country": "Ecuador",
+  "cc": "ec",
+  "category": "city",
+  "query": "Quito, Ecuador"
+ },
+ {
+  "name": "Santiago",
+  "region": "world",
+  "country": "Chile",
+  "cc": "cl",
+  "category": "large",
+  "query": "Santiago, Chile"
+ },
+ {
+  "name": "Valparaiso",
+  "region": "world",
+  "country": "Chile",
+  "cc": "cl",
+  "category": "town",
+  "query": "Valparaiso, Chile"
+ },
+ {
+  "name": "Buenos Aires",
+  "region": "world",
+  "country": "Argentina",
+  "cc": "ar",
+  "category": "metro",
+  "query": "Buenos Aires, Argentina"
+ },
+ {
+  "name": "Montevideo",
+  "region": "world",
+  "country": "Uruguay",
+  "cc": "uy",
+  "category": "city",
+  "query": "Montevideo, Uruguay"
+ },
+ {
+  "name": "Rio de Janeiro",
+  "region": "world",
+  "country": "Brazil",
+  "cc": "br",
+  "category": "large",
+  "query": "Rio de Janeiro, Brazil"
+ },
+ {
+  "name": "Sao Paulo",
+  "region": "world",
+  "country": "Brazil",
+  "cc": "br",
+  "category": "metro",
+  "query": "Sao Paulo, Brazil"
+ },
+ {
+  "name": "Salvador",
+  "region": "world",
+  "country": "Brazil",
+  "cc": "br",
+  "category": "city",
+  "query": "Salvador, Brazil"
+ },
+ {
+  "name": "Brasilia",
+  "region": "world",
+  "country": "Brazil",
+  "cc": "br",
+  "category": "large",
+  "query": "Brasilia, Brazil"
+ },
+ {
+  "name": "Cairo",
+  "region": "world",
+  "country": "Egypt",
+  "cc": "eg",
+  "category": "metro",
+  "query": "Cairo, Egypt"
+ },
+ {
+  "name": "Alexandria",
+  "region": "world",
+  "country": "Egypt",
+  "cc": "eg",
+  "category": "city",
+  "query": "Alexandria, Egypt"
+ },
+ {
+  "name": "Marrakesh",
+  "region": "world",
+  "country": "Morocco",
+  "cc": "ma",
+  "category": "city",
+  "query": "Marrakesh, Morocco"
+ },
+ {
+  "name": "Fez",
+  "region": "world",
+  "country": "Morocco",
+  "cc": "ma",
+  "category": "city",
+  "query": "Fez, Morocco"
+ },
+ {
+  "name": "Casablanca",
+  "region": "world",
+  "country": "Morocco",
+  "cc": "ma",
+  "category": "large",
+  "query": "Casablanca, Morocco"
+ },
+ {
+  "name": "Tunis",
+  "region": "world",
+  "country": "Tunisia",
+  "cc": "tn",
+  "category": "city",
+  "query": "Tunis, Tunisia"
+ },
+ {
+  "name": "Cape Town",
+  "region": "world",
+  "country": "South Africa",
+  "cc": "za",
+  "category": "city",
+  "query": "Cape Town, South Africa"
+ },
+ {
+  "name": "Johannesburg",
+  "region": "world",
+  "country": "South Africa",
+  "cc": "za",
+  "category": "large",
+  "query": "Johannesburg, South Africa"
+ },
+ {
+  "name": "Durban",
+  "region": "world",
+  "country": "South Africa",
+  "cc": "za",
+  "category": "city",
+  "query": "Durban, South Africa"
+ },
+ {
+  "name": "Nairobi",
+  "region": "world",
+  "country": "Kenya",
+  "cc": "ke",
+  "category": "large",
+  "query": "Nairobi, Kenya"
+ },
+ {
+  "name": "Addis Ababa",
+  "region": "world",
+  "country": "Ethiopia",
+  "cc": "et",
+  "category": "large",
+  "query": "Addis Ababa, Ethiopia"
+ },
+ {
+  "name": "Lagos",
+  "region": "world",
+  "country": "Nigeria",
+  "cc": "ng",
+  "category": "metro",
+  "query": "Lagos, Nigeria"
+ },
+ {
+  "name": "Accra",
+  "region": "world",
+  "country": "Ghana",
+  "cc": "gh",
+  "category": "city",
+  "query": "Accra, Ghana"
+ },
+ {
+  "name": "Dakar",
+  "region": "world",
+  "country": "Senegal",
+  "cc": "sn",
+  "category": "city",
+  "query": "Dakar, Senegal"
+ },
+ {
+  "name": "Zanzibar City",
+  "region": "world",
+  "country": "Tanzania",
+  "cc": "tz",
+  "category": "small",
+  "query": "Zanzibar City, Tanzania"
+ },
+ {
+  "name": "Jerusalem",
+  "region": "world",
+  "country": "Israel",
+  "cc": "il",
+  "category": "city",
+  "query": "Jerusalem, Israel"
+ },
+ {
+  "name": "Tel Aviv",
+  "region": "world",
+  "country": "Israel",
+  "cc": "il",
+  "category": "city",
+  "query": "Tel Aviv, Israel"
+ },
+ {
+  "name": "Beirut",
+  "region": "world",
+  "country": "Lebanon",
+  "cc": "lb",
+  "category": "city",
+  "query": "Beirut, Lebanon"
+ },
+ {
+  "name": "Amman",
+  "region": "world",
+  "country": "Jordan",
+  "cc": "jo",
+  "category": "city",
+  "query": "Amman, Jordan"
+ },
+ {
+  "name": "Dubai",
+  "region": "world",
+  "country": "United Arab Emirates",
+  "cc": "ae",
+  "category": "large",
+  "query": "Dubai, United Arab Emirates"
+ },
+ {
+  "name": "Doha",
+  "region": "world",
+  "country": "Qatar",
+  "cc": "qa",
+  "category": "city",
+  "query": "Doha, Qatar"
+ },
+ {
+  "name": "Muscat",
+  "region": "world",
+  "country": "Oman",
+  "cc": "om",
+  "category": "city",
+  "query": "Muscat, Oman"
+ },
+ {
+  "name": "Isfahan",
+  "region": "world",
+  "country": "Iran",
+  "cc": "ir",
+  "category": "city",
+  "query": "Isfahan, Iran"
+ },
+ {
+  "name": "Tehran",
+  "region": "world",
+  "country": "Iran",
+  "cc": "ir",
+  "category": "metro",
+  "query": "Tehran, Iran"
+ },
+ {
+  "name": "Tokyo",
+  "region": "world",
+  "country": "Japan",
+  "cc": "jp",
+  "category": "metro",
+  "query": "Tokyo, Japan"
+ },
+ {
+  "name": "Kyoto",
+  "region": "world",
+  "country": "Japan",
+  "cc": "jp",
+  "category": "city",
+  "query": "Kyoto, Japan"
+ },
+ {
+  "name": "Osaka",
+  "region": "world",
+  "country": "Japan",
+  "cc": "jp",
+  "category": "large",
+  "query": "Osaka, Japan"
+ },
+ {
+  "name": "Sapporo",
+  "region": "world",
+  "country": "Japan",
+  "cc": "jp",
+  "category": "city",
+  "query": "Sapporo, Japan"
+ },
+ {
+  "name": "Kanazawa",
+  "region": "world",
+  "country": "Japan",
+  "cc": "jp",
+  "category": "town",
+  "query": "Kanazawa, Japan"
+ },
+ {
+  "name": "Seoul",
+  "region": "world",
+  "country": "South Korea",
+  "cc": "kr",
+  "category": "metro",
+  "query": "Seoul, South Korea"
+ },
+ {
+  "name": "Busan",
+  "region": "world",
+  "country": "South Korea",
+  "cc": "kr",
+  "category": "large",
+  "query": "Busan, South Korea"
+ },
+ {
+  "name": "Beijing",
+  "region": "world",
+  "country": "China",
+  "cc": "cn",
+  "category": "metro",
+  "query": "Beijing, China"
+ },
+ {
+  "name": "Shanghai",
+  "region": "world",
+  "country": "China",
+  "cc": "cn",
+  "category": "metro",
+  "query": "Shanghai, China"
+ },
+ {
+  "name": "Hong Kong",
+  "region": "world",
+  "country": "Hong Kong",
+  "cc": "hk",
+  "category": "large",
+  "query": "Hong Kong"
+ },
+ {
+  "name": "Taipei",
+  "region": "world",
+  "country": "Taiwan",
+  "cc": "tw",
+  "category": "large",
+  "query": "Taipei, Taiwan"
+ },
+ {
+  "name": "Singapore",
+  "region": "world",
+  "country": "Singapore",
+  "cc": "sg",
+  "category": "large",
+  "query": "Singapore, Singapore"
+ },
+ {
+  "name": "Bangkok",
+  "region": "world",
+  "country": "Thailand",
+  "cc": "th",
+  "category": "metro",
+  "query": "Bangkok, Thailand"
+ },
+ {
+  "name": "Chiang Mai",
+  "region": "world",
+  "country": "Thailand",
+  "cc": "th",
+  "category": "town",
+  "query": "Chiang Mai, Thailand"
+ },
+ {
+  "name": "Hanoi",
+  "region": "world",
+  "country": "Vietnam",
+  "cc": "vn",
+  "category": "large",
+  "query": "Hanoi, Vietnam"
+ },
+ {
+  "name": "Ho Chi Minh City",
+  "region": "world",
+  "country": "Vietnam",
+  "cc": "vn",
+  "category": "large",
+  "query": "Ho Chi Minh City, Vietnam"
+ },
+ {
+  "name": "Kuala Lumpur",
+  "region": "world",
+  "country": "Malaysia",
+  "cc": "my",
+  "category": "large",
+  "query": "Kuala Lumpur, Malaysia"
+ },
+ {
+  "name": "George Town",
+  "region": "world",
+  "country": "Malaysia",
+  "cc": "my",
+  "category": "town",
+  "query": "George Town, Penang, Malaysia"
+ },
+ {
+  "name": "Jakarta",
+  "region": "world",
+  "country": "Indonesia",
+  "cc": "id",
+  "category": "metro",
+  "query": "Jakarta, Indonesia"
+ },
+ {
+  "name": "Yogyakarta",
+  "region": "world",
+  "country": "Indonesia",
+  "cc": "id",
+  "category": "city",
+  "query": "Yogyakarta, Indonesia"
+ },
+ {
+  "name": "Manila",
+  "region": "world",
+  "country": "Philippines",
+  "cc": "ph",
+  "category": "metro",
+  "query": "Manila, Philippines"
+ },
+ {
+  "name": "Delhi",
+  "region": "world",
+  "country": "India",
+  "cc": "in",
+  "category": "metro",
+  "query": "Delhi, India"
+ },
+ {
+  "name": "Mumbai",
+  "region": "world",
+  "country": "India",
+  "cc": "in",
+  "category": "metro",
+  "query": "Mumbai, India"
+ },
+ {
+  "name": "Jaipur",
+  "region": "world",
+  "country": "India",
+  "cc": "in",
+  "category": "large",
+  "query": "Jaipur, India"
+ },
+ {
+  "name": "Kolkata",
+  "region": "world",
+  "country": "India",
+  "cc": "in",
+  "category": "metro",
+  "query": "Kolkata, India"
+ },
+ {
+  "name": "Chennai",
+  "region": "world",
+  "country": "India",
+  "cc": "in",
+  "category": "large",
+  "query": "Chennai, India"
+ },
+ {
+  "name": "Varanasi",
+  "region": "world",
+  "country": "India",
+  "cc": "in",
+  "category": "city",
+  "query": "Varanasi, India"
+ },
+ {
+  "name": "Kathmandu",
+  "region": "world",
+  "country": "Nepal",
+  "cc": "np",
+  "category": "city",
+  "query": "Kathmandu, Nepal"
+ },
+ {
+  "name": "Colombo",
+  "region": "world",
+  "country": "Sri Lanka",
+  "cc": "lk",
+  "category": "city",
+  "query": "Colombo, Sri Lanka"
+ },
+ {
+  "name": "Sydney",
+  "region": "world",
+  "country": "Australia",
+  "cc": "au",
+  "category": "metro",
+  "query": "Sydney, Australia"
+ },
+ {
+  "name": "Melbourne",
+  "region": "world",
+  "country": "Australia",
+  "cc": "au",
+  "category": "metro",
+  "query": "Melbourne, Australia"
+ },
+ {
+  "name": "Brisbane",
+  "region": "world",
+  "country": "Australia",
+  "cc": "au",
+  "category": "large",
+  "query": "Brisbane, Australia"
+ },
+ {
+  "name": "Perth",
+  "region": "world",
+  "country": "Australia",
+  "cc": "au",
+  "category": "large",
+  "query": "Perth, Australia"
+ },
+ {
+  "name": "Adelaide",
+  "region": "world",
+  "country": "Australia",
+  "cc": "au",
+  "category": "city",
+  "query": "Adelaide, Australia"
+ },
+ {
+  "name": "Hobart",
+  "region": "world",
+  "country": "Australia",
+  "cc": "au",
+  "category": "town",
+  "query": "Hobart, Australia"
+ },
+ {
+  "name": "Auckland",
+  "region": "world",
+  "country": "New Zealand",
+  "cc": "nz",
+  "category": "large",
+  "query": "Auckland, New Zealand"
+ },
+ {
+  "name": "Wellington",
+  "region": "world",
+  "country": "New Zealand",
+  "cc": "nz",
+  "category": "city",
+  "query": "Wellington, New Zealand"
+ },
+ {
+  "name": "Christchurch",
+  "region": "world",
+  "country": "New Zealand",
+  "cc": "nz",
+  "category": "city",
+  "query": "Christchurch, New Zealand"
+ },
+ {
+  "name": "Dunedin",
+  "region": "world",
+  "country": "New Zealand",
+  "cc": "nz",
+  "category": "town",
+  "query": "Dunedin, New Zealand"
+ },
+ {
+  "name": "Ulaanbaatar",
+  "region": "world",
+  "country": "Mongolia",
+  "cc": "mn",
+  "category": "city",
+  "query": "Ulaanbaatar, Mongolia"
+ },
+ {
+  "name": "Almaty",
+  "region": "world",
+  "country": "Kazakhstan",
+  "cc": "kz",
+  "category": "large",
+  "query": "Almaty, Kazakhstan"
+ },
+ {
+  "name": "Tashkent",
+  "region": "world",
+  "country": "Uzbekistan",
+  "cc": "uz",
+  "category": "large",
+  "query": "Tashkent, Uzbekistan"
+ },
+ {
+  "name": "Samarkand",
+  "region": "world",
+  "country": "Uzbekistan",
+  "cc": "uz",
+  "category": "city",
+  "query": "Samarkand, Uzbekistan"
+ }
+]

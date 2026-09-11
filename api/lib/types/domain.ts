@@ -344,3 +344,53 @@ export interface TaskItem {
   createdAt: string
   updatedAt: string
 }
+
+// --- generated map artwork -------------------------------------------------
+
+export interface CityArt {
+  id: string
+  /** The entry in the curated city list this was drawn from. */
+  cityKey: string
+  cityName: string
+  /** Which part of the list it came from: 'world', 'wales', and so on. */
+  region: string
+  country: string
+  latitude: number
+  longitude: number
+  theme: string
+  /** The theme's display name, resolved when the row is read. */
+  themeName: string
+  /**
+   * The theme's background colour.
+   *
+   * Handed to the UI so it can paint the right colour behind an artwork that
+   * is still loading, rather than flashing black between pictures.
+   */
+  background: string
+  width: number
+  height: number
+  url: string
+  /** The small version, for a grid of them. Made on demand. */
+  thumbUrl: string
+  svgUrl: string
+  createdAt: string
+}
+
+/** The on-disk side of an artwork. Never leaves the API. */
+export interface CityArtFile {
+  id: string
+  svgPath: string
+  rasterPath: string | null
+  cityName: string
+}
+
+export interface CityArtOutcome {
+  /** The artwork that was drawn, or null if nothing was. */
+  created: CityArt | null
+  /** Cities passed over because OpenStreetMap had too little to draw. */
+  skipped: string[]
+  /** How many old artworks were deleted to stay within the pool size. */
+  pruned: number
+  /** Why nothing was drawn, when `created` is null. */
+  reason: string | null
+}

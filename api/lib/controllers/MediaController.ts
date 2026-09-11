@@ -2,11 +2,13 @@ import type { Response } from 'express'
 import { Controller } from '../core/Controller'
 import { Get, Path, Res, Response as ResponseCode, Route, SuccessResponse } from '../core/Decorators'
 import { ApiError } from '../core/model/ApiError'
+import { CityArtRepository } from '../repositories/CityArtRepository'
 import { PhotoRepository } from '../repositories/PhotoRepository'
 import { ImageFile } from '../services/ImageFile'
 import { MediaStore } from '../services/MediaStore'
 
 const photos = new PhotoRepository()
+const cityArt = new CityArtRepository()
 
 /**
  * Serves the image files themselves.
@@ -111,6 +113,92 @@ export class MediaController extends Controller {
     if (!original) throw ApiError.notFound(`The file for photo '${id}' is not on the media volume`)
 
     await MediaController.sendFile(res, original, photo.mimeType ?? 'application/octet-stream', photo.filename)
+  }
+
+  /**
+   * A generated map artwork, as the raster the screensaver loads.
+   *
+   * Falls back to the SVG when there is no raster — which happens only if
+   * `sharp` could not rasterise it — so the picture still appears rather than
+   * leaving a gap in the rotation.
+   */
+  @Get('city-art/{id}')
+  @SuccessResponse(200, 'The artwork')
+  @ResponseCode(404, 'No such artwork, or its file has gone')
+  public async getCityArt(@Path('id') id: string, @Res() res: Response): Promise<void> {
+    const art = await cityArt.fileFor(id)
+    if (!art) throw ApiError.notFound(`No map artwork with id '${id}'`)
+
+    if (art.rasterPath) {
+      const raster = await MediaStore.cityArtPath(art.rasterPath)
+      if (raster) {
+        await MediaController.sendFile(res, raster, 'image/webp', `${art.cityName}.webp`)
+        return
+      }
+    }
+
+    const svg = await MediaStore.cityArtPath(art.svgPath)
+    if (!svg) throw ApiError.notFound(`The files for map artwork '${id}' are not on the media volume`)
+
+    await MediaController.sendFile(res, svg, 'image/svg+xml', `${art.cityName}.svg`)
+  }
+
+  /**
+   * The small version, for the grid on the Settings page.
+   *
+   * Made on demand the first time somebody looks at that page and kept
+   * afterwards, rather than during generation — the same bargain the photo
+   * library's display copies make. Worth having because the full artwork is
+   * around a megabyte, and a dozen of them behind 200-pixel tiles is twelve
+   * megabytes for a page that only needs to show what each one looks like.
+   */
+  @Get('city-art/{id}/thumb')
+  @SuccessResponse(200, 'The small version')
+  @ResponseCode(404, 'No such artwork, or its file has gone')
+  public async getCityArtThumb(@Path('id') id: string, @Res() res: Response): Promise<void> {
+    const art = await cityArt.fileFor(id)
+    if (!art) throw ApiError.notFound(`No map artwork with id '${id}'`)
+
+    const thumbName = MediaStore.cityArtThumbName(id)
+    const existing = await MediaStore.cityArtPath(thumbName)
+
+    if (existing) {
+      await MediaController.sendFile(res, existing, 'image/webp', `${art.cityName}.webp`)
+      return
+    }
+
+    // Built from the vector master rather than the raster, so the small
+    // version is resampled from the source instead of from a compressed copy.
+    const source = await MediaStore.cityArtPath(art.svgPath)
+    if (!source) throw ApiError.notFound(`The file for map artwork '${id}' is not on the media volume`)
+
+    const thumbnail = await ImageFile.renderCityArtThumbnail(source)
+    if (!thumbnail) throw ApiError.unavailable(`A small version of map artwork '${id}' could not be made`)
+
+    await MediaStore.writeCityArt(thumbName, thumbnail)
+    const written = await MediaStore.cityArtPath(thumbName)
+    if (!written) throw ApiError.unavailable(`A small version of map artwork '${id}' could not be stored`)
+
+    await MediaController.sendFile(res, written, 'image/webp', `${art.cityName}.webp`)
+  }
+
+  /**
+   * The vector master.
+   *
+   * Resolution independent, and the form to print or take somewhere else —
+   * which is the main reason both are kept rather than only the raster.
+   */
+  @Get('city-art/{id}/svg')
+  @SuccessResponse(200, 'The artwork as SVG')
+  @ResponseCode(404, 'No such artwork, or its file has gone')
+  public async getCityArtSvg(@Path('id') id: string, @Res() res: Response): Promise<void> {
+    const art = await cityArt.fileFor(id)
+    if (!art) throw ApiError.notFound(`No map artwork with id '${id}'`)
+
+    const svg = await MediaStore.cityArtPath(art.svgPath)
+    if (!svg) throw ApiError.notFound(`The file for map artwork '${id}' is not on the media volume`)
+
+    await MediaController.sendFile(res, svg, 'image/svg+xml', `${art.cityName}.svg`)
   }
 
   private static sendFile(res: Response, absolutePath: string, contentType: string, filename: string): Promise<void> {

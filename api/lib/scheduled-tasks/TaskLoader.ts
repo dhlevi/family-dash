@@ -1,6 +1,7 @@
 import { AppProperties } from '../core/AppProperties'
 import { TaskManager } from '../core/TaskManager'
 import { calendarSyncTask } from './CalendarSyncTask'
+import { cityArtRefreshTask } from './CityArtRefreshTask'
 import { newsFetchTask } from './NewsFetchTask'
 import { photoScanTask } from './PhotoScanTask'
 import { weatherRefreshTask } from './WeatherRefreshTask'
@@ -17,7 +18,7 @@ import { weatherRefreshTask } from './WeatherRefreshTask'
  * minutes.
  */
 export function registerTasks(): void {
-  TaskManager.register(calendarSyncTask, weatherRefreshTask, newsFetchTask, photoScanTask)
+  TaskManager.register(calendarSyncTask, weatherRefreshTask, newsFetchTask, photoScanTask, cityArtRefreshTask)
 
   const registered = TaskManager.names()
   console.info(

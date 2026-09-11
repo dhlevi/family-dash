@@ -22,8 +22,10 @@ media/*.ics
 # media library (user content; keep the folder structure)
 media/photos/*
 media/thumbs/*
+media/cityart/*
 !media/photos/.gitkeep
 !media/thumbs/.gitkeep
+!media/cityart/.gitkeep
 
 # database dumps from `make backup`
 backups/

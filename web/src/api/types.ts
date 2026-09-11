@@ -326,6 +326,56 @@ export interface ShoppingList {
 
 // --- photos and drawings ---------------------------------------------------
 
+/** What the screensaver shows when the display has been left alone. */
+export type ScreensaverSource = 'gallery' | 'map' | 'both'
+
+export type CityArtOrientation = 'landscape' | 'portrait'
+
+// --- generated map artwork -------------------------------------------------
+
+export interface CityArt {
+  id: string
+  cityKey: string
+  cityName: string
+  region: string
+  country: string
+  latitude: number
+  longitude: number
+  theme: string
+  themeName: string
+  /** The theme's background, painted behind the picture while it loads. */
+  background: string
+  width: number
+  height: number
+  url: string
+  /** The small version, for a grid of them. Made on demand. */
+  thumbUrl: string
+  /** The vector master — resolution independent, and the one to print. */
+  svgUrl: string
+  createdAt: string
+}
+
+export interface CityArtOutcome {
+  created: CityArt | null
+  skipped: string[]
+  pruned: number
+  reason: string | null
+}
+
+export interface MapThemeInfo {
+  id: string
+  name: string
+  description: string
+  mood: 'light' | 'dark'
+  background: string
+}
+
+export interface CityRegionInfo {
+  region: string
+  label: string
+  count: number
+}
+
 export interface Photo {
   id: string
   /** Subfolder in the library, or '' for the loose files at the top of it. */
@@ -581,6 +631,11 @@ export interface AppSettings {
   'appearance.accent': string
   'appearance.clock24Hour': boolean
   'appearance.screensaverMinutes': number
+  'appearance.screensaverSource': ScreensaverSource
+  'cityart.regions': string[]
+  'cityart.themes': string[]
+  'cityart.poolSize': number
+  'cityart.orientation': CityArtOrientation
   'input.onScreenKeyboard': KeyboardMode
   'dashboard.widgets': DashboardWidget[]
   'calendar.defaultView': 'month' | 'week' | 'agenda'

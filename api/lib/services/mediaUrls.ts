@@ -21,3 +21,24 @@ export function photoUrls(id: string, updatedAt: Date): PhotoUrls {
     thumbUrl: `/media/thumbs/${id}?v=${version}`
   }
 }
+
+export interface CityArtUrls {
+  url: string
+  thumbUrl: string
+  svgUrl: string
+}
+
+/**
+ * Generated artwork is addressed by id for the same reason photos are, and
+ * offers both forms: the raster is what the screensaver loads, the SVG is the
+ * master — resolution independent, and the one to print.
+ */
+export function cityArtUrls(id: string, updatedAt: Date): CityArtUrls {
+  const version = updatedAt.getTime()
+
+  return {
+    url: `/media/city-art/${id}?v=${version}`,
+    thumbUrl: `/media/city-art/${id}/thumb?v=${version}`,
+    svgUrl: `/media/city-art/${id}/svg?v=${version}`
+  }
+}

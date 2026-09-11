@@ -47,9 +47,10 @@ Built to run on a Raspberry Pi with a touchscreen monitor, in either portrait or
   Enter, so the forms that act on it still work. Anything anchored to the bottom of the screen moves clear of it. Set to auto by default, which means on for a
   touchscreen and off where there is a mouse, decided per screen rather than per install.
 - **Screensaver**: after a configurable idle spell the screen becomes a clock, the current
-  temperature and a slow slideshow of the favourited photos, which is more use from across a
-  kitchen than the dashboard it replaces and keeps one layout from burning into the panel. Any
-  tap, key or scroll dismisses it. Off by default; set the idle minutes in Settings.
+  temperature and a slow slideshow, which is more use from across a kitchen than the dashboard it
+  replaces and keeps one layout from burning into the panel. Any tap, key or scroll dismisses it.
+  Off by default; set the idle minutes in Settings.
+- **Map artwork**: an alternative to the photo slideshow for anyone with no pictures to show, ornno wish to show them. The API draws a stylised street map of a different place every few hours. There are 400 locations in total, weighted towards Vancouver Island, British Columbia and Wales. Gallery, maps, or both in rotation, as a setting.
 
 Recipes carry a picture from the photo library, so one can be uploaded once and reused, and
 deleting it from the library clears the reference rather than leaving a broken image.
@@ -124,6 +125,12 @@ rather than leaving the page empty.
 
 News is **RSS**, which also needs no key. There is no official Google News API; the feed list is
 editable in Settings.
+
+Map artwork uses vector tiles from [OpenFreeMap](https://openfreemap.org), which needs no key, no
+account and has no quota, and is open source so you can host it yourself if you want to. Just set `cityart.tiles.url` if you do. Tiles are only fetched while the screensaver is actually set to show maps. The artwork
+is map data from [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL) via
+[OpenMapTiles](https://openmaptiles.org), with place names and coordinates from
+[GeoNames](https://www.geonames.org) (CC BY 4.0).
 
 Two Google APIs deserve a warning, because both shape the design:
 
@@ -443,6 +450,61 @@ indexes whatever it finds, and `Rescan` on the Pictures page does it now. Nothin
 If the library lives on a removable drive, note that the scan will not delete the index when the
 drive is absent, it reports that instead, so unplugging the drive does not lose the pictures'
 favourites or the recipe photos pointing at them.
+
+### Map artwork
+
+An alternative or addition to the photo slideshow. Settings →
+Appearance → **Screensaver shows** switches between `Gallery`, `Maps` and `Both`; the default is `Gallery`.
+
+Everything is drawn on the server. A background task picks a place, fetches a dozen or two vector tiles, renders an SVG and rasterises it to WebP; the screensaver then loads a finished
+picture. That is the whole design decision: a wall display should not be running a map renderer.
+Showing one of these costs the Pi exactly what showing a photograph costs, it keeps working with
+no network at all, and there is no WebGL in the picture.
+
+```
+<MEDIA_PATH>/
+└── cityart/               generated, and safe to delete, the next run redraws
+    ├── <id>.svg           the master: resolution independent, and the one to print
+    ├── <id>.webp          what the screensaver actually loads (~0.3-1MB)
+    └── <id>-thumb.webp    made on demand, for the grid in Settings (~50KB)
+```
+
+`/media/city-art/<id>/svg` serves the vector original if you want to send one to a printer.
+
+**Places.** 401 entries in `api/lib/providers/map/cityList.ts` — 211 around the world, 74 in
+British Columbia, 38 on Vancouver Island and 78 in Wales. Tick the groups you want in Settings, or
+leave them all off to mean all of them. Coordinates were resolved once and committed; nothing
+calls a geocoder at runtime. To add your own, edit `api/scripts/cities.source.json` and run:
+
+```bash
+node api/scripts/build-city-list.mjs
+```
+
+That reads the [GeoNames](https://www.geonames.org) gazetteer, downloading about 25MB of place
+data into `api/scripts/.geonames/` on first use and reusing it afterwards. It is a bulk download
+rather than a geocoding service on purpose: the same input gives the same output, offline, and
+there is no rate limit to respect.
+
+**Styles.** A dozen, from `Blueprint` and `Ink on Paper` to `Neon`; each says whether it suits a
+lit or a dim room. Pick a subset in Settings or leave it empty for all of them. `Draw one now`
+renders immediately rather than waiting for the schedule, which is the only sane way to decide
+whether you like a style.
+
+**Shape.** Set `Shape` to match how the panel is mounted. The artwork is generated at that aspect
+ratio; a landscape picture on a portrait screen gets centre-cropped and you lose the edges of the
+city.
+
+A few settings worth knowing:
+
+| Setting | Default | Notes |
+|---|---|---|
+| `Keep` | 12 maps | ~10MB. Older ones are deleted as new ones arrive |
+| `tasks.cityart.refresh.cron` | `17 */3 * * *` | One new picture every three hours |
+| `cityart.size` | 2000 | Long edge in pixels. More than a 16-inch panel resolves |
+| `cityart.tiles.url` | OpenFreeMap | Point at your own tile server if you prefer |
+
+Places with very little in OpenStreetMap produce an almost empty picture, so the generator counts
+what it drew and moves on to somewhere else rather than putting a blank rectangle on your wall.
 
 ### Storage
 

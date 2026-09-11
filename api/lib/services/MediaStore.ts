@@ -30,9 +30,21 @@ export class MediaStore {
     return path.join(MediaStore.root(), AppProperties.getString('media.thumbs.dir', 'thumbs'))
   }
 
+  /**
+   * Generated map artwork for the screensaver.
+   *
+   * Kept apart from the photo library on purpose: the library is a folder a
+   * person curates, and a background task quietly writing pictures into it —
+   * and pruning them again — would be an unpleasant surprise. Everything here
+   * is disposable and regenerated from the city list.
+   */
+  public static cityArtDir(): string {
+    return path.join(MediaStore.root(), AppProperties.getString('media.cityart.dir', 'cityart'))
+  }
+
   /** Creates the library directories if the volume is mounted but empty. */
   public static async ensureDirectories(): Promise<void> {
-    for (const directory of [MediaStore.photosDir(), MediaStore.thumbsDir()]) {
+    for (const directory of [MediaStore.photosDir(), MediaStore.thumbsDir(), MediaStore.cityArtDir()]) {
       await fs.promises.mkdir(directory, { recursive: true })
     }
   }
@@ -77,6 +89,10 @@ export class MediaStore {
 
   public static photoPath(relPath: string): Promise<string | null> {
     return MediaStore.resolveExistingWithin(MediaStore.photosDir(), relPath)
+  }
+
+  public static cityArtPath(relPath: string): Promise<string | null> {
+    return MediaStore.resolveExistingWithin(MediaStore.cityArtDir(), relPath)
   }
 
   public static thumbPath(relPath: string): Promise<string | null> {
@@ -158,6 +174,44 @@ export class MediaStore {
     }
 
     throw new Error(`Could not find an unused name for '${filename}' in album '${album || 'the library'}'`)
+  }
+
+  /**
+   * The small version of a generated artwork.
+   *
+   * Derived from the id rather than stored, in the same way thumbnail names
+   * are derived from a photo's path, so it can be found without a column to
+   * record it and regenerated at any time.
+   */
+  public static cityArtThumbName(id: string): string {
+    return `${id}-thumb.webp`
+  }
+
+  /**
+   * Writes one generated artwork file, replacing any previous version.
+   *
+   * Unlike an uploaded photo this *may* overwrite: the name is a generated id
+   * rather than something a person chose, so a collision means the same
+   * artwork being rewritten, not two people's pictures competing.
+   */
+  public static async writeCityArt(filename: string, data: Buffer | string): Promise<string> {
+    const absolute = MediaStore.resolveWithin(MediaStore.cityArtDir(), filename)
+    if (!absolute) throw new Error(`Refusing to write city art outside the media volume: '${filename}'`)
+
+    await fs.promises.mkdir(MediaStore.cityArtDir(), { recursive: true })
+    await fs.promises.writeFile(absolute, data)
+
+    return filename
+  }
+
+  /** Removes generated artwork files, ignoring any that have gone already. */
+  public static async removeCityArt(...relPaths: Array<string | null>): Promise<void> {
+    for (const relPath of relPaths) {
+      if (!relPath) continue
+
+      const absolute = MediaStore.resolveWithin(MediaStore.cityArtDir(), relPath)
+      if (absolute) await fs.promises.rm(absolute, { force: true })
+    }
   }
 
   /** Removes a photo and its thumbnail, ignoring either being gone already. */

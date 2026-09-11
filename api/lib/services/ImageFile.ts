@@ -135,6 +135,27 @@ export class ImageFile {
     return ImageFile.resizeInto(sourcePath, destinationPath, ImageFile.displayWidth(), 86)
   }
 
+  /**
+   * Renders a small version of a generated map artwork, as a buffer.
+   *
+   * Rasterised from the SVG rather than resampled from the WebP, so the tile
+   * is drawn at its own size instead of being a shrunk copy of a compressed
+   * one — line art resamples badly, and the thin strokes are the whole
+   * picture. Returns null rather than throwing: a missing tile in a settings
+   * grid is not worth failing a page over.
+   */
+  public static async renderCityArtThumbnail(svgPath: string): Promise<Buffer | null> {
+    try {
+      return await sharp(svgPath, { density: 96 })
+        .resize(ImageFile.thumbnailWidth(), null, { withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer()
+    } catch (error) {
+      console.warn(`Could not render a thumbnail for '${svgPath}': ${(error as Error).message}`)
+      return null
+    }
+  }
+
   /** The longest edge of a display copy, from `media.display.width`. */
   public static displayWidth(): number {
     return AppProperties.getNumber('media.display.width', 2048)

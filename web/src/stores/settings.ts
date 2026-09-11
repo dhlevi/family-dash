@@ -3,7 +3,7 @@ import { computed, onScopeDispose, ref, watch } from 'vue'
 import { ApiRequestError } from '@/api/client'
 import { settingsApi } from '@/api/settings'
 import { resolveAutoTheme, type SunTimes } from '@/utils/theme'
-import type { AppSettings, SettingKey, Theme, ThemePreference } from '@/api/types'
+import type { AppSettings, ScreensaverSource, SettingKey, Theme, ThemePreference } from '@/api/types'
 
 /**
  * Application preferences, loaded once and shared.
@@ -92,6 +92,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const showCompletedTasks = computed(() => get('tasks.showCompleted', false))
   const slideshowSeconds = computed(() => get('photos.slideshowSeconds', 20))
   const screensaverMinutes = computed(() => get('appearance.screensaverMinutes', 0))
+  const screensaverSource = computed<ScreensaverSource>(() => get('appearance.screensaverSource', 'gallery'))
 
   async function load(): Promise<void> {
     loading.value = true
@@ -188,6 +189,7 @@ export const useSettingsStore = defineStore('settings', () => {
     showCompletedTasks,
     slideshowSeconds,
     screensaverMinutes,
+    screensaverSource,
     load,
     save,
     set,

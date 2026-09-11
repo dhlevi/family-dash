@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { AppProperties } from '../core/AppProperties'
+import { CITY_REGIONS } from '../providers/map/cities'
+import { themeIds } from '../providers/map/themes'
 
 /**
  * The catalogue of application preferences.
@@ -57,8 +59,46 @@ export const SETTINGS: Record<string, SettingDefinition> = {
   'appearance.screensaverMinutes': {
     schema: z.number().int().min(0).max(240),
     default: () => 0,
+    description: 'Idle minutes before the screen turns into a slideshow. Any tap or key dismisses it. 0 disables it.'
+  },
+  'appearance.screensaverSource': {
+    schema: z.enum(['gallery', 'map', 'both']),
+    default: () => 'gallery',
     description:
-      'Idle minutes before the screen turns into a photo slideshow. Any tap or key dismisses it. ' + '0 disables it.'
+      'What the screensaver shows: pictures from the photo library, generated map artwork of a ' +
+      'different city each time, or both in rotation. Map artwork needs no photographs and no ' +
+      'account anywhere, and is only drawn while this is set to use it.'
+  },
+
+  // --- map artwork --------------------------------------------------------
+  'cityart.regions': {
+    schema: z.array(z.enum(CITY_REGIONS)),
+    default: () => [],
+    description: 'Which parts of the city list the screensaver draws from. Empty means all of them.'
+  },
+  'cityart.themes': {
+    schema: z
+      .array(z.string().trim().min(1))
+      .refine(
+        values => values.every(value => themeIds().includes(value)),
+        'Every entry must be one of the available map themes'
+      ),
+    default: () => [],
+    description: 'Which art styles to use for map artwork. Empty means all of them.'
+  },
+  'cityart.poolSize': {
+    schema: z.number().int().min(4).max(60),
+    default: () => 12,
+    description:
+      'How many generated maps to keep. Older ones are deleted as new ones are drawn; a dozen is ' +
+      'a few megabytes and more variety than anyone notices in an evening.'
+  },
+  'cityart.orientation': {
+    schema: z.enum(['landscape', 'portrait']),
+    default: () => 'landscape',
+    description:
+      'Shape of the generated artwork. Set this to match how the display is mounted, or the ' +
+      'picture will be cropped to fit the screen.'
   },
 
   // --- input ---------------------------------------------------------------

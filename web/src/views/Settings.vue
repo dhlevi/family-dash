@@ -7,6 +7,7 @@ import { systemApi } from '@/api/system'
 import CalendarSources from '@/components/settings/CalendarSources.vue'
 import GoogleCalendar from '@/components/settings/GoogleCalendar.vue'
 import LocationPicker from '@/components/settings/LocationPicker.vue'
+import MapArtwork from '@/components/settings/MapArtwork.vue'
 import NewsFeeds from '@/components/settings/NewsFeeds.vue'
 import Card from '@/components/ui/Card.vue'
 import ColourPicker from '@/components/ui/ColourPicker.vue'
@@ -22,7 +23,15 @@ import Toggle from '@/components/ui/Toggle.vue'
 import ToolButton from '@/components/ui/ToolButton.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useSystemStore } from '@/stores/system'
-import type { CalendarSource, DashboardWidget, KeyboardMode, NewsFeed, SystemInfo, ThemePreference } from '@/api/types'
+import type {
+  CalendarSource,
+  DashboardWidget,
+  KeyboardMode,
+  NewsFeed,
+  ScreensaverSource,
+  SystemInfo,
+  ThemePreference
+} from '@/api/types'
 
 /**
  * Settings.
@@ -80,6 +89,7 @@ const theme = ref<ThemePreference>('dark')
 const onScreenKeyboard = ref<KeyboardMode>('auto')
 const autoThemeOffset = ref(30)
 const screensaverMinutes = ref(0)
+const screensaverSource = ref<ScreensaverSource>('gallery')
 const slideshowSeconds = ref(20)
 const accent = ref('#4f8ef7')
 const clock24Hour = ref(true)
@@ -127,6 +137,7 @@ watch(
     onScreenKeyboard.value = values['input.onScreenKeyboard']
     autoThemeOffset.value = values['appearance.autoThemeOffsetMinutes']
     screensaverMinutes.value = values['appearance.screensaverMinutes']
+    screensaverSource.value = values['appearance.screensaverSource']
     slideshowSeconds.value = values['photos.slideshowSeconds']
     accent.value = values['appearance.accent']
     clock24Hour.value = values['appearance.clock24Hour']
@@ -319,7 +330,24 @@ async function runTask(name: string): Promise<void> {
             />
           </Field>
 
-          <Field v-if="screensaverMinutes > 0" label="Seconds per photo">
+          <Field
+            v-if="screensaverMinutes > 0"
+            label="Screensaver shows"
+            hint="Map artwork needs no photographs: the API draws a different city every few hours."
+          >
+            <SegmentedControl
+              v-model="screensaverSource"
+              :options="[
+                { value: 'gallery', label: 'Gallery' },
+                { value: 'map', label: 'Maps' },
+                { value: 'both', label: 'Both' }
+              ]"
+              block
+              @update:model-value="persist({ 'appearance.screensaverSource': screensaverSource })"
+            />
+          </Field>
+
+          <Field v-if="screensaverMinutes > 0" label="Seconds per picture">
             <NumberStepper
               v-model="slideshowSeconds"
               :min="3"
@@ -341,6 +369,18 @@ async function runTask(name: string): Promise<void> {
             @update:model-value="persist({ 'appearance.clock24Hour': clock24Hour })"
           />
         </div>
+      </Card>
+
+      <!-- Map artwork. Only worth showing once the screensaver is set to use
+           it: the controls are meaningless otherwise, and the card is long. -->
+      <Card v-if="screensaverMinutes > 0 && screensaverSource !== 'gallery'">
+        <h2 class="mb-1 text-sm font-semibold tracking-wide text-muted uppercase">Map artwork</h2>
+        <p class="mb-3 text-xs text-faint">
+          Street maps of a different place each time, drawn here from OpenStreetMap data and kept on disk. No account,
+          no key, and nothing to fetch while the screensaver is running.
+        </p>
+
+        <MapArtwork />
       </Card>
 
       <!-- Calendar -->

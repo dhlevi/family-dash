@@ -34,6 +34,10 @@ function event(overrides: Partial<CalendarEvent> & { startsAt: string; endsAt: s
     location: null,
     allDay: false,
     rrule: null,
+    recurrence: null,
+    recurrenceUntil: null,
+    seriesId: null,
+    seriesStartsAt: null,
     colour: null,
     ...overrides
   }

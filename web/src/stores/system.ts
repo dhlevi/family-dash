@@ -18,7 +18,26 @@ export const useSystemStore = defineStore('system', () => {
   const lastCheckedAt = ref<Date | null>(null)
   const checking = ref(false)
 
-  let poller: ReturnType<typeof setInterval> | undefined
+  /**
+   * Whether the API has answered at least once since the page loaded.
+   *
+   * The kiosk browser starts with the desktop session, which on a Pi is well
+   * before the API has finished waiting on Postgres and running migrations.
+   * Until this flips, "not reachable" means "still starting", which is worth
+   * saying differently from "it broke".
+   */
+  const everConnected = ref(false)
+
+  /**
+   * Incremented each time the API comes back after an outage. App.vue keys
+   * the routed view on it, so a recovery remounts the page and every widget
+   * loads again - the same thing that happens when you switch tabs and come
+   * back, which is what you would otherwise have to do by hand.
+   */
+  const generation = ref(0)
+
+  let poller: ReturnType<typeof setTimeout> | undefined
+  let stopped = true
 
   const status = computed<'ok' | 'degraded' | 'unhealthy' | 'offline'>(() => {
     if (!reachable.value) return 'offline'
@@ -50,7 +69,9 @@ export const useSystemStore = defineStore('system', () => {
   const failingTasks = computed(() => (report.value?.tasks ?? []).filter(task => task.lastError !== null))
 
   async function refresh(): Promise<void> {
+    const wasReachable = reachable.value
     checking.value = true
+
     try {
       report.value = await systemApi.health()
       reachable.value = true
@@ -64,24 +85,54 @@ export const useSystemStore = defineStore('system', () => {
       checking.value = false
       lastCheckedAt.value = new Date()
     }
+
+    if (!reachable.value) return
+
+    // A first connection needs no remount: nothing has mounted yet, because
+    // the startup gate has been holding the view back. A reconnection does,
+    // because everything on screen failed to load while the API was away.
+    if (everConnected.value && !wasReachable) generation.value += 1
+    everConnected.value = true
   }
 
+  /**
+   * Poll interval while the API is answering. Health is cheap, but this runs
+   * for months on end, so there is no reason to ask more often than this.
+   */
+  const STEADY_INTERVAL_MS = 30000
+
+  /**
+   * And while it is not. Fast, because this is the interval that decides how
+   * long a wall display sits showing errors after a reboot or a redeploy -
+   * nobody is going to walk over and tap it.
+   */
+  const RETRY_INTERVAL_MS = 2000
+
   /** Begin polling. Called once from App.vue. */
-  function startPolling(intervalMs = 30000): void {
-    if (poller) return
-    void refresh()
-    poller = setInterval(() => void refresh(), intervalMs)
+  function startPolling(intervalMs = STEADY_INTERVAL_MS): void {
+    if (!stopped) return
+    stopped = false
+
+    const tick = async (): Promise<void> => {
+      await refresh()
+      if (stopped) return
+      poller = setTimeout(() => void tick(), reachable.value ? intervalMs : RETRY_INTERVAL_MS)
+    }
+
+    void tick()
   }
 
   function stopPolling(): void {
-    if (!poller) return
-    clearInterval(poller)
+    stopped = true
+    if (poller) clearTimeout(poller)
     poller = undefined
   }
 
   return {
     report,
     reachable,
+    everConnected,
+    generation,
     checking,
     lastCheckedAt,
     status,

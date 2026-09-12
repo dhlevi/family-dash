@@ -13,8 +13,8 @@
  * average out to the same thing but can still deal out long runs of one kind,
  * which on a wall display reads as the other source being broken.
  */
-export function interleave<T>(first: readonly T[], second: readonly T[]): T[] {
-  const merged: T[] = []
+export function interleave<A, B>(first: readonly A[], second: readonly B[]): (A | B)[] {
+  const merged: (A | B)[] = []
 
   for (let index = 0; index < Math.max(first.length, second.length); index++) {
     if (index < first.length) merged.push(first[index]!)

@@ -100,6 +100,36 @@ describe('api client', () => {
     expect(error.code).toBe('NETWORK')
   })
 
+  it('reads a 502 from nginx as the API being unreachable, not as an error it returned', async () => {
+    // What nginx actually sends while the API container is still starting.
+    fetchMock.mockResolvedValue(
+      new Response('<html><head><title>502 Bad Gateway</title></head></html>', {
+        status: 502,
+        headers: { 'content-type': 'text/html' }
+      })
+    )
+
+    await expect(api.health()).rejects.toMatchObject({ status: 0, code: 'NETWORK' })
+  })
+
+  it('reads a 503 from nginx as unreachable too, despite the API using 503 itself', async () => {
+    fetchMock.mockResolvedValue(
+      new Response('<html><head><title>503 Service Temporarily Unavailable</title></head></html>', {
+        status: 503,
+        headers: { 'content-type': 'text/html' }
+      })
+    )
+
+    await expect(api.health()).rejects.toMatchObject({ status: 0, code: 'NETWORK' })
+  })
+
+  it('reports a health check that never reached the network as unreachable', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+    await expect(api.health()).rejects.toBeInstanceOf(ApiRequestError)
+    await expect(api.health()).rejects.toMatchObject({ status: 0, code: 'NETWORK' })
+  })
+
   it('treats a 503 health report as readable rather than throwing', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ status: 'unhealthy', checks: [] }, 503))
 

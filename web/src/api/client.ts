@@ -34,6 +34,12 @@ interface RequestOptions {
 
 const DEFAULT_TIMEOUT_MS = 15000
 
+/**
+ * Statuses nginx returns on the API's behalf when it cannot reach it. These
+ * mean "not there", not "said no", however much they look like the latter.
+ */
+const GATEWAY_STATUSES = new Set([502, 503, 504])
+
 function buildUrl(path: string, query?: RequestOptions['query']): string {
   const url = `/api${path.startsWith('/') ? path : `/${path}`}`
   if (!query) return url
@@ -114,9 +120,31 @@ export const api = {
 
   /** /healthCheck sits outside /api, so it needs its own call. */
   health: async <T>(): Promise<T> => {
-    const response = await fetch('/healthCheck')
-    // 503 still carries a useful report body.
-    if (!response.ok && response.status !== 503) throw await toError(response)
-    return (await response.json()) as T
+    let response: Response
+    try {
+      response = await fetch('/healthCheck')
+    } catch (error) {
+      throw new ApiRequestError(0, 'Cannot reach the API', 'NETWORK', error)
+    }
+
+    // Two very different things arrive here as a 5xx. The API answers its own
+    // health check with 503 when a check is failing, and that report is the
+    // most useful thing we get all day. nginx answers with 502/503/504 when
+    // the API is not listening at all - during a rebuild, or while the
+    // container waits on Postgres - and its body is an HTML error page.
+    //
+    // The status code cannot tell them apart, so the body does: a report has
+    // a status field, an nginx page does not parse as JSON at all. Getting
+    // this wrong is not cosmetic. An unreachable API misread as a reachable
+    // one leaves the display insisting it is Connected while every widget
+    // fails, and nothing ever retries.
+    const payload = await response.json().catch(() => null)
+    if (payload !== null && typeof payload === 'object' && 'status' in payload) return payload as T
+
+    if (GATEWAY_STATUSES.has(response.status)) {
+      throw new ApiRequestError(0, 'The dashboard service is not answering', 'NETWORK')
+    }
+
+    throw new ApiRequestError(response.status, response.statusText || 'Health check failed')
   }
 }

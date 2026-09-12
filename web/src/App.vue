@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import AppHeader from '@/components/ui/AppHeader.vue'
 import AppNav from '@/components/ui/AppNav.vue'
 import OnScreenKeyboard from '@/components/ui/OnScreenKeyboard.vue'
 import Screensaver from '@/components/ui/Screensaver.vue'
+import StartupGate from '@/components/ui/StartupGate.vue'
 import { useIdle } from '@/composables/useIdle'
 import { useOnScreenKeyboard } from '@/composables/useOnScreenKeyboard'
 import { useSolarTheme } from '@/composables/useSolarTheme'
@@ -33,13 +34,24 @@ const { idle, wake } = useIdle(computed(() => settings.screensaverMinutes))
 // on a device with a mouse unless the setting says otherwise.
 const keyboard = useOnScreenKeyboard()
 
-onMounted(() => {
-  system.startPolling()
-  // Loaded here rather than per-page so the theme and accent are applied
-  // before the first paint of whichever tab the kiosk opens on.
-  void settings.load()
-})
+onMounted(() => system.startPolling())
 onBeforeUnmount(() => system.stopPolling())
+
+/**
+ * Settings are loaded here rather than per-page so the theme and accent are
+ * applied before the first paint of whichever tab the kiosk opens on - but
+ * not until the API is actually answering. Loading them on mount meant that
+ * on a cold boot the one request that decides what the whole display looks
+ * like was also the one most likely to be made too early, leaving the Pi on
+ * default colours until someone reloaded the page.
+ */
+watch(
+  [() => system.everConnected, () => system.generation],
+  ([connected]) => {
+    if (connected) void settings.load()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -49,11 +61,20 @@ onBeforeUnmount(() => system.stopPolling())
     <main class="flex min-h-0 min-w-0 flex-1 flex-col">
       <AppHeader />
 
-      <RouterView v-slot="{ Component }">
+      <!-- Nothing below here can load anything until the API answers, so
+           until it has answered once, wait rather than mounting a page that
+           can only fail. -->
+      <StartupGate v-if="!system.everConnected" />
+
+      <RouterView v-else v-slot="{ Component }">
         <!-- Views are lazy; without a fallback the pane flashes empty on the
              first visit to each tab. -->
         <Suspense>
-          <component :is="Component" />
+          <!-- Keyed on the connection generation, so an API restart remounts
+               the page and reloads every widget on it. Widgets load once on
+               mount; without this they keep whatever error they were left
+               holding until somebody switches tabs. -->
+          <component :is="Component" :key="system.generation" />
         </Suspense>
       </RouterView>
     </main>

@@ -836,6 +836,7 @@ set -- --kiosk --noerrdialogs --disable-infobars --incognito \
   --disable-features=TranslateUI --check-for-update-interval=31536000 \
   --disable-pinch --overscroll-history-navigation=0 \
   --autoplay-policy=no-user-gesture-required \
+  --password-store=basic \
   "http://$(hostname).local:8080"
 
 # Under Wayland, Chromium still tries the X11 backend first and dies with
@@ -875,9 +876,16 @@ browser is what the app offers when sharing the shopping list to a phone (or con
 Pi's IP) means what is on screen is something another device can actually reach. If you do use
 `localhost`, the app notices and asks you once for the network address instead. 
 
-`--disable-pinch` and `--overscroll-history-navigation=0` matter more than they sound: without
+`--disable-pinch` and `--overscroll-history-navigation=0` Without
 them a stray two-finger touch zooms the whole dashboard, and a horizontal swipe on the drawing
 page navigates back (we're in chromium afterall). You can reenable them if you want to.
+
+`--password-store=basic` is what stops the keyring prompt on boot. Chromium looks for a system
+secret store, finds `gnome-keyring`, and asks for the password to unlock it, except that under
+auto-login nothing has unlocked the login keyring, and nobody is standing at the screen to type
+it anyway. The dialog then sits on top of the dashboard until somebody dismisses it. `basic`
+tells Chromium to skip the keyring and use its own store, which costs nothing here: the kiosk
+runs `--incognito` and has no passwords to keep.
 
 #### 4. Start it at login
 

@@ -52,7 +52,7 @@ export class TerrainOverlay {
    * Fetches, shades and crops.
    *
    * Returns null whenever a hillshade would not be worth having,
-   * rather than an empty image, so the caller can record that the 
+   * rather than an empty image, so the caller can record that the
    * artwork simply has none.
    */
   public static async build(
@@ -92,8 +92,8 @@ export class TerrainOverlay {
     const elevations = new Float32Array(gridWidth * gridHeight)
 
     // Which squares actually arrived. An absent tile leaves its block at zero
-    // metres, and the join between that and real ground is a "cliff"; a hard 
-    // black edge straight across the picture. Unsurveyed ocean and the far 
+    // metres, and the join between that and real ground is a "cliff"; a hard
+    // black edge straight across the picture. Unsurveyed ocean and the far
     // north are where this has the greatest effect.
     const covered = new Uint8Array(tilesAcross * tilesDown)
 

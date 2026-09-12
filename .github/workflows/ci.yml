@@ -76,15 +76,29 @@ jobs:
         run: |
           cp .env.example .env
           sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=ci-password/' .env
+          # The checkout belongs to the runner, not to the image's node user,
+          # so ./media is read-only to the API unless it runs as the runner.
+          # This is the same knob a USB drive or a NAS mount needs.
+          sed -i "s/^API_UID=.*/API_UID=$(id -u)/;s/^API_GID=.*/API_GID=$(id -g)/" .env
           docker compose up --build -d --wait --wait-timeout 180
 
       # Proves the migrations apply from an empty database and that the whole
       # chain from nginx to API to Postgres is wired, which unit tests cannot.
       - name: Verify health through the proxy
         run: |
-          status=$(curl -fsS http://localhost:8080/healthCheck | jq -r .status)
+          report=$(curl -fsS http://localhost:8080/healthCheck)
+          status=$(jq -r .status <<< "$report")
           echo "health: $status"
-          test "$status" = "ok"
+
+          # "degraded" on its own does not say which probe is unhappy, which
+          # turns a one-line CI failure into an afternoon. Name it.
+          if [ "$status" != "ok" ]; then
+            jq -r '.checks[] | select(.healthy == false)
+                   | "  check \(.name): \(.message // "failing, no message")"' <<< "$report"
+            jq -r '.tasks[] | select(.lastError != null)
+                   | "  task \(.name): \(.lastError)"' <<< "$report"
+            exit 1
+          fi
 
       - name: Verify the SPA and its deep links are served
         run: |

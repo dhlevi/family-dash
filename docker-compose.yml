@@ -98,6 +98,21 @@ services:
       NTFY_URL: http://ntfy:80
       NTFY_PUBLIC_URL: ${NTFY_PUBLIC_URL:-}
       NTFY_TOKEN: ${NTFY_TOKEN:-}
+    # The uid the API runs as. It has to be able to write MEDIA_PATH, which
+    # is a host directory, so its ownership is the host's business and not
+    # something the image can decide. 1000 is the image's own `node` user and
+    # also the first account created by Raspberry Pi OS, which is why the
+    # default is right for the ordinary install.
+    #
+    # Point MEDIA_PATH at a USB drive, a NAS mount or another account's folder
+    # and the owning uid is very likely something else. Set these rather than
+    # chowning a photo library the dashboard does not own:
+    #
+    #   API_UID=$(id -u)  API_GID=$(id -g)
+    #
+    # Get it wrong and nothing crashes: /healthCheck reports the media probe
+    # as unhealthy with the reason, and the dashboard runs without uploads.
+    user: "${API_UID:-1000}:${API_GID:-1000}"
     volumes:
       - ${MEDIA_PATH:-./media}:/media
     depends_on:

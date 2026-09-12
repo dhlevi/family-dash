@@ -17,6 +17,10 @@ services:
   api:
     build:
       target: development
+    # The development image installs node_modules as root and tsx writes a
+    # cache into it, so development keeps running as root rather than
+    # inheriting the production uid.
+    user: "root"
     environment:
       NODE_ENV: development
       LOG_LEVEL: debug

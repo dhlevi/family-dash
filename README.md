@@ -469,6 +469,24 @@ If the library lives on a removable drive, note that the scan will not delete th
 drive is absent, it reports that instead, so unplugging the drive does not lose the pictures'
 favourites or the recipe photos pointing at them.
 
+#### Who owns it
+
+The API writes thumbnails into this folder, so it has to be able to. It runs as uid **1000**,
+which is the first account Raspberry Pi OS creates, so the default install needs nothing done.
+
+A drive or share owned by somebody else is the case that bites. Rather than chowning a photo
+library the dashboard does not own, tell it which uid to be:
+
+```bash
+API_UID=$(id -u)   # as the owner of MEDIA_PATH
+API_GID=$(id -g)
+```
+
+Both live in `.env`. Nothing crashes if this is wrong: `make health` reports the media probe as
+unhealthy and names the reason, uploads and thumbnails stop, and the rest of the dashboard
+carries on. That is deliberate, a photo folder that went away with a USB drive is not a reason
+to take the calendar down with it.
+
 ### Map artwork
 
 An alternative or addition to the photo slideshow. Settings →
